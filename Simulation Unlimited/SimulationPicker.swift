@@ -14,28 +14,37 @@ struct SimulationPicker: View {
             VStack {
                 
                 NavigationLink {
-                    Text("TODO")
+                    BoidsView()
                 } label: {
-                    RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
-                        .stroke(lineWidth: 1.0)
+                    BoidsView()
+                        .frame(width: 500, height: 200)
                         .overlay(
                             HStack {
                                 Image(systemName: "bird.circle")
-                                      .foregroundStyle(.teal, .gray)
+                                      .foregroundStyle(.white, .white)
                                       .font(.system(size: 64))
                                       .padding()
                                 
                                 Text("Boids")
-                                    .padding()
+                                    .padding(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 20))
                                     .font(.largeTitle)
-                                
-                            })
-                        .frame(width: 500, height: 200)
+                                    .foregroundColor(.white)
+                                    
+                            }
+                            .background(.gray.opacity(0.75), in: RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+                        )
+                        .clipShape(RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+                        .padding(0.9) // hack alert
+                        .background(RoundedRectangle(cornerRadius: 10).fill(.blue))
+//                        .border(.blue)
+
+                        
+                        
+
                 }
                 
                 NavigationLink {
-//                    SlimeView()
-                    Text("TODO")
+                    SlimeView()
                 } label: {
 //                    RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
 //                        .stroke(lineWidth: 1.0)
@@ -69,6 +78,7 @@ struct SimulationPicker: View {
                                     
                             }.background(.gray.opacity(0.75), in: RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
                         )
+                        
                 }
                 
                 NavigationLink {

@@ -83,7 +83,7 @@ struct SlimeView: UIViewRepresentable {
         var viewPortSize = vector_uint2(x: 0, y: 0)
         
 
-        fileprivate var particles = [Particle]()
+        fileprivate var particles = [SlimeParticle]()
 //        var obstacles = [Obstacle]()
         
         var colours = RenderColours()
@@ -275,7 +275,7 @@ extension SlimeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPass", "secondPass", "thirdPass", "fourthPass", "boxBlur"].map {
+        states = try ["firstPassSlime", "secondPassSlime", "thirdPassSlime", "fourthPassSlime", "boxBlur"].map {
             guard let function = library.makeFunction(name: $0) else {
                 fatalError("Can't make function \($0)")
             }
@@ -345,7 +345,7 @@ extension SlimeView.Coordinator {
 //                species = xLinePosition.truncatingRemainder(dividingBy: 3)
 //            }
             
-            let particle = Particle(position: position, velocity: speed, species: species)
+            let particle = SlimeParticle(position: position, velocity: speed, species: species)
             particles.append(particle)
         }
         let size = particles.count * MemoryLayout<Particle>.size
@@ -360,7 +360,7 @@ extension SlimeView.Coordinator {
         
         particles = []
         for i in 0..<particleCount {
-            particles.append((particleBuffer.contents() + (i * MemoryLayout<Particle>.size)).load(as: Particle.self))
+            particles.append((particleBuffer.contents() + (i * MemoryLayout<SlimeParticle>.size)).load(as: SlimeParticle.self))
         }
     }
     
@@ -388,7 +388,7 @@ struct RenderColours {
 }
 
 
-struct MetalView_Previews: PreviewProvider {
+struct SlimeView_Previews: PreviewProvider {
     static var previews: some View {
         SlimeView()
     }
@@ -406,7 +406,7 @@ private extension Color {
     }
 }
 
-private struct Particle {
+private struct SlimeParticle {
     var position: SIMD2<Float>
     var velocity: SIMD2<Float>
     var acceleration: SIMD2<Float> = SIMD2<Float>(0,0)

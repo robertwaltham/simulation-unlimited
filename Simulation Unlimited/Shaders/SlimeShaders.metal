@@ -40,13 +40,13 @@ float2 rotate_vector(float2 vector, float angle) {
     return rotation * vector;
 }
 
-kernel void firstPass(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+kernel void firstPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                       const device RenderColours& colours [[buffer(InputIndexColours)]],
                       uint2 id [[thread_position_in_grid]]) {
     output.write((half4)colours.background, id);
 }
 
-kernel void secondPass(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
+kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
                        const device RenderColours& colours [[buffer(InputIndexColours)]],
                        device Particle *particles [[buffer(InputIndexParticles)]],
                        const device float *random [[buffer(InputIndexRandom)]],
@@ -147,7 +147,7 @@ kernel void secondPass(texture2d<half, access::read_write> output [[texture(Inpu
 }
 
 
-kernel void thirdPass(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+kernel void thirdPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                       device Particle *particles [[buffer(InputIndexParticles)]],
                       const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
                       const device RenderColours& colours [[buffer(InputIndexColours)]],
@@ -204,7 +204,7 @@ kernel void thirdPass(texture2d<half, access::write> output [[texture(InputTextu
 
 }
 
-kernel void fourthPass(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+kernel void fourthPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                        texture2d<half, access::read_write> input [[texture(InputTextureIndexPathOutput)]],
                        uint2 gid [[ thread_position_in_grid ]]) {
     half4 color = input.read(gid);

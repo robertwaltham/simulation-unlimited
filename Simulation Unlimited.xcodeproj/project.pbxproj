@@ -15,6 +15,8 @@
 		D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F06F2AC792FB00324D6D /* SimulationPicker.swift */; };
 		D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0712AC7A28900324D6D /* SlimeShaders.metal */; };
 		D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0752AC7A30C00324D6D /* SlimeView.swift */; };
+		D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0772AC7AB1700324D6D /* BoidsView.swift */; };
+		D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0792AC7ABBB00324D6D /* BoidShaders.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,8 @@
 		D197F0712AC7A28900324D6D /* SlimeShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SlimeShaders.metal; sourceTree = "<group>"; };
 		D197F0732AC7A2B700324D6D /* SlimeTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SlimeTypes.h; sourceTree = "<group>"; };
 		D197F0752AC7A30C00324D6D /* SlimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeView.swift; sourceTree = "<group>"; };
+		D197F0772AC7AB1700324D6D /* BoidsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsView.swift; sourceTree = "<group>"; };
+		D197F0792AC7ABBB00324D6D /* BoidShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BoidShaders.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +67,7 @@
 				D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */,
 				D197F0612AC78E0800324D6D /* ContentView.swift */,
 				D197F06F2AC792FB00324D6D /* SimulationPicker.swift */,
+				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
 				D197F0752AC7A30C00324D6D /* SlimeView.swift */,
 				D197F0742AC7A2E300324D6D /* Shaders */,
 				D197F0632AC78E0800324D6D /* Item.swift */,
@@ -85,6 +90,7 @@
 			children = (
 				D197F0712AC7A28900324D6D /* SlimeShaders.metal */,
 				D197F0732AC7A2B700324D6D /* SlimeTypes.h */,
+				D197F0792AC7ABBB00324D6D /* BoidShaders.metal */,
 			);
 			path = Shaders;
 			sourceTree = "<group>";
@@ -161,6 +167,8 @@
 			files = (
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
+				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
+				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
 				D197F0622AC78E0800324D6D /* ContentView.swift in Sources */,
 				D197F0642AC78E0800324D6D /* Item.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,

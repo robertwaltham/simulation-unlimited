@@ -17,6 +17,7 @@
 
 #include <simd/simd.h>
 
+// Slime
 
 typedef enum InputIndex {
     InputIndexColours = 0,
@@ -32,6 +33,29 @@ typedef enum InputTextureIndex {
     InputTextureIndexPathOutput = 2
 
 } InputTextureIndex;
+
+// Boids
+
+typedef enum SecondPassInputIndex {
+    SecondPassInputIndexParticle = 0,
+    SecondPassInputIndexParticleCount = 1,
+    SecondPassInputIndexMaxSpeed = 2,
+    SecondPassInputIndexMargin = 3,
+    SecondPassInputIndexAlign = 4,
+    SecondPassInputIndexCohere = 5,
+    SecondPassInputIndexSeparate = 6,
+    SecondPassInputIndexRadius = 7,
+    SecondPassInputIndexWidth = 8,
+    SecondPassInputIndexHeight = 9,
+    SecondPassInputIndexObstacle = 10,
+    SecondPassInputIndexObstacleCount = 11
+
+} SecondPassInputIndex;
+
+typedef enum ThirdPassInputIndex {
+    ThirdPassInputTextureIndexParticle = 0,
+    ThirdPassInputTextureIndexRadius = 1,
+} ThirdPassInputTextureIndex;
 
 
 #endif /* ShaderTypes_h */
