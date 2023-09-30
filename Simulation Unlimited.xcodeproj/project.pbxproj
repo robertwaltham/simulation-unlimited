@@ -13,6 +13,8 @@
 		D197F0662AC78E0800324D6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0652AC78E0800324D6D /* Assets.xcassets */; };
 		D197F0692AC78E0800324D6D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0682AC78E0800324D6D /* Preview Assets.xcassets */; };
 		D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F06F2AC792FB00324D6D /* SimulationPicker.swift */; };
+		D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0712AC7A28900324D6D /* SlimeShaders.metal */; };
+		D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0752AC7A30C00324D6D /* SlimeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,6 +25,9 @@
 		D197F0652AC78E0800324D6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D197F0682AC78E0800324D6D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D197F06F2AC792FB00324D6D /* SimulationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationPicker.swift; sourceTree = "<group>"; };
+		D197F0712AC7A28900324D6D /* SlimeShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SlimeShaders.metal; sourceTree = "<group>"; };
+		D197F0732AC7A2B700324D6D /* SlimeTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SlimeTypes.h; sourceTree = "<group>"; };
+		D197F0752AC7A30C00324D6D /* SlimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +63,8 @@
 				D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */,
 				D197F0612AC78E0800324D6D /* ContentView.swift */,
 				D197F06F2AC792FB00324D6D /* SimulationPicker.swift */,
+				D197F0752AC7A30C00324D6D /* SlimeView.swift */,
+				D197F0742AC7A2E300324D6D /* Shaders */,
 				D197F0632AC78E0800324D6D /* Item.swift */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
@@ -71,6 +78,15 @@
 				D197F0682AC78E0800324D6D /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		D197F0742AC7A2E300324D6D /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				D197F0712AC7A28900324D6D /* SlimeShaders.metal */,
+				D197F0732AC7A2B700324D6D /* SlimeTypes.h */,
+			);
+			path = Shaders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -144,8 +160,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
+				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F0622AC78E0800324D6D /* ContentView.swift in Sources */,
 				D197F0642AC78E0800324D6D /* Item.swift in Sources */,
+				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -296,6 +314,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.leveltenpaladin.Simulation-Unlimited";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/Shaders/SlimeTypes.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -325,6 +344,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.leveltenpaladin.Simulation-Unlimited";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/Shaders/SlimeTypes.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

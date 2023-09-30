@@ -34,23 +34,41 @@ struct SimulationPicker: View {
                 }
                 
                 NavigationLink {
+//                    SlimeView()
                     Text("TODO")
                 } label: {
-                    RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
-                        .stroke(lineWidth: 1.0)
+//                    RoundedRectangle(cornerSize: CGSize(width: 10, height: 10))
+//                        .stroke(lineWidth: 1.0)
+//                        .overlay(
+//                            HStack {
+//                                Image(systemName: "drop.circle")
+//                                      .foregroundStyle(.teal, .gray)
+//                                      .font(.system(size: 64))
+//                                      .padding()
+//                                
+//                                Text("Slime")
+//                                    .padding()
+//                                    .font(.largeTitle)
+//                                
+//                            })
+//                        .frame(width: 500, height: 200)
+                    SlimeView()
+                        .frame(width: 500, height: 200)
+                        .clipShape(RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
                         .overlay(
                             HStack {
                                 Image(systemName: "drop.circle")
-                                      .foregroundStyle(.teal, .gray)
+                                      .foregroundStyle(.white, .white)
                                       .font(.system(size: 64))
                                       .padding()
                                 
                                 Text("Slime")
-                                    .padding()
+                                    .padding(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 20))
                                     .font(.largeTitle)
-                                
-                            })
-                        .frame(width: 500, height: 200)
+                                    .foregroundColor(.white)
+                                    
+                            }.background(.gray.opacity(0.75), in: RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+                        )
                 }
                 
                 NavigationLink {
