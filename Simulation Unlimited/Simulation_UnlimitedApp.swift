@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct Simulation_UnlimitedApp: App {
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -25,7 +26,7 @@ struct Simulation_UnlimitedApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SimulationPicker()
         }
         .modelContainer(sharedModelContainer)
     }
