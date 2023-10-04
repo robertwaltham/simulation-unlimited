@@ -23,6 +23,15 @@ struct Obstacle {
     float2 position;
 };
 
+struct BoidsConfig {
+    float max_speed;
+    float margin;
+    float align_coefficient;
+    float cohere_coefficient;
+    float separate_coefficient;
+    float radius;
+};
+
 float2 limit_magnitude(float2 vec, float max_mag) {
     float magnitude = length(vec);
     if (magnitude > max_mag) {
@@ -36,18 +45,19 @@ kernel void firstPass(texture2d<half, access::write> output [[texture(0)]],
     output.write(half4(0.), id);
 }
 
-kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexParticle)]],
-                       const device int& particle_count [[ buffer(SecondPassInputIndexParticleCount)]],
-                       const device uint& width [[ buffer(SecondPassInputIndexWidth)]],
-                       const device uint& height [[ buffer(SecondPassInputIndexHeight)]],
-                       const device float& max_speed [[ buffer(SecondPassInputIndexMaxSpeed)]],
-                       const device float& margin [[ buffer(SecondPassInputIndexMargin)]],
-                       const device float& align_coefficient [[ buffer(SecondPassInputIndexAlign)]],
-                       const device float& cohere_coefficient [[ buffer(SecondPassInputIndexCohere)]],
-                       const device float& separate_coefficient [[ buffer(SecondPassInputIndexSeparate)]],
-                       const device float& radius [[ buffer(SecondPassInputIndexRadius)]],
-                       device Obstacle *obstacles [[buffer(SecondPassInputIndexObstacle)]],
-                       const device int& obstacle_count [[ buffer(SecondPassInputIndexObstacleCount)]],
+kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexParticle)]],
+                       const device int& particle_count [[ buffer(BoidsInputIndexParticleCount)]],
+                       const device uint& width [[ buffer(BoidsInputIndexWidth)]],
+                       const device uint& height [[ buffer(BoidsInputIndexHeight)]],
+//                       const device float& max_speed [[ buffer(BoidsInputIndexMaxSpeed)]],
+//                       const device float& margin [[ buffer(BoidsInputIndexMargin)]],
+//                       const device float& align_coefficient [[ buffer(BoidsInputIndexAlign)]],
+//                       const device float& cohere_coefficient [[ buffer(BoidsInputIndexCohere)]],
+//                       const device float& separate_coefficient [[ buffer(BoidsInputIndexSeparate)]],
+//                       const device float& radius [[ buffer(BoidsInputIndexRadius)]],
+                       device Obstacle *obstacles [[buffer(BoidsInputIndexObstacle)]],
+                       const device int& obstacle_count [[ buffer(BoidsInputIndexObstacleCount)]],
+                       const device BoidsConfig& config [[ buffer(BoidsInputIndexConfig)]],
                        uint id [[ thread_position_in_grid ]],
                        uint tid [[ thread_index_in_threadgroup ]],
                        uint bid [[ threadgroup_position_in_grid ]],
@@ -77,7 +87,7 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
 
         Particle other = particles[i];
         float dist = distance(position, other.position);
-        if (dist > radius) {
+        if (dist > config.radius) {
             continue;
         }
         total++;
@@ -86,7 +96,7 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
         cohere_center += other.position;
 
         float2 diff = position - other.position;
-        if (diff.x != 0 && diff.y != 0 && dist < radius / 2) {
+        if (diff.x != 0 && diff.y != 0 && dist < config.radius / 2) {
             diff = diff / pow(dist, 2.);
             separate_target += diff;
             separate_total++;
@@ -102,10 +112,10 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
         float align_target_len = length(align_target);
         if (align_target_len != 0) {
             align_target /= total;
-            align_target *= max_speed / align_target_len;
+            align_target *= config.max_speed / align_target_len;
             align_force = align_target - velocity;
             align_force = limit_magnitude(align_force, max_force);
-            align_force *= align_coefficient;
+            align_force *= config.align_coefficient;
             acceleration += align_force;
         }
 
@@ -113,10 +123,10 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
         float2 cohere_target = cohere_center - position;
         float cohere_target_len = length(cohere_target);
         if (cohere_target_len != 0) {
-            cohere_target *= max_speed / cohere_target_len;
+            cohere_target *= config.max_speed / cohere_target_len;
             cohere_force = cohere_target - velocity;
             cohere_force = limit_magnitude(cohere_force, max_force);
-            cohere_force *= cohere_coefficient;
+            cohere_force *= config.cohere_coefficient;
             acceleration += cohere_force;
         }
     }
@@ -125,15 +135,15 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
         separate_target /= separate_total;
         float separate_target_len = length(separate_target);
         if (separate_target_len != 0) {
-            separate_target *= max_speed / separate_target_len;
+            separate_target *= config.max_speed / separate_target_len;
             separate_force = separate_target - velocity;
             separate_force = limit_magnitude(separate_force, max_force);
-            separate_force *= separate_coefficient;
+            separate_force *= config.separate_coefficient;
             acceleration += separate_force;
         }
     }
     
-    acceleration = limit_magnitude(acceleration, max_speed*2);
+    acceleration = limit_magnitude(acceleration, config.max_speed*2);
 
     
     // obstacles
@@ -169,14 +179,14 @@ kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexP
     
     // velocity
     velocity += acceleration;
-    velocity = limit_magnitude(velocity, max_speed);
+    velocity = limit_magnitude(velocity, config.max_speed);
     float magnitude = length(velocity);
-    if (magnitude < max_speed / 3) {
-        velocity = normalize(velocity) * max_speed;
+    if (magnitude < config.max_speed / 3) {
+        velocity = normalize(velocity) * config.max_speed;
     }
     
     // margin
-    if (position.x < margin || position.x > width - margin || position.y < margin || position.y > height - margin) {
+    if (position.x < config.margin || position.x > width - config.margin || position.y < config.margin || position.y > height - config.margin) {
         float2 center = float2(width / 2., height / 2.);
         float2 center_direction = normalize(center - position);
         float2 center_force = center_direction * margin_force;

@@ -15,28 +15,14 @@ struct BoidsView: UIViewRepresentable {
     
     typealias UIViewType = MTKView
     
-     var alignCoefficient: Float
-     var cohereCoefficient: Float
-     var separateCoefficient: Float
-    
-     var drawSize: Float
-      
-     var count: Int
-     var maxSpeed: Float
-    var radius: Float
+    var drawSize: Float
+    var count: Int
     
     init() {
-        self.alignCoefficient = 0.3
-        self.cohereCoefficient = 0.4
-        self.separateCoefficient = 0.5
-        
         self.drawSize = 2
-        
         self.count = 4096
-        self.maxSpeed = 5
-        self.radius = 15
     }
-
+    
     func makeUIView(context: Context) -> MTKView {
         let mtkView = MTKView()
         mtkView.delegate = context.coordinator
@@ -63,14 +49,8 @@ struct BoidsView: UIViewRepresentable {
     
     func updateUIView(_ uiView: MTKView, context: Context) {
         let boidsRenderer = context.coordinator
-        boidsRenderer.separateCoefficient = separateCoefficient
-        boidsRenderer.alignCoefficient = alignCoefficient
-        boidsRenderer.cohereCoefficient = cohereCoefficient
         
         boidsRenderer.drawRadius = Int(drawSize)
-        
-        boidsRenderer.maxSpeed = maxSpeed
-        boidsRenderer.radius = radius
         boidsRenderer.particleCount = count
     }
     
@@ -80,10 +60,6 @@ struct BoidsView: UIViewRepresentable {
     
     class Coordinator : NSObject, MTKViewDelegate {
         
-        var alignCoefficient: Float = 0;
-        var cohereCoefficient: Float = 0;
-        var separateCoefficient: Float = 0;
-
         var view: MTKView!
         var metalDevice: MTLDevice!
         var metalCommandQueue: MTLCommandQueue!
@@ -91,21 +67,21 @@ struct BoidsView: UIViewRepresentable {
         var firstState: MTLComputePipelineState!
         var secondState: MTLComputePipelineState!
         var thirdState: MTLComputePipelineState!
-
+        
         var particleBuffer: MTLBuffer!
-
+        
         var particleCount = 0
-        var maxSpeed: Float = 0
-        var margin: Float = 50
-        var radius: Float = 50
+        
         
         var drawRadius: Int = 4
         
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
-
+        
         var particles = [Particle]()
         var obstacles = [Obstacle]()
-
+        
+        var config = BoidsConfig(max_speed: 5, margin: 50, align_coefficient: 0.3, cohere_coefficient: 0.4, separate_coefficient: 0.5, radius: 15)
+        
         init(_ parent: BoidsView) {
             
             
@@ -132,7 +108,7 @@ struct Particle {
     var velocity: SIMD2<Float>
     var acceleration: SIMD2<Float> = SIMD2<Float>(0,0)
     var force: SIMD2<Float> = SIMD2<Float>(0,0)
-
+    
     var description: String {
         return "p<\(position.x),\(position.y)> v<\(velocity.x),\(velocity.y)> a<\(acceleration.x),\(acceleration.y) f<\(force.x),\(force.y)>"
     }
@@ -140,6 +116,15 @@ struct Particle {
 
 struct Obstacle {
     var position: SIMD2<Float>
+}
+
+struct BoidsConfig {
+    var max_speed: Float
+    var margin: Float
+    var align_coefficient: Float
+    var cohere_coefficient: Float
+    var separate_coefficient: Float
+    var radius: Float
 }
 
 
@@ -163,9 +148,10 @@ extension BoidsView.Coordinator {
         guard particleBuffer == nil else {
             return
         }
+        let maxSpeed = config.max_speed
         
         for _ in 0 ..< particleCount {
-            let speed = SIMD2<Float>(Float.random(min: -maxSpeed, max: maxSpeed), Float.random(min: -maxSpeed, max: maxSpeed))
+            let speed = SIMD2<Float>(Float.random(in: -maxSpeed...maxSpeed), Float.random(in: -maxSpeed...maxSpeed))
             let position = SIMD2<Float>(randomPosition(length: UInt(viewPortSize.x)), randomPosition(length: UInt(viewPortSize.y)))
             let particle = Particle(position: position,
                                     velocity: speed)
@@ -173,14 +159,12 @@ extension BoidsView.Coordinator {
         }
         let size = particles.count * MemoryLayout<Particle>.size
         particleBuffer = metalDevice.makeBuffer(bytes: &particles, length: size, options: [])
-
+        
     }
     
     private func randomPosition(length: UInt) -> Float {
-        
-        let maxSize = length - (UInt(margin) * 2)
-        
-        return Float(arc4random_uniform(UInt32(maxSize)) + UInt32(margin))
+        let maxSize = length - (UInt(config.margin) * 2)
+        return Float(arc4random_uniform(UInt32(maxSize)) + UInt32(config.margin))
     }
     
     func buildPipeline() {
@@ -190,7 +174,7 @@ extension BoidsView.Coordinator {
             fatalError("can't make queue")
         }
         metalCommandQueue = queue
-
+        
         
         // pipeline state
         do {
@@ -198,7 +182,7 @@ extension BoidsView.Coordinator {
         } catch {
             fatalError("Unable to compile render pipeline state.  Error info: \(error)")
         }
-
+        
     }
     
     func buildRenderPipelineWithDevice(device: MTLDevice, metalKitView: MTKView) throws {
@@ -222,7 +206,7 @@ extension BoidsView.Coordinator {
             fatalError("can't create first pass")
         }
         thirdState = try device.makeComputePipelineState(function: thirdPass)
-
+        
     }
     
     func extractParticles() {
@@ -241,9 +225,7 @@ extension BoidsView.Coordinator {
     
     func drawableSizeWillChange(_ size: CGSize) {
         /// Respond to drawable size or orientation changes here
-
         viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
-        
     }
     
     func draw() {
@@ -257,62 +239,57 @@ extension BoidsView.Coordinator {
         let h = firstState.maxTotalThreadsPerThreadgroup / w
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
-                
+        
         initializeBoidsIfNeeded()
-
+        
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
-                                
-                
+            
+            
             // first pass - Boid updates
             if let particleBuffer = particleBuffer {
                 
                 commandEncoder.setComputePipelineState(secondState)
-                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(SecondPassInputIndexParticle.rawValue))
-                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int>.stride, index: Int(SecondPassInputIndexParticleCount.rawValue))
-                commandEncoder.setBytes(&maxSpeed, length: MemoryLayout<Float>.stride, index: Int(SecondPassInputIndexMaxSpeed.rawValue))
-                commandEncoder.setBytes(&margin, length: MemoryLayout<Int>.stride, index: Int(SecondPassInputIndexMargin.rawValue))
-                commandEncoder.setBytes(&alignCoefficient, length: MemoryLayout<Float>.stride, index: Int(SecondPassInputIndexAlign.rawValue))
-                commandEncoder.setBytes(&separateCoefficient, length: MemoryLayout<Float>.stride, index: Int(SecondPassInputIndexSeparate.rawValue))
-                commandEncoder.setBytes(&cohereCoefficient, length: MemoryLayout<Float>.stride, index: Int(SecondPassInputIndexCohere.rawValue))
-                commandEncoder.setBytes(&radius, length: MemoryLayout<Float>.stride, index: Int(SecondPassInputIndexRadius.rawValue))
-                commandEncoder.setBytes(&viewPortSize.x, length: MemoryLayout<UInt>.stride, index: Int(SecondPassInputIndexWidth.rawValue))
-                commandEncoder.setBytes(&viewPortSize.y, length: MemoryLayout<UInt>.stride, index: Int(SecondPassInputIndexHeight.rawValue))
-                commandEncoder.setBuffer(obstacleBuffer(), offset: 0, index: Int(SecondPassInputIndexObstacle.rawValue))
+                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(BoidsInputIndexParticle.rawValue))
+                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int>.stride, index: Int(BoidsInputIndexParticleCount.rawValue))
+                commandEncoder.setBytes(&viewPortSize.x, length: MemoryLayout<UInt>.stride, index: Int(BoidsInputIndexWidth.rawValue))
+                commandEncoder.setBytes(&viewPortSize.y, length: MemoryLayout<UInt>.stride, index: Int(BoidsInputIndexHeight.rawValue))
+                commandEncoder.setBuffer(obstacleBuffer(), offset: 0, index: Int(BoidsInputIndexObstacle.rawValue))
+                commandEncoder.setBytes(&config, length: MemoryLayout<BoidsConfig>.stride, index: Int(BoidsInputIndexConfig.rawValue))
                 var count = obstacles.count
-                commandEncoder.setBytes(&count, length: MemoryLayout<Int>.stride, index: Int(SecondPassInputIndexObstacleCount.rawValue))
-
-                commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
-
-            }
-                   
-           if let drawable = view.currentDrawable {
-   
-               // second pass - set texture to solid colour
-               
-               commandEncoder.setComputePipelineState(firstState)
-               commandEncoder.setTexture(drawable.texture, index: 0)
-               commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
-               
-               // third pass - draw boids
-               
-               if let particleBuffer = particleBuffer {
-                   commandEncoder.setComputePipelineState(thirdState)
-                   commandEncoder.setTexture(drawable.texture, index: 0)
-                   commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ThirdPassInputTextureIndexParticle.rawValue))
-                   commandEncoder.setBytes(&drawRadius, length: MemoryLayout<Int>.stride, index: Int(ThirdPassInputTextureIndexRadius.rawValue))
-                   commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
-               }
-
-               // finish
-               
-               commandEncoder.endEncoding()
-               commandBuffer.present(drawable)
-               
-           } else {
-               fatalError("No drawable")
-           }
+                commandEncoder.setBytes(&count, length: MemoryLayout<Int>.stride, index: Int(BoidsInputIndexObstacleCount.rawValue))
                 
+                commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                
+            }
+            
+            if let drawable = view.currentDrawable {
+                
+                // second pass - set texture to solid colour
+                
+                commandEncoder.setComputePipelineState(firstState)
+                commandEncoder.setTexture(drawable.texture, index: 0)
+                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                
+                // third pass - draw boids
+                
+                if let particleBuffer = particleBuffer {
+                    commandEncoder.setComputePipelineState(thirdState)
+                    commandEncoder.setTexture(drawable.texture, index: 0)
+                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ThirdPassInputTextureIndexParticle.rawValue))
+                    commandEncoder.setBytes(&drawRadius, length: MemoryLayout<Int>.stride, index: Int(ThirdPassInputTextureIndexRadius.rawValue))
+                    commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                }
+                
+                // finish
+                
+                commandEncoder.endEncoding()
+                commandBuffer.present(drawable)
+                
+            } else {
+                fatalError("No drawable")
+            }
+            
             commandBuffer.commit()
         }
         extractParticles()
@@ -346,17 +323,6 @@ extension BoidsView.Coordinator {
     }
 }
 
-
-public extension Float {
-
-    static var random: Float {
-        return Float(arc4random()) / 0xFFFFFFFF // TODO: Fix floating point representation warning, implement this properly
-    }
-
-    static func random(min: Float, max: Float) -> Float {
-        return Float.random * (max - min) + min
-    }
-}
 
 #Preview {
     BoidsView()

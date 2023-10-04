@@ -36,21 +36,22 @@ typedef enum InputTextureIndex {
 
 // Boids
 
-typedef enum SecondPassInputIndex {
-    SecondPassInputIndexParticle = 0,
-    SecondPassInputIndexParticleCount = 1,
-    SecondPassInputIndexMaxSpeed = 2,
-    SecondPassInputIndexMargin = 3,
-    SecondPassInputIndexAlign = 4,
-    SecondPassInputIndexCohere = 5,
-    SecondPassInputIndexSeparate = 6,
-    SecondPassInputIndexRadius = 7,
-    SecondPassInputIndexWidth = 8,
-    SecondPassInputIndexHeight = 9,
-    SecondPassInputIndexObstacle = 10,
-    SecondPassInputIndexObstacleCount = 11
+typedef enum BoidsInputIndex {
+    BoidsInputIndexParticle = 0,
+    BoidsInputIndexParticleCount = 1,
+//    BoidsInputIndexMaxSpeed = 2,
+//    BoidsInputIndexMargin = 3,
+//    BoidsInputIndexAlign = 4,
+//    BoidsInputIndexCohere = 5,
+//    BoidsInputIndexSeparate = 6,
+//    BoidsInputIndexRadius = 7,
+    BoidsInputIndexWidth = 2,
+    BoidsInputIndexHeight = 3,
+    BoidsInputIndexObstacle = 4,
+    BoidsInputIndexObstacleCount = 5,
+    BoidsInputIndexConfig = 6
 
-} SecondPassInputIndex;
+} BoidsInputIndex;
 
 typedef enum ThirdPassInputIndex {
     ThirdPassInputTextureIndexParticle = 0,
