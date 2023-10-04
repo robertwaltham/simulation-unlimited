@@ -41,9 +41,7 @@ struct BoidsView: UIViewRepresentable {
         let mtkView = MTKView()
         mtkView.delegate = context.coordinator
         
-        guard let coordinator = context.coordinator as? BoidsRenderer else {
-            fatalError("wrong coordinator")
-        }
+        let coordinator = context.coordinator
         
         mtkView.preferredFramesPerSecond = 60
         mtkView.enableSetNeedsDisplay = true
@@ -64,30 +62,67 @@ struct BoidsView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: MTKView, context: Context) {
-        let boidsRenderer = context.coordinator as? BoidsRenderer
-        boidsRenderer?.separateCoefficient = separateCoefficient
-        boidsRenderer?.alignCoefficient = alignCoefficient
-        boidsRenderer?.cohereCoefficient = cohereCoefficient
+        let boidsRenderer = context.coordinator
+        boidsRenderer.separateCoefficient = separateCoefficient
+        boidsRenderer.alignCoefficient = alignCoefficient
+        boidsRenderer.cohereCoefficient = cohereCoefficient
         
-        boidsRenderer?.drawRadius = Int(drawSize)
+        boidsRenderer.drawRadius = Int(drawSize)
         
-        boidsRenderer?.maxSpeed = maxSpeed
-        boidsRenderer?.radius = radius
-        boidsRenderer?.particleCount = count
+        boidsRenderer.maxSpeed = maxSpeed
+        boidsRenderer.radius = radius
+        boidsRenderer.particleCount = count
     }
     
     func makeCoordinator() -> Coordinator {
-        BoidsRenderer(self)
+        BoidsView.Coordinator(self)
     }
     
     class Coordinator : NSObject, MTKViewDelegate {
         
-        func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        var alignCoefficient: Float = 0;
+        var cohereCoefficient: Float = 0;
+        var separateCoefficient: Float = 0;
+
+        var view: MTKView!
+        var metalDevice: MTLDevice!
+        var metalCommandQueue: MTLCommandQueue!
+        
+        var firstState: MTLComputePipelineState!
+        var secondState: MTLComputePipelineState!
+        var thirdState: MTLComputePipelineState!
+
+        var particleBuffer: MTLBuffer!
+
+        var particleCount = 0
+        var maxSpeed: Float = 0
+        var margin: Float = 50
+        var radius: Float = 50
+        
+        var drawRadius: Int = 4
+        
+        var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
+
+        var particles = [Particle]()
+        var obstacles = [Obstacle]()
+
+        init(_ parent: BoidsView) {
             
+            
+            if let metalDevice = MTLCreateSystemDefaultDevice() {
+                self.metalDevice = metalDevice
+            }
+            
+            self.metalCommandQueue = metalDevice.makeCommandQueue()!
+            super.init()
+        }
+        
+        func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+            drawableSizeWillChange(size)
         }
         
         func draw(in view: MTKView) {
-            
+            draw()
         }
     }
 }
@@ -108,44 +143,7 @@ struct Obstacle {
 }
 
 
-final class BoidsRenderer: BoidsView.Coordinator {
-    
-    var alignCoefficient: Float = 0;
-    var cohereCoefficient: Float = 0;
-    var separateCoefficient: Float = 0;
-
-    var view: MTKView!
-    var metalDevice: MTLDevice!
-    var metalCommandQueue: MTLCommandQueue!
-    
-    var firstState: MTLComputePipelineState!
-    var secondState: MTLComputePipelineState!
-    var thirdState: MTLComputePipelineState!
-
-    var particleBuffer: MTLBuffer!
-
-    var particleCount = 0
-    var maxSpeed: Float = 0
-    var margin: Float = 50
-    var radius: Float = 50
-    
-    var drawRadius: Int = 4
-    
-    var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
-
-    var particles = [Particle]()
-    var obstacles = [Obstacle]()
-
-    init(_ parent: BoidsView) {
-        
-        
-        if let metalDevice = MTLCreateSystemDefaultDevice() {
-            self.metalDevice = metalDevice
-        }
-        
-        self.metalCommandQueue = metalDevice.makeCommandQueue()!
-        super.init()
-    }
+extension BoidsView.Coordinator {
     
     func obstacleBuffer() -> MTLBuffer {
         
@@ -241,14 +239,14 @@ final class BoidsRenderer: BoidsView.Coordinator {
     
     // MARK: - UIViewRepresentable.Coordinator
     
-    override func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+    func drawableSizeWillChange(_ size: CGSize) {
         /// Respond to drawable size or orientation changes here
 
         viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
         
     }
     
-    override func draw(in view: MTKView) {
+    func draw() {
         
         let threadgroupSizeMultiplier = 1
         let maxThreads = 512
@@ -360,8 +358,6 @@ public extension Float {
     }
 }
 
-struct BoidsView_Previews: PreviewProvider {
-    static var previews: some View {
-        BoidsView()
-    }
+#Preview {
+    BoidsView()
 }

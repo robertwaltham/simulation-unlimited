@@ -17,6 +17,8 @@
 		D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0752AC7A30C00324D6D /* SlimeView.swift */; };
 		D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0772AC7AB1700324D6D /* BoidsView.swift */; };
 		D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0792AC7ABBB00324D6D /* BoidShaders.metal */; };
+		D197F07C2AC8A74E00324D6D /* SlimeConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F07B2AC8A74E00324D6D /* SlimeConfig.swift */; };
+		D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		D197F0752AC7A30C00324D6D /* SlimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeView.swift; sourceTree = "<group>"; };
 		D197F0772AC7AB1700324D6D /* BoidsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsView.swift; sourceTree = "<group>"; };
 		D197F0792AC7ABBB00324D6D /* BoidShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BoidShaders.metal; sourceTree = "<group>"; };
+		D197F07B2AC8A74E00324D6D /* SlimeConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeConfig.swift; sourceTree = "<group>"; };
+		D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeWorkshop.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +73,8 @@
 				D197F06F2AC792FB00324D6D /* SimulationPicker.swift */,
 				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
 				D197F0752AC7A30C00324D6D /* SlimeView.swift */,
+				D197F07B2AC8A74E00324D6D /* SlimeConfig.swift */,
+				D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */,
 				D197F0742AC7A2E300324D6D /* Shaders */,
 				D197F0632AC78E0800324D6D /* Item.swift */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
@@ -169,8 +175,10 @@
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
+				D197F07C2AC8A74E00324D6D /* SlimeConfig.swift in Sources */,
 				D197F0622AC78E0800324D6D /* ContentView.swift in Sources */,
 				D197F0642AC78E0800324D6D /* Item.swift in Sources */,
+				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
 			);

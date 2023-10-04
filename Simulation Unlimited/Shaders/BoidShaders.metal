@@ -33,7 +33,7 @@ float2 limit_magnitude(float2 vec, float max_mag) {
 
 kernel void firstPass(texture2d<half, access::write> output [[texture(0)]],
                       uint2 id [[thread_position_in_grid]]) {
-    output.write(half4(1., 1., 1., 1.), id);
+    output.write(half4(0.), id);
 }
 
 kernel void secondPass(device Particle *particles [[buffer(SecondPassInputIndexParticle)]],
@@ -215,7 +215,7 @@ kernel void thirdPass(texture2d<half, access::write> output [[texture(0)]],
     uint2 pos = uint2(particle.position);
     
     // display
-    half4 color = half4(0.);
+    half4 color = half4(1.);
     
     if (span == 0) {
         output.write(color, pos);

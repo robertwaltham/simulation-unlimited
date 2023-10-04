@@ -75,7 +75,7 @@ struct SlimeView: UIViewRepresentable {
         var drawParticles = false
         var drawPath = true
         
-        fileprivate var config = ParticleConfig()
+        fileprivate var config = SlimeConfig()
         
         // skip all rendering, in the case the hardware doesn't support what we're doing (like in previews)
         var skipDraw = false
@@ -153,7 +153,7 @@ extension SlimeView.Coordinator {
     }
 }
 
-// MARK: - Metal
+// MARK: - Coordinator
 
 extension SlimeView.Coordinator {
     
@@ -176,7 +176,7 @@ extension SlimeView.Coordinator {
 //        if viewModel.mutateSpeed {
 //            viewModel.speedMultiplier = wave(time: time, phase: viewModel.mutateSpeedPhase, phaseOffset: 0, magitude: 1.75, magnitudeOffset: 1.5)
 //        }
-        config = ParticleConfig(sensorAngle: Float.pi / 8, sensorDistance: 10, turnAngle: Float.pi / 16, drawRadius: 2, trailRadius: 2, cutoff: 0.01, falloff: 0.02, speedMultiplier: 2)
+        config = SlimeConfig.defaultConfig()
         
         initializeParticlesIfNeeded()
         
@@ -203,7 +203,7 @@ extension SlimeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
-            commandEncoder.setBytes(&config, length: MemoryLayout<ParticleConfig>.stride, index: Int(InputIndexConfig.rawValue))
+            commandEncoder.setBytes(&config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
 
             if let particleBuffer = particleBuffer {
@@ -418,13 +418,3 @@ private struct SlimeParticle {
     }
 }
 
-struct ParticleConfig {
-    var sensorAngle: Float = 0
-    var sensorDistance: Float = 0
-    var turnAngle: Float = 0
-    var drawRadius: Float = 0
-    var trailRadius: Float = 0
-    var cutoff: Float = 0
-    var falloff: Float = 0
-    var speedMultiplier: Float = 0
-}
