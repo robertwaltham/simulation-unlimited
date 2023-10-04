@@ -19,13 +19,13 @@ struct SimulationPicker: View {
                 }, text: "Boids", icon: "bird.circle")
                 
                 simulationTile(content: {
-                    SlimeWorkshop()
+                    SlimeWorkshop().navigationTitle("Slime")
                 }, sim: {
                     SlimeView(viewModel: SlimeViewModel())
                 }, text: "Slime", icon: "drop.circle")
                 
                 simulationTile(content: {
-                    Text("TODO")
+                    Text("TODO").navigationTitle("TODO")
                 }, sim: {
                     Rectangle()
                 }, text: "Particle Life", icon: "sun.dust.circle")

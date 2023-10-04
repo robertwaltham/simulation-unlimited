@@ -48,6 +48,15 @@ enum StartType: Int, CaseIterable, Identifiable {
     var drawPath = true
 
     var startType: StartType = .random
+    
+    let maxSensorAngle = Float.pi / 2
+    let maxDistance: Float = 15
+    let maxTurnAngle = Float.pi / 4
+    
+    let maxCutoff: Float = 1
+    let maxFalloff: Float = 0.15
+    let maxRadius: Float = 4
+    let maxMultiplier: Float = 6
 }
 
 struct SlimeConfig {
