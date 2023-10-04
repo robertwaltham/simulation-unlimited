@@ -48,15 +48,15 @@ extension SimulationPicker {
                 .overlay(
                     HStack {
                         Image(systemName: icon)
-                              .foregroundStyle(.white, .white)
-                              .font(.system(size: 64))
-                              .padding()
+                            .foregroundStyle(.white, .white)
+                            .font(.system(size: 64))
+                            .padding()
                         
                         Text(text)
                             .padding(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 20))
                             .font(.largeTitle)
                             .foregroundColor(.white)
-                            
+                        
                     }.background(.gray.opacity(0.75), in: RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
                 )
         }

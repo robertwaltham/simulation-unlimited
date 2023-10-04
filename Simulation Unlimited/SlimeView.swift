@@ -12,14 +12,14 @@ import simd
 
 struct SlimeView: UIViewRepresentable {
     
-//    @ObservedObject var viewModel: ViewModel
-
+    //    @ObservedObject var viewModel: ViewModel
+    
     typealias UIViewType = MTKView
     
-//    init(viewModel: ViewModel) {
-//       self.viewModel = viewModel
-//    }
-
+    //    init(viewModel: ViewModel) {
+    //       self.viewModel = viewModel
+    //    }
+    
     func makeUIView(context: Context) -> MTKView {
         let mtkView = MTKView()
         mtkView.delegate = context.coordinator
@@ -36,16 +36,16 @@ struct SlimeView: UIViewRepresentable {
         mtkView.preferredFramesPerSecond = 60
         mtkView.isMultipleTouchEnabled = true
         context.coordinator.view = mtkView
-
+        
         return mtkView
     }
     
     func updateUIView(_ uiView: MTKView, context: Context) {
-//        context.coordinator.colours.background = viewModel.bgColor.float4()
-//        context.coordinator.drawParticles = viewModel.drawParticles
-//        context.coordinator.drawPath = viewModel.drawPath
-//        context.coordinator.particleCount = viewModel.count
-//        context.coordinator.config = viewModel.particleConfig()
+        //        context.coordinator.colours.background = viewModel.bgColor.float4()
+        //        context.coordinator.drawParticles = viewModel.drawParticles
+        //        context.coordinator.drawPath = viewModel.drawPath
+        //        context.coordinator.particleCount = viewModel.count
+        //        context.coordinator.config = viewModel.particleConfig()
     }
     
     func makeCoordinator() -> Coordinator {
@@ -82,15 +82,15 @@ struct SlimeView: UIViewRepresentable {
         
         var viewPortSize = vector_uint2(x: 0, y: 0)
         
-
+        
         fileprivate var particles = [SlimeParticle]()
-//        var obstacles = [Obstacle]()
+        //        var obstacles = [Obstacle]()
         
         var colours = RenderColours()
-//        var viewModel: ViewModel
+        //        var viewModel: ViewModel
         
         private var lastDraw = Date()
-
+        
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
             viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
         }
@@ -103,9 +103,9 @@ struct SlimeView: UIViewRepresentable {
             
             self.view = view
             
-//            let start = Date()
-//            viewModel.fps = 1 / start.timeIntervalSince(lastDraw)
-//            lastDraw = start
+            //            let start = Date()
+            //            viewModel.fps = 1 / start.timeIntervalSince(lastDraw)
+            //            lastDraw = start
             
             draw()
         }
@@ -116,10 +116,10 @@ struct SlimeView: UIViewRepresentable {
                 self.metalDevice = metalDevice
             }
             
-//            self.viewModel = parent.viewModel
-
+            //            self.viewModel = parent.viewModel
+            
             super.init()
-//            print(self.metalDevice)
+            //            print(self.metalDevice)
             guard self.metalDevice.supportsFamily(.common3) || self.metalDevice.supportsFamily(.apple4) else {
                 print("doesn't support read_write textures")
                 skipDraw = true
@@ -137,11 +137,11 @@ struct SlimeView: UIViewRepresentable {
 extension SlimeView.Coordinator {
     
     func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        
     }
     
     func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        
     }
     
     func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -149,7 +149,7 @@ extension SlimeView.Coordinator {
     }
     
     func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        
     }
 }
 
@@ -162,20 +162,20 @@ extension SlimeView.Coordinator {
     }
     
     func draw() {
-                
-//        let time = Date().timeIntervalSince1970
-//        
-//        if viewModel.mutateDistance {
-//            viewModel.sensorDistance = wave(time: time, phase: viewModel.mutateDistancePhase, phaseOffset: 0, magitude: 5, magnitudeOffset: 2)
-//        }
-//        
-//        if viewModel.mutateAngle {
-//            viewModel.turnAngle = wave(time: time, phase: viewModel.mutateAnglePhase, phaseOffset: 0, magitude: 0.35, magnitudeOffset: 1.2)
-//        }
-//        
-//        if viewModel.mutateSpeed {
-//            viewModel.speedMultiplier = wave(time: time, phase: viewModel.mutateSpeedPhase, phaseOffset: 0, magitude: 1.75, magnitudeOffset: 1.5)
-//        }
+        
+        //        let time = Date().timeIntervalSince1970
+        //
+        //        if viewModel.mutateDistance {
+        //            viewModel.sensorDistance = wave(time: time, phase: viewModel.mutateDistancePhase, phaseOffset: 0, magitude: 5, magnitudeOffset: 2)
+        //        }
+        //
+        //        if viewModel.mutateAngle {
+        //            viewModel.turnAngle = wave(time: time, phase: viewModel.mutateAnglePhase, phaseOffset: 0, magitude: 0.35, magnitudeOffset: 1.2)
+        //        }
+        //
+        //        if viewModel.mutateSpeed {
+        //            viewModel.speedMultiplier = wave(time: time, phase: viewModel.mutateSpeedPhase, phaseOffset: 0, magitude: 1.75, magnitudeOffset: 1.5)
+        //        }
         config = SlimeConfig.defaultConfig()
         
         initializeParticlesIfNeeded()
@@ -186,7 +186,7 @@ extension SlimeView.Coordinator {
         }
         let randomCount = 1024
         var random: [Float] = (0..<randomCount).map { _ in Float.random(in: 0...1) }
-
+        
         let threadgroupSizeMultiplier = 1
         let maxThreads = 512
         let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
@@ -196,7 +196,7 @@ extension SlimeView.Coordinator {
         let h = states[0].maxTotalThreadsPerThreadgroup / w
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
-               
+        
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
@@ -205,7 +205,7 @@ extension SlimeView.Coordinator {
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
             commandEncoder.setBytes(&config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
-
+            
             if let particleBuffer = particleBuffer {
                 
                 // update particles and draw on path
@@ -226,7 +226,7 @@ extension SlimeView.Coordinator {
                 commandEncoder.setComputePipelineState(states[0])
                 commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
-                                
+                
                 if drawPath {
                     commandEncoder.setComputePipelineState(states[3])
                     commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
@@ -266,7 +266,7 @@ extension SlimeView.Coordinator {
             fatalError("Unable to compile render pipeline state.  Error info: \(error)")
         }
     }
-
+    
     
     func buildRenderPipelineWithDevice(device: MTLDevice) throws {
         /// Build a render state pipeline object
@@ -293,57 +293,57 @@ extension SlimeView.Coordinator {
         let speedRange = minSpeed...maxSpeed
         let xRange = margin...(Float(viewPortSize.x) - margin)
         let yRange = margin...(Float(viewPortSize.y) - margin)
-//        let lineSpace: Float = 100
-
+        //        let lineSpace: Float = 100
+        
         for _ in 0 ..< particleCount {
             var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
             let species = Float(Int.random(in: 0..<3))
             let position: SIMD2<Float>
             
-//            switch viewModel.startType {
-                
-//            case .random:
-                position = SIMD2<Float>(Float.random(in: xRange), Float.random(in: yRange))
-                let angle = Float.random(in: 0...Float.pi * 2)
-                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
-                speed = rotation * speed
-                
-//            case .circle:
-//                position = SIMD2<Float>(Float(viewPortSize.x / 2), Float(viewPortSize.y / 2))
-//                let angle = Float.random(in: 0...Float.pi * 2)
-//                
-//                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
-//                speed = rotation * speed
-//                
-//            case .grid:
-//                
-//                if i < particleCount / 2 {
-//                    
-//                    let xLinePosition = round(Float.random(in: xRange) / lineSpace)
-//                    let xPosition = xLinePosition * lineSpace
-//                    position = SIMD2<Float>(xPosition, Float.random(in: yRange))
-//                    speed = SIMD2<Float>(0, Float.random(in: speedRange))
-//                    species = 0
-//                } else {
-//                    
-//                    let yLinePosition = round(Float.random(in: yRange) / lineSpace)
-//                    let yPosition = yLinePosition * lineSpace
-//                    position = SIMD2<Float>(Float.random(in: xRange), yPosition)
-//                    speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-//                    species = 1
-//                }
-//                
-//            case.lines:
-//                
-//                let xLinePosition = round(Float.random(in: xRange) / lineSpace)
-//                let xPosition = xLinePosition * lineSpace
-//                position = SIMD2<Float>(xPosition, Float.random(in: yRange))
-//                speed = SIMD2<Float>(0, Float.random(in: speedRange))
-//                if i % 2 == 0 {
-//                    speed.y *= -1
-//                }
-//                species = xLinePosition.truncatingRemainder(dividingBy: 3)
-//            }
+            //            switch viewModel.startType {
+            
+            //            case .random:
+            position = SIMD2<Float>(Float.random(in: xRange), Float.random(in: yRange))
+            let angle = Float.random(in: 0...Float.pi * 2)
+            let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+            speed = rotation * speed
+            
+            //            case .circle:
+            //                position = SIMD2<Float>(Float(viewPortSize.x / 2), Float(viewPortSize.y / 2))
+            //                let angle = Float.random(in: 0...Float.pi * 2)
+            //
+            //                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+            //                speed = rotation * speed
+            //
+            //            case .grid:
+            //
+            //                if i < particleCount / 2 {
+            //
+            //                    let xLinePosition = round(Float.random(in: xRange) / lineSpace)
+            //                    let xPosition = xLinePosition * lineSpace
+            //                    position = SIMD2<Float>(xPosition, Float.random(in: yRange))
+            //                    speed = SIMD2<Float>(0, Float.random(in: speedRange))
+            //                    species = 0
+            //                } else {
+            //
+            //                    let yLinePosition = round(Float.random(in: yRange) / lineSpace)
+            //                    let yPosition = yLinePosition * lineSpace
+            //                    position = SIMD2<Float>(Float.random(in: xRange), yPosition)
+            //                    speed = SIMD2<Float>(Float.random(in: speedRange), 0)
+            //                    species = 1
+            //                }
+            //
+            //            case.lines:
+            //
+            //                let xLinePosition = round(Float.random(in: xRange) / lineSpace)
+            //                let xPosition = xLinePosition * lineSpace
+            //                position = SIMD2<Float>(xPosition, Float.random(in: yRange))
+            //                speed = SIMD2<Float>(0, Float.random(in: speedRange))
+            //                if i % 2 == 0 {
+            //                    speed.y *= -1
+            //                }
+            //                species = xLinePosition.truncatingRemainder(dividingBy: 3)
+            //            }
             
             let particle = SlimeParticle(position: position, velocity: speed, species: species)
             particles.append(particle)
@@ -375,10 +375,10 @@ extension SlimeView.Coordinator {
         guard let texture = device.makeTexture(descriptor: descriptor) else {
             fatalError("can't make texture")
         }
-
+        
         return texture
     }
-
+    
 }
 
 struct RenderColours {

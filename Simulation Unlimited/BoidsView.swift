@@ -60,7 +60,7 @@ struct BoidsView: UIViewRepresentable {
     
     class Coordinator : NSObject, MTKViewDelegate {
         
-        var view: MTKView!
+        var view: MTKView! // TODO: view with touches
         var metalDevice: MTLDevice!
         var metalCommandQueue: MTLCommandQueue!
         
@@ -244,7 +244,6 @@ extension BoidsView.Coordinator {
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
-            
             
             // first pass - Boid updates
             if let particleBuffer = particleBuffer {

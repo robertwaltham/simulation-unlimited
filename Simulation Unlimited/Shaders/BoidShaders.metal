@@ -49,12 +49,6 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
                        const device int& particle_count [[ buffer(BoidsInputIndexParticleCount)]],
                        const device uint& width [[ buffer(BoidsInputIndexWidth)]],
                        const device uint& height [[ buffer(BoidsInputIndexHeight)]],
-//                       const device float& max_speed [[ buffer(BoidsInputIndexMaxSpeed)]],
-//                       const device float& margin [[ buffer(BoidsInputIndexMargin)]],
-//                       const device float& align_coefficient [[ buffer(BoidsInputIndexAlign)]],
-//                       const device float& cohere_coefficient [[ buffer(BoidsInputIndexCohere)]],
-//                       const device float& separate_coefficient [[ buffer(BoidsInputIndexSeparate)]],
-//                       const device float& radius [[ buffer(BoidsInputIndexRadius)]],
                        device Obstacle *obstacles [[buffer(BoidsInputIndexObstacle)]],
                        const device int& obstacle_count [[ buffer(BoidsInputIndexObstacleCount)]],
                        const device BoidsConfig& config [[ buffer(BoidsInputIndexConfig)]],
@@ -65,14 +59,14 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     
     uint index = bid * blockDim + tid;
     Particle particle = particles[index];
-
+    
     float margin_force = 0.1;
     float max_force = 1;
     
     float2 position = particle.position;
     float2 velocity = particle.velocity;
     float2 acceleration = float2(0,0);
-
+    
     // boids
     float2 align_target = float2(0,0);
     float2 cohere_center = float2(0,0);
@@ -80,21 +74,21 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     float total = 0;
     float separate_total = 0;
     for (uint i = 0; i < uint(particle_count); i++) {
-
+        
         if (i == index) {
             continue;
         }
-
+        
         Particle other = particles[i];
         float dist = distance(position, other.position);
         if (dist > config.radius) {
             continue;
         }
         total++;
-
+        
         align_target += other.velocity;
         cohere_center += other.position;
-
+        
         float2 diff = position - other.position;
         if (diff.x != 0 && diff.y != 0 && dist < config.radius / 2) {
             diff = diff / pow(dist, 2.);
@@ -106,9 +100,9 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     float2 align_force = float2(0,0);
     float2 cohere_force = float2(0,0);
     float2 separate_force = float2(0,0);
-
+    
     if (total > 0) {
-
+        
         float align_target_len = length(align_target);
         if (align_target_len != 0) {
             align_target /= total;
@@ -118,7 +112,7 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
             align_force *= config.align_coefficient;
             acceleration += align_force;
         }
-
+        
         cohere_center /= total;
         float2 cohere_target = cohere_center - position;
         float cohere_target_len = length(cohere_target);
@@ -144,7 +138,7 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     }
     
     acceleration = limit_magnitude(acceleration, config.max_speed*2);
-
+    
     
     // obstacles
     
@@ -197,13 +191,13 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     
     // position
     position += velocity;
-
+    
     // update particle
     particle.velocity = velocity;
     particle.acceleration = acceleration;
     particle.position = position;
     particle.force = align_force + cohere_force + separate_force;
-
+    
     // output
     particles[index] = particle;
 }
@@ -220,7 +214,7 @@ kernel void thirdPass(texture2d<half, access::write> output [[texture(0)]],
     
     uint width = output.get_width();
     uint height = output.get_height();
-
+    
     Particle particle = particles[index];
     uint2 pos = uint2(particle.position);
     

@@ -31,7 +31,6 @@ typedef enum InputTextureIndex {
     InputTextureIndexDrawable = 0,
     InputTextureIndexPathInput = 1,
     InputTextureIndexPathOutput = 2
-
 } InputTextureIndex;
 
 // Boids
@@ -39,18 +38,11 @@ typedef enum InputTextureIndex {
 typedef enum BoidsInputIndex {
     BoidsInputIndexParticle = 0,
     BoidsInputIndexParticleCount = 1,
-//    BoidsInputIndexMaxSpeed = 2,
-//    BoidsInputIndexMargin = 3,
-//    BoidsInputIndexAlign = 4,
-//    BoidsInputIndexCohere = 5,
-//    BoidsInputIndexSeparate = 6,
-//    BoidsInputIndexRadius = 7,
     BoidsInputIndexWidth = 2,
     BoidsInputIndexHeight = 3,
     BoidsInputIndexObstacle = 4,
     BoidsInputIndexObstacleCount = 5,
     BoidsInputIndexConfig = 6
-
 } BoidsInputIndex;
 
 typedef enum ThirdPassInputIndex {

@@ -41,21 +41,21 @@ float2 rotate_vector(float2 vector, float angle) {
 }
 
 kernel void firstPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
-                      const device RenderColours& colours [[buffer(InputIndexColours)]],
-                      uint2 id [[thread_position_in_grid]]) {
+                           const device RenderColours& colours [[buffer(InputIndexColours)]],
+                           uint2 id [[thread_position_in_grid]]) {
     output.write((half4)colours.background, id);
 }
 
 kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
-                       const device RenderColours& colours [[buffer(InputIndexColours)]],
-                       device Particle *particles [[buffer(InputIndexParticles)]],
-                       const device float *random [[buffer(InputIndexRandom)]],
-                       const device int& particle_count [[ buffer(InputIndexParticleCount)]],
-                       const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
-                       uint id [[ thread_position_in_grid ]],
-                       uint tid [[ thread_index_in_threadgroup ]],
-                       uint bid [[ threadgroup_position_in_grid ]],
-                       uint blockDim [[ threads_per_threadgroup ]]) {
+                            const device RenderColours& colours [[buffer(InputIndexColours)]],
+                            device Particle *particles [[buffer(InputIndexParticles)]],
+                            const device float *random [[buffer(InputIndexRandom)]],
+                            const device int& particle_count [[ buffer(InputIndexParticleCount)]],
+                            const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                            uint id [[ thread_position_in_grid ]],
+                            uint tid [[ thread_index_in_threadgroup ]],
+                            uint bid [[ threadgroup_position_in_grid ]],
+                            uint blockDim [[ threads_per_threadgroup ]]) {
     
     uint index = bid * blockDim + tid;
     Particle particle = particles[index];
@@ -93,7 +93,7 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     ushort2 center_coord = (ushort2)floor(position - center_direction);
     ushort2 left_coord = (ushort2)floor(position - left_direction);
     ushort2 right_coord = (ushort2)floor(position - right_direction);
-
+    
     half4 center_colour = output.read(center_coord);
     half4 left_colour = output.read(left_coord);
     half4 right_colour = output.read(right_coord);
@@ -111,12 +111,12 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
             velocity = rotate_vector(velocity, turn_angle);
         }
     }
-
+    
     // update particle
     particle.velocity = velocity;
     particle.acceleration = acceleration;
     particle.position = position;
-
+    
     // output
     particles[index] = particle;
     
@@ -148,19 +148,19 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
 
 
 kernel void thirdPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
-                      device Particle *particles [[buffer(InputIndexParticles)]],
-                      const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
-                      const device RenderColours& colours [[buffer(InputIndexColours)]],
-                      uint id [[ thread_position_in_grid ]],
-                      uint tid [[ thread_index_in_threadgroup ]],
-                      uint bid [[ threadgroup_position_in_grid ]],
-                      uint blockDim [[ threads_per_threadgroup ]]) {
+                           device Particle *particles [[buffer(InputIndexParticles)]],
+                           const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                           const device RenderColours& colours [[buffer(InputIndexColours)]],
+                           uint id [[ thread_position_in_grid ]],
+                           uint tid [[ thread_index_in_threadgroup ]],
+                           uint bid [[ threadgroup_position_in_grid ]],
+                           uint blockDim [[ threads_per_threadgroup ]]) {
     
     uint index = bid * blockDim + tid;
     
     uint width = output.get_width();
     uint height = output.get_height();
-
+    
     Particle particle = particles[index];
     uint2 pos = uint2(particle.position);
     uint span = (uint)config.draw_radius;
@@ -201,24 +201,24 @@ kernel void thirdPassSlime(texture2d<half, access::write> output [[texture(Input
     output.write(sensor_color, center_coord);
     output.write(sensor_color, left_coord);
     output.write(sensor_color, right_coord);
-
+    
 }
 
 kernel void fourthPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
-                       texture2d<half, access::read_write> input [[texture(InputTextureIndexPathOutput)]],
-                       uint2 gid [[ thread_position_in_grid ]]) {
+                            texture2d<half, access::read_write> input [[texture(InputTextureIndexPathOutput)]],
+                            uint2 gid [[ thread_position_in_grid ]]) {
     half4 color = input.read(gid);
     output.write(color, gid);
 }
 
 kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTextureIndexPathOutput)]],
-                       texture2d<half, access::read_write> input [[texture(InputTextureIndexPathInput)]],
-                       const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
-                       uint2 gid [[ thread_position_in_grid ]]) {
+                    texture2d<half, access::read_write> input [[texture(InputTextureIndexPathInput)]],
+                    const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                    uint2 gid [[ thread_position_in_grid ]]) {
     
     const int blurSize = 5;
     int range = floor(blurSize/2.0);
-
+    
     half4 colors = half4(0);
     for (int x = -range; x <= range; x++) {
         for (int y = -range; y <= range; y++) {
@@ -226,7 +226,7 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
             colors += color;
         }
     }
-
+    
     half4 finalColor = colors/float(blurSize*blurSize);
     
     float cutoff = config.cutoff;
@@ -244,7 +244,7 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
     finalColor[0] *= decay;
     finalColor[1] *= decay;
     finalColor[2] *= decay;
-
+    
     output.write(finalColor, gid);
 }
 
