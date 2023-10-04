@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */; };
-		D197F0622AC78E0800324D6D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0612AC78E0800324D6D /* ContentView.swift */; };
-		D197F0642AC78E0800324D6D /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0632AC78E0800324D6D /* Item.swift */; };
 		D197F0662AC78E0800324D6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0652AC78E0800324D6D /* Assets.xcassets */; };
 		D197F0692AC78E0800324D6D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0682AC78E0800324D6D /* Preview Assets.xcassets */; };
 		D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F06F2AC792FB00324D6D /* SimulationPicker.swift */; };
@@ -24,13 +22,11 @@
 /* Begin PBXFileReference section */
 		D197F05C2AC78E0800324D6D /* Simulation Unlimited.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Simulation Unlimited.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation_UnlimitedApp.swift; sourceTree = "<group>"; };
-		D197F0612AC78E0800324D6D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		D197F0632AC78E0800324D6D /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		D197F0652AC78E0800324D6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D197F0682AC78E0800324D6D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D197F06F2AC792FB00324D6D /* SimulationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationPicker.swift; sourceTree = "<group>"; };
 		D197F0712AC7A28900324D6D /* SlimeShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SlimeShaders.metal; sourceTree = "<group>"; };
-		D197F0732AC7A2B700324D6D /* SlimeTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SlimeTypes.h; sourceTree = "<group>"; };
+		D197F0732AC7A2B700324D6D /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
 		D197F0752AC7A30C00324D6D /* SlimeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeView.swift; sourceTree = "<group>"; };
 		D197F0772AC7AB1700324D6D /* BoidsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsView.swift; sourceTree = "<group>"; };
 		D197F0792AC7ABBB00324D6D /* BoidShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BoidShaders.metal; sourceTree = "<group>"; };
@@ -69,12 +65,10 @@
 			isa = PBXGroup;
 			children = (
 				D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */,
-				D197F0612AC78E0800324D6D /* ContentView.swift */,
 				D197F06F2AC792FB00324D6D /* SimulationPicker.swift */,
-				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
+				D197F0732AC7A2B700324D6D /* ShaderTypes.h */,
+				D197F0822ACE067000324D6D /* Boids */,
 				D197F07F2ACDF70000324D6D /* Slime */,
-				D197F0742AC7A2E300324D6D /* Shaders */,
-				D197F0632AC78E0800324D6D /* Item.swift */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
 			);
@@ -89,24 +83,24 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		D197F0742AC7A2E300324D6D /* Shaders */ = {
-			isa = PBXGroup;
-			children = (
-				D197F0712AC7A28900324D6D /* SlimeShaders.metal */,
-				D197F0732AC7A2B700324D6D /* SlimeTypes.h */,
-				D197F0792AC7ABBB00324D6D /* BoidShaders.metal */,
-			);
-			path = Shaders;
-			sourceTree = "<group>";
-		};
 		D197F07F2ACDF70000324D6D /* Slime */ = {
 			isa = PBXGroup;
 			children = (
+				D197F0712AC7A28900324D6D /* SlimeShaders.metal */,
 				D197F0752AC7A30C00324D6D /* SlimeView.swift */,
 				D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */,
 				D197F0802ACDF71500324D6D /* SlimeViewModel.swift */,
 			);
 			path = Slime;
+			sourceTree = "<group>";
+		};
+		D197F0822ACE067000324D6D /* Boids */ = {
+			isa = PBXGroup;
+			children = (
+				D197F0792AC7ABBB00324D6D /* BoidShaders.metal */,
+				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
+			);
+			path = Boids;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -184,8 +178,6 @@
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
-				D197F0622AC78E0800324D6D /* ContentView.swift in Sources */,
-				D197F0642AC78E0800324D6D /* Item.swift in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
@@ -338,7 +330,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.leveltenpaladin.Simulation-Unlimited";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/Shaders/SlimeTypes.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/ShaderTypes.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -368,7 +360,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.leveltenpaladin.Simulation-Unlimited";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/Shaders/SlimeTypes.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Simulation Unlimited/ShaderTypes.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

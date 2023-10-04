@@ -6,7 +6,7 @@
 //
 
 #include <metal_stdlib>
-#import "SlimeTypes.h"
+#import "../ShaderTypes.h"
 
 using namespace metal;
 

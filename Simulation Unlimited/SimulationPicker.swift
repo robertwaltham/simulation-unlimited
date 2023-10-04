@@ -13,7 +13,7 @@ struct SimulationPicker: View {
         NavigationStack {
             VStack {
                 simulationTile(content: {
-                    BoidsView()
+                    BoidsView().navigationTitle("Boids")
                 }, sim: {
                     BoidsView()
                 }, text: "Boids", icon: "bird.circle")
