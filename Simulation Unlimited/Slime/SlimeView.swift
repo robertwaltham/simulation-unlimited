@@ -12,13 +12,13 @@ import simd
 
 struct SlimeView: UIViewRepresentable {
     
-    //    @ObservedObject var viewModel: ViewModel
+    @State var viewModel: SlimeViewModel
     
     typealias UIViewType = MTKView
     
-    //    init(viewModel: ViewModel) {
-    //       self.viewModel = viewModel
-    //    }
+    init(viewModel: SlimeViewModel) {
+        self.viewModel = viewModel
+    }
     
     func makeUIView(context: Context) -> MTKView {
         let mtkView = MTKView()
@@ -36,16 +36,13 @@ struct SlimeView: UIViewRepresentable {
         mtkView.preferredFramesPerSecond = 60
         mtkView.isMultipleTouchEnabled = true
         context.coordinator.view = mtkView
+        context.coordinator.viewModel = viewModel
         
         return mtkView
     }
     
     func updateUIView(_ uiView: MTKView, context: Context) {
-        //        context.coordinator.colours.background = viewModel.bgColor.float4()
-        //        context.coordinator.drawParticles = viewModel.drawParticles
-        //        context.coordinator.drawPath = viewModel.drawPath
-        //        context.coordinator.particleCount = viewModel.count
-        //        context.coordinator.config = viewModel.particleConfig()
+        context.coordinator.viewModel = viewModel
     }
     
     func makeCoordinator() -> Coordinator {
@@ -54,42 +51,23 @@ struct SlimeView: UIViewRepresentable {
     
     class Coordinator : NSObject, MTKViewDelegate {
         
-        var view: MTKView?
-        var metalDevice: MTLDevice!
-        var metalCommandQueue: MTLCommandQueue!
+        fileprivate var view: MTKView?
+        fileprivate var viewModel: SlimeViewModel!
+        private var metalDevice: MTLDevice!
+        private var metalCommandQueue: MTLCommandQueue!
         
-        var pathTextures: [MTLTexture] = []
+        private var pathTextures: [MTLTexture] = []
+        private var states: [MTLComputePipelineState] = []
+        private var particleBuffer: MTLBuffer!
+        private var viewPortSize = vector_uint2(x: 0, y: 0)
         
-        var states: [MTLComputePipelineState] = []
-        
-        var particleBuffer: MTLBuffer!
-        
-        var particleCount = 8192
-        
-        var maxSpeed: Float = 1
-        var minSpeed: Float = 0.75
-        
-        var margin: Float = 50
-        var radius: Float = 50
-        
-        var drawParticles = false
-        var drawPath = true
-        
-        fileprivate var config = SlimeConfig()
-        
-        // skip all rendering, in the case the hardware doesn't support what we're doing (like in previews)
-        var skipDraw = false
-        
-        var viewPortSize = vector_uint2(x: 0, y: 0)
-        
-        
-        fileprivate var particles = [SlimeParticle]()
-        //        var obstacles = [Obstacle]()
-        
-        var colours = RenderColours()
-        //        var viewModel: ViewModel
+        private var particles = [SlimeParticle]()
+        private var colours = RenderColours()
         
         private var lastDraw = Date()
+        
+        private var skipDraw = false // skip all rendering, in the case the hardware doesn't support what we're doing (like in previews)
+
         
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
             viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
@@ -103,10 +81,6 @@ struct SlimeView: UIViewRepresentable {
             
             self.view = view
             
-            //            let start = Date()
-            //            viewModel.fps = 1 / start.timeIntervalSince(lastDraw)
-            //            lastDraw = start
-            
             draw()
         }
         
@@ -116,10 +90,8 @@ struct SlimeView: UIViewRepresentable {
                 self.metalDevice = metalDevice
             }
             
-            //            self.viewModel = parent.viewModel
-            
             super.init()
-            //            print(self.metalDevice)
+            
             guard self.metalDevice.supportsFamily(.common3) || self.metalDevice.supportsFamily(.apple4) else {
                 print("doesn't support read_write textures")
                 skipDraw = true
@@ -127,7 +99,6 @@ struct SlimeView: UIViewRepresentable {
             }
             
             buildPipeline()
-            
         }
     }
 }
@@ -176,7 +147,6 @@ extension SlimeView.Coordinator {
         //        if viewModel.mutateSpeed {
         //            viewModel.speedMultiplier = wave(time: time, phase: viewModel.mutateSpeedPhase, phaseOffset: 0, magitude: 1.75, magnitudeOffset: 1.5)
         //        }
-        config = SlimeConfig.defaultConfig()
         
         initializeParticlesIfNeeded()
         
@@ -190,7 +160,7 @@ extension SlimeView.Coordinator {
         let threadgroupSizeMultiplier = 1
         let maxThreads = 512
         let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
-        let particleThreadGroupsPerGrid = MTLSize(width: (max(particleCount / (maxThreads * threadgroupSizeMultiplier), 1)), height: 1, depth:1)
+        let particleThreadGroupsPerGrid = MTLSize(width: (max(viewModel.particleCount / (maxThreads * threadgroupSizeMultiplier), 1)), height: 1, depth:1)
         
         let w = states[0].threadExecutionWidth
         let h = states[0].maxTotalThreadsPerThreadgroup / w
@@ -203,7 +173,7 @@ extension SlimeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
-            commandEncoder.setBytes(&config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
+            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
             
             if let particleBuffer = particleBuffer {
@@ -211,7 +181,7 @@ extension SlimeView.Coordinator {
                 // update particles and draw on path
                 commandEncoder.setComputePipelineState(states[1])
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticles.rawValue))
-                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int>.stride, index: Int(InputIndexParticleCount.rawValue))
+                commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(InputIndexParticleCount.rawValue))
                 commandEncoder.setBytes(&colours, length: MemoryLayout<RenderColours>.stride, index: Int(InputIndexColours.rawValue))
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
@@ -227,12 +197,12 @@ extension SlimeView.Coordinator {
                 commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 
-                if drawPath {
+                if viewModel.drawPath {
                     commandEncoder.setComputePipelineState(states[3])
                     commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 }
                 
-                if drawParticles, let particleBuffer = particleBuffer {
+                if viewModel.drawParticles, let particleBuffer = particleBuffer {
                     commandEncoder.setComputePipelineState(states[2])
                     commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticleCount.rawValue))
                     commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
@@ -290,12 +260,12 @@ extension SlimeView.Coordinator {
             return
         }
         
-        let speedRange = minSpeed...maxSpeed
-        let xRange = margin...(Float(viewPortSize.x) - margin)
-        let yRange = margin...(Float(viewPortSize.y) - margin)
+        let speedRange = viewModel.minSpeed...viewModel.maxSpeed
+        let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
+        let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
         //        let lineSpace: Float = 100
         
-        for _ in 0 ..< particleCount {
+        for _ in 0 ..< viewModel.particleCount {
             var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
             let species = Float(Int.random(in: 0..<3))
             let position: SIMD2<Float>
@@ -359,7 +329,7 @@ extension SlimeView.Coordinator {
         }
         
         particles = []
-        for i in 0..<particleCount {
+        for i in 0..<viewModel.particleCount {
             particles.append((particleBuffer.contents() + (i * MemoryLayout<SlimeParticle>.size)).load(as: SlimeParticle.self))
         }
     }
@@ -388,10 +358,8 @@ struct RenderColours {
 }
 
 
-struct SlimeView_Previews: PreviewProvider {
-    static var previews: some View {
-        SlimeView()
-    }
+#Preview {
+    SlimeView(viewModel: SlimeViewModel())
 }
 
 private extension Color {

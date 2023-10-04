@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SlimeWorkshop: View {
+    @State var viewModel = SlimeViewModel()
+    
     var body: some View {
         Text("hello")
     }

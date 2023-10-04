@@ -19,9 +19,9 @@ struct SimulationPicker: View {
                 }, text: "Boids", icon: "bird.circle")
                 
                 simulationTile(content: {
-                    SlimeView()
+                    SlimeWorkshop()
                 }, sim: {
-                    SlimeView()
+                    SlimeView(viewModel: SlimeViewModel())
                 }, text: "Slime", icon: "drop.circle")
                 
                 simulationTile(content: {
