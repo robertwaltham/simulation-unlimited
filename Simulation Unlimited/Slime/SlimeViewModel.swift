@@ -46,8 +46,9 @@ enum StartType: Int, CaseIterable, Identifiable {
     
     var drawParticles = false
     var drawPath = true
+    var resetOnNext = false
 
-    var startType: StartType = .random
+    var startType: StartType = .circle
     
     let maxSensorAngle = Float.pi / 2
     let maxDistance: Float = 15

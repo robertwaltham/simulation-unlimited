@@ -67,7 +67,7 @@ struct SlimeView: UIViewRepresentable {
         private var lastDraw = Date()
         
         private var skipDraw = false // skip all rendering, in the case the hardware doesn't support what we're doing (like in previews)
-
+        
         
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
             viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
@@ -149,6 +149,11 @@ extension SlimeView.Coordinator {
         //        }
         
         initializeParticlesIfNeeded()
+        
+        if viewModel.resetOnNext {
+            resetParticles()
+            viewModel.resetOnNext = false
+        }
         
         if pathTextures.count == 0 {
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
@@ -260,66 +265,22 @@ extension SlimeView.Coordinator {
             return
         }
         
-        let speedRange = viewModel.minSpeed...viewModel.maxSpeed
-        let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
-        let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
-        //        let lineSpace: Float = 100
-        
-        for _ in 0 ..< viewModel.particleCount {
-            var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-            let species = Float(Int.random(in: 0..<3))
-            let position: SIMD2<Float>
-            
-            //            switch viewModel.startType {
-            
-            //            case .random:
-            position = SIMD2<Float>(Float.random(in: xRange), Float.random(in: yRange))
-            let angle = Float.random(in: 0...Float.pi * 2)
-            let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
-            speed = rotation * speed
-            
-            //            case .circle:
-            //                position = SIMD2<Float>(Float(viewPortSize.x / 2), Float(viewPortSize.y / 2))
-            //                let angle = Float.random(in: 0...Float.pi * 2)
-            //
-            //                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
-            //                speed = rotation * speed
-            //
-            //            case .grid:
-            //
-            //                if i < particleCount / 2 {
-            //
-            //                    let xLinePosition = round(Float.random(in: xRange) / lineSpace)
-            //                    let xPosition = xLinePosition * lineSpace
-            //                    position = SIMD2<Float>(xPosition, Float.random(in: yRange))
-            //                    speed = SIMD2<Float>(0, Float.random(in: speedRange))
-            //                    species = 0
-            //                } else {
-            //
-            //                    let yLinePosition = round(Float.random(in: yRange) / lineSpace)
-            //                    let yPosition = yLinePosition * lineSpace
-            //                    position = SIMD2<Float>(Float.random(in: xRange), yPosition)
-            //                    speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-            //                    species = 1
-            //                }
-            //
-            //            case.lines:
-            //
-            //                let xLinePosition = round(Float.random(in: xRange) / lineSpace)
-            //                let xPosition = xLinePosition * lineSpace
-            //                position = SIMD2<Float>(xPosition, Float.random(in: yRange))
-            //                speed = SIMD2<Float>(0, Float.random(in: speedRange))
-            //                if i % 2 == 0 {
-            //                    speed.y *= -1
-            //                }
-            //                species = xLinePosition.truncatingRemainder(dividingBy: 3)
-            //            }
-            
-            let particle = SlimeParticle(position: position, velocity: speed, species: species)
-            particles.append(particle)
-        }
+        particles = makeParticles()
         let size = particles.count * MemoryLayout<Particle>.size
+        
         particleBuffer = metalDevice.makeBuffer(bytes: &particles, length: size, options: [])
+        particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
+    }
+    
+    private func resetParticles() {
+        
+        guard particleBuffer != nil else {
+            return
+        }
+        
+        let size = particles.count * MemoryLayout<Particle>.size
+        particles = makeParticles()
+        particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
     }
     
     private func extractParticles() {
@@ -332,6 +293,72 @@ extension SlimeView.Coordinator {
         for i in 0..<viewModel.particleCount {
             particles.append((particleBuffer.contents() + (i * MemoryLayout<SlimeParticle>.size)).load(as: SlimeParticle.self))
         }
+    }
+    
+    private func makeParticles() -> [SlimeParticle] {
+        
+        var result = [SlimeParticle]()
+        
+        let speedRange = viewModel.minSpeed...viewModel.maxSpeed
+        let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
+        let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
+        let lineSpace: Float = 100
+        
+        for i in 0 ..< viewModel.particleCount {
+            var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
+            var species = Float(Int.random(in: 0..<3))
+            let position: SIMD2<Float>
+            
+            switch viewModel.startType {
+                
+            case .random:
+                position = SIMD2<Float>(Float.random(in: xRange), Float.random(in: yRange))
+                let angle = Float.random(in: 0...Float.pi * 2)
+                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+                speed = rotation * speed
+                
+            case .circle:
+                position = SIMD2<Float>(Float(viewPortSize.x / 2), Float(viewPortSize.y / 2))
+                let angle = Float.random(in: 0...Float.pi * 2)
+                
+                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+                speed = rotation * speed
+                
+            case .grid:
+                
+                if i < viewModel.particleCount / 2 {
+                    
+                    let xLinePosition = round(Float.random(in: xRange) / lineSpace)
+                    let xPosition = xLinePosition * lineSpace
+                    position = SIMD2<Float>(xPosition, Float.random(in: yRange))
+                    speed = SIMD2<Float>(0, Float.random(in: speedRange))
+                    species = 0
+                } else {
+                    
+                    let yLinePosition = round(Float.random(in: yRange) / lineSpace)
+                    let yPosition = yLinePosition * lineSpace
+                    position = SIMD2<Float>(Float.random(in: xRange), yPosition)
+                    speed = SIMD2<Float>(Float.random(in: speedRange), 0)
+                    species = 1
+                }
+                
+            case.lines:
+                
+                let xLinePosition = round(Float.random(in: xRange) / lineSpace)
+                let xPosition = xLinePosition * lineSpace
+                position = SIMD2<Float>(xPosition, Float.random(in: yRange))
+                speed = SIMD2<Float>(0, Float.random(in: speedRange))
+                if i % 2 == 0 {
+                    speed.y *= -1
+                }
+                species = xLinePosition.truncatingRemainder(dividingBy: 3)
+            }
+            
+            let particle = SlimeParticle(position: position, velocity: speed, species: species)
+            result.append(particle)
+        }
+        
+        return result
     }
     
     private func makeTexture(device: MTLDevice, drawableSize: vector_uint2) -> MTLTexture {
