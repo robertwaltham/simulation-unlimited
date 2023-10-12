@@ -129,10 +129,6 @@ extension ParticleLifeView.Coordinator {
 
 extension ParticleLifeView.Coordinator {
     
-    func wave(time: Double, phase: Double, phaseOffset: Double, magitude: Double, magnitudeOffset: Double) -> Float {
-        return Float((sin(time * phase + phaseOffset) + magnitudeOffset) * magitude)
-    }
-    
     func draw() {
 
         
@@ -179,7 +175,8 @@ extension ParticleLifeView.Coordinator {
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                 commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                 commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexColours.rawValue))
-
+                commandEncoder.setBytes(viewModel.weights, length: MemoryLayout<Float>.stride * viewModel.weights.count, index: Int(ParticleLifeInputIndexWeights.rawValue))
+                
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer

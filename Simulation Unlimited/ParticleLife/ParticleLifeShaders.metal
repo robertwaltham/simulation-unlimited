@@ -19,8 +19,8 @@ struct LifeParticle {
 };
 
 struct ParticleLifeConfig {
-    float sensor_angle;
-    float sensor_distance;
+    float r_min_distance;
+    float r_max_distance;
     float turn_angle;
     float draw_radius;
     float trail_radius;
@@ -83,7 +83,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
                             const device RenderLifeColours& colours [[buffer(InputIndexColours)]],
                             device LifeParticle *particles [[buffer(InputIndexParticles)]],
                             device float4 *colors [[buffer(ParticleLifeInputIndexColours)]],
-                            const device float *random [[buffer(InputIndexRandom)]],
+                            const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
                             const device int& particle_count [[ buffer(InputIndexParticleCount)]],
                             const device ParticleLifeConfig& config [[ buffer(InputIndexConfig)]],
                             uint id [[ thread_position_in_grid ]],
@@ -117,35 +117,6 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     
     // velocity
     
-//    float sensor_angle = config.sensor_angle;
-//    float turn_angle = config.turn_angle;
-//    float sensor_distance = config.sensor_distance;
-//    
-//    float2 center_direction = normalize(-velocity) * sensor_distance;
-//    float2 left_direction = rotate_vector2(center_direction, sensor_angle);
-//    float2 right_direction = rotate_vector2(center_direction, -sensor_angle);
-//    
-//    ushort2 center_coord = (ushort2)floor(position - center_direction);
-//    ushort2 left_coord = (ushort2)floor(position - left_direction);
-//    ushort2 right_coord = (ushort2)floor(position - right_direction);
-//    
-//    half4 center_colour = output.read(center_coord);
-//    half4 left_colour = output.read(left_coord);
-//    half4 right_colour = output.read(right_coord);
-    
-//    int channel = species;
-//    float tolerance = 0.1;
-//    if (left_colour[channel] - center_colour[channel] > tolerance && left_colour[channel] - right_colour[channel] > tolerance) {
-//        velocity = rotate_vector2(velocity, turn_angle);
-//    } else if (right_colour[channel] - center_colour[channel] > tolerance && right_colour[channel] - left_colour[channel] > tolerance) {
-//        velocity = rotate_vector2(velocity, -turn_angle);
-//    } else if (abs(right_colour[channel] - left_colour[channel]) < tolerance) {
-//        if (random[index % 1024] < 0.5) {
-//            velocity = rotate_vector2(velocity, -turn_angle);
-//        } else {
-//            velocity = rotate_vector2(velocity, turn_angle);
-//        }
-//    }
     
     // update particle
     particle.velocity = velocity;
@@ -156,13 +127,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     particles[index] = particle;
     
     // leave trail
-    
     uint2 pos = uint2(particle.position);
-//    half4 trail_colour = half4(0,0,0,1);
-//    trail_colour[species] = 0.25;
-    
-//    half4 deletion_colour = half4(0.1, 0.1, 0.1, 1);
-//    deletion_colour[species] = 0;
     uint span = (uint)config.trail_radius;
     
     for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
@@ -174,8 +139,8 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
             if (length(float2(u, v) - particle.position) < span) {
                 half4 current_color = output.read(uint2(u,v));
                 half4 output_color = current_color += color;
-//                output_color = current_color -= deletion_colour;
                 output.write(clamp(output_color, half4(0), half4(1)), uint2(u, v));
+                // TODO: desaturate existing color?
             }
         }
     }

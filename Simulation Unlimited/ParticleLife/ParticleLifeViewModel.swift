@@ -43,21 +43,43 @@ import SwiftUI
         SIMD4<Float>(0.5, 0, 0.5, 1),
         SIMD4<Float>(0.25, 0.75, 0, 1),
         SIMD4<Float>(0, 0.25, 0.75, 1),
-        SIMD4<Float>(0.25, 0.75, 0, 1),
+        SIMD4<Float>(0.25, 0, 0.75, 1),
         SIMD4<Float>(0.5, 0.5, 0.5, 1),
     ]
+    
+    var weights = createDefaultWeights(flavourCount: 10) // TODO: de-hardcode the flavour count
     
     func getSwiftUIColors() -> [Color] {
         colours.map { c in
             Color(uiColor: UIColor(red: CGFloat(c.x), green: CGFloat(c.y), blue: CGFloat(c.z), alpha: CGFloat(c.w)))
         }
     }
+    
+    static func createDefaultWeights(flavourCount: Int) -> [Float] {
+        var defaultWeights: [Float] = Array(repeating: -0.5, count: flavourCount * flavourCount)
+        
+        for i in 0..<flavourCount {
+            defaultWeights[(i * flavourCount) + i] = 0.5
+        }
+        
+        return defaultWeights
+    }
+    
+    func weight(x: Int, y: Int) -> Float {
+        let index = x * config.flavourCount + y
+        guard index < weights.count else {
+            fatalError("out of bounds")
+        }
+        
+        return weights[index]
+    }
+    
 }
 
 
 struct ParticleLifeConfig {
-    var sensorAngle: Float = 0
-    var sensorDistance: Float = 0
+    var rMinDistance: Float = 0
+    var rMaxDistance: Float = 0
     var turnAngle: Float = 0
     var drawRadius: Float = 0
     var trailRadius: Float = 0
@@ -67,8 +89,8 @@ struct ParticleLifeConfig {
     var flavourCount = 0
     
     static func defaultConfig() -> ParticleLifeConfig {
-        ParticleLifeConfig(sensorAngle: Float.pi / 8,
-                           sensorDistance: 10,
+        ParticleLifeConfig(rMinDistance: 1,
+                           rMaxDistance: 10,
                            turnAngle: Float.pi / 16,
                            drawRadius: 2,
                            trailRadius: 2,

@@ -53,11 +53,12 @@ typedef enum ThirdPassInputIndex {
 // Particle Life
 
 typedef enum ParticleLifeInputIndex {
-    ParticleLifeInputIndexColours = 5,
     ParticleLifeInputIndexParticles = 1,
     ParticleLifeInputIndexParticleCount = 2,
     ParticleLifeInputIndexConfig = 3,
-    ParticleLifeInputIndexRandom = 4
+    ParticleLifeInputIndexRandom = 4,
+    ParticleLifeInputIndexColours = 5,
+    ParticleLifeInputIndexWeights = 6
 } ParticleLifeInputIndex;
 
 #endif /* ShaderTypes_h */
