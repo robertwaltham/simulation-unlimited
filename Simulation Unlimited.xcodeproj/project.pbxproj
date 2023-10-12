@@ -20,6 +20,7 @@
 		D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */; };
 		D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */; };
 		D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */; };
+		D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ParticleLifeShaders.metal; sourceTree = "<group>"; };
 		D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeView.swift; sourceTree = "<group>"; };
 		D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeViewModel.swift; sourceTree = "<group>"; };
+		D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeWorkshop.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 			children = (
 				D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */,
 				D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */,
+				D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */,
 				D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */,
 			);
 			path = ParticleLife;
@@ -192,6 +195,7 @@
 			files = (
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
 				D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */,
+				D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */,
 				D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */,
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,

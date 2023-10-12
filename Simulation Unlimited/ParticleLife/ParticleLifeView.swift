@@ -242,7 +242,7 @@ extension ParticleLifeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPassSlime", "secondPassSlime", "drawLifeParticles", "fourthPassSlime", "boxBlur"].map {
+        states = try ["firstPassSlime", "drawParticlePath", "drawLifeParticles", "fourthPassSlime", "boxBlur"].map {
             guard let function = library.makeFunction(name: $0) else {
                 fatalError("Can't make function \($0)")
             }

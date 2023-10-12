@@ -19,8 +19,8 @@ import SwiftUI
     var margin: Float = 50
     var radius: Float = 50
     
-    var drawParticles = true
-    var drawPath = false
+    var drawParticles = false
+    var drawPath = true
     var resetOnNext = false
     
     var startType: StartType = .random
@@ -46,6 +46,12 @@ import SwiftUI
         SIMD4<Float>(0.25, 0.75, 0, 1),
         SIMD4<Float>(0.5, 0.5, 0.5, 1),
     ]
+    
+    func getSwiftUIColors() -> [Color] {
+        colours.map { c in
+            Color(uiColor: UIColor(red: CGFloat(c.x), green: CGFloat(c.y), blue: CGFloat(c.z), alpha: CGFloat(c.w)))
+        }
+    }
 }
 
 
