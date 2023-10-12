@@ -17,6 +17,9 @@
 		D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0792AC7ABBB00324D6D /* BoidShaders.metal */; };
 		D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */; };
 		D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0802ACDF71500324D6D /* SlimeViewModel.swift */; };
+		D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */; };
+		D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */; };
+		D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +35,9 @@
 		D197F0792AC7ABBB00324D6D /* BoidShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BoidShaders.metal; sourceTree = "<group>"; };
 		D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeWorkshop.swift; sourceTree = "<group>"; };
 		D197F0802ACDF71500324D6D /* SlimeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeViewModel.swift; sourceTree = "<group>"; };
+		D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ParticleLifeShaders.metal; sourceTree = "<group>"; };
+		D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeView.swift; sourceTree = "<group>"; };
+		D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -69,6 +75,7 @@
 				D197F0732AC7A2B700324D6D /* ShaderTypes.h */,
 				D197F0822ACE067000324D6D /* Boids */,
 				D197F07F2ACDF70000324D6D /* Slime */,
+				D1D6E9292AD78879007F03F0 /* ParticleLife */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
 			);
@@ -101,6 +108,16 @@
 				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
 			);
 			path = Boids;
+			sourceTree = "<group>";
+		};
+		D1D6E9292AD78879007F03F0 /* ParticleLife */ = {
+			isa = PBXGroup;
+			children = (
+				D1D6E92A2AD78892007F03F0 /* ParticleLifeShaders.metal */,
+				D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */,
+				D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */,
+			);
+			path = ParticleLife;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -174,12 +191,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
+				D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */,
 				D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */,
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
+				D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
+				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

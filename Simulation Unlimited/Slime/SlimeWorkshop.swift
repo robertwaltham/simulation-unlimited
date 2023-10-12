@@ -51,7 +51,7 @@ struct SlimeWorkshop: View {
                 Slider(value: $viewModel.config.turnAngle, in: 0...viewModel.maxTurnAngle)
             }
             VStack {
-
+                Text("Start").font(.title)
                 Picker("Start", selection: $viewModel.startType) {
                     ForEach(StartType.allCases) { type in
                         type.label.tag(type)
@@ -60,7 +60,6 @@ struct SlimeWorkshop: View {
                 .onChange(of: viewModel.startType, {
                     viewModel.resetOnNext = true
                 })
-                .pickerStyle(WheelPickerStyle())
             }
         }
         .padding(10)
