@@ -59,10 +59,11 @@ struct ParticleLifeView: UIViewRepresentable {
         private var pathTextures: [MTLTexture] = []
         private var states: [MTLComputePipelineState] = []
         private var particleBuffer: MTLBuffer!
+        private var colorBuffer: MTLBuffer!
+
         private var viewPortSize = vector_uint2(x: 0, y: 0)
         
         private var particles = [LifeParticle]()
-        private var colours = RenderColours()
         
         private var lastDraw = Date()
         
@@ -136,6 +137,7 @@ extension ParticleLifeView.Coordinator {
 
         
         initializeParticlesIfNeeded()
+        initializeColorsIfNeeded()
         
         if viewModel.resetOnNext {
             resetParticles()
@@ -159,22 +161,25 @@ extension ParticleLifeView.Coordinator {
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
         
+        var colors = RenderColours()
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
-            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
-            commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
-            
+            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
+            commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
+            commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(InputIndexColours.rawValue))
+
             if let particleBuffer = particleBuffer {
                 
                 // update particles and draw on path
                 commandEncoder.setComputePipelineState(states[1])
-                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticles.rawValue))
-                commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(InputIndexParticleCount.rawValue))
-                commandEncoder.setBytes(&colours, length: MemoryLayout<RenderColours>.stride, index: Int(InputIndexColours.rawValue))
+                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
+                commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
+                commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexColours.rawValue))
+
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer
@@ -196,7 +201,7 @@ extension ParticleLifeView.Coordinator {
                 
                 if viewModel.drawParticles, let particleBuffer = particleBuffer {
                     commandEncoder.setComputePipelineState(states[2])
-                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticleCount.rawValue))
+                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                     commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 }
                 
@@ -237,7 +242,7 @@ extension ParticleLifeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPassSlime", "secondPassSlime", "thirdPassSlime", "fourthPassSlime", "boxBlur"].map {
+        states = try ["firstPassSlime", "secondPassSlime", "drawLifeParticles", "fourthPassSlime", "boxBlur"].map {
             guard let function = library.makeFunction(name: $0) else {
                 fatalError("Can't make function \($0)")
             }
@@ -282,6 +287,18 @@ extension ParticleLifeView.Coordinator {
         }
     }
     
+    private func initializeColorsIfNeeded() {
+        
+        guard colorBuffer == nil else {
+            return
+        }
+        
+        let count = viewModel.colours.count
+        let size = count * MemoryLayout<SIMD4<Float>>.size
+        
+        colorBuffer = metalDevice.makeBuffer(bytes: viewModel.colours, length: size, options: [])
+    }
+    
     private func makeParticles() -> [LifeParticle] {
         
         var result = [LifeParticle]()
@@ -293,7 +310,7 @@ extension ParticleLifeView.Coordinator {
         
         for i in 0 ..< viewModel.particleCount {
             var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-            var species = Float(Int.random(in: 0..<3))
+            var species = Float(Int.random(in: 0..<viewModel.config.flavourCount))
             let position: SIMD2<Float>
             
             switch viewModel.startType {
@@ -344,7 +361,6 @@ extension ParticleLifeView.Coordinator {
             let particle = LifeParticle(position: position, velocity: speed, species: species)
             result.append(particle)
         }
-        
         return result
     }
     
@@ -374,18 +390,6 @@ struct ParticleLifeColors {
 
 #Preview {
     ParticleLifeView(viewModel: ParticleLifeViewModel())
-}
-
-private extension Color {
-    func float4() -> SIMD4<Float> {
-        if let components = cgColor?.components {
-            return SIMD4<Float>(Float(components[0]),
-                                Float(components[1]),
-                                Float(components[2]),
-                                Float(components[3]))
-        }
-        return SIMD4<Float>(0,0,0,0)
-    }
 }
 
 private struct LifeParticle {

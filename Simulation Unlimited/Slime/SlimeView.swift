@@ -389,18 +389,6 @@ struct RenderColours {
     SlimeView(viewModel: SlimeViewModel())
 }
 
-private extension Color {
-    func float4() -> SIMD4<Float> {
-        if let components = cgColor?.components {
-            return SIMD4<Float>(Float(components[0]),
-                                Float(components[1]),
-                                Float(components[2]),
-                                Float(components[3]))
-        }
-        return SIMD4<Float>(0,0,0,0)
-    }
-}
-
 private struct SlimeParticle {
     var position: SIMD2<Float>
     var velocity: SIMD2<Float>

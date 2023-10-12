@@ -25,9 +25,9 @@ struct SimulationPicker: View {
                 }, text: "Slime", icon: "drop.circle")
                 
                 simulationTile(content: {
-                    Text("TODO").navigationTitle("TODO")
+                    ParticleLifeView(viewModel: ParticleLifeViewModel()).navigationTitle("Particle Life")
                 }, sim: {
-                    Rectangle()
+                    ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
             }.navigationTitle("Simulations")

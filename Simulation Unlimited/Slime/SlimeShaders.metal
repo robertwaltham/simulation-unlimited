@@ -201,7 +201,6 @@ kernel void thirdPassSlime(texture2d<half, access::write> output [[texture(Input
     output.write(sensor_color, center_coord);
     output.write(sensor_color, left_coord);
     output.write(sensor_color, right_coord);
-    
 }
 
 kernel void fourthPassSlime(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
