@@ -21,12 +21,13 @@ struct LifeParticle {
 struct ParticleLifeConfig {
     float r_min_distance;
     float r_max_distance;
-    float turn_angle;
+    float max_speed;
     float draw_radius;
     float trail_radius;
     float cutoff;
     float falloff;
     float speed_multiplier;
+    float flavour_count;
 };
 
 struct RenderLifeColours {
@@ -39,6 +40,15 @@ struct RenderLifeColours {
 float2 rotate_vector2(float2 vector, float angle) {
     float2x2 rotation = float2x2(cos(angle), -sin(angle), sin(angle), cos(angle));
     return rotation * vector;
+}
+
+// TODO: put in shared file
+float2 limit_magnitude2(float2 vec, float max_mag) {
+    float magnitude = length(vec);
+    if (magnitude > max_mag) {
+        return normalize(vec) * max_mag;
+    }
+    return vec;
 }
 
 kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
@@ -107,15 +117,56 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     position += (velocity * config.speed_multiplier);
     
     // bounds
-    if (position.x < 0 || position.x > width) {
-        velocity.x *= -1;
+    if (position.x < 0) {
+        position.x = width;
     }
     
-    if (position.y < 0 || position.y > height) {
-        velocity.y *= -1;
+    if (position.y < 0) {
+        position.y = height;
+    }
+    
+    if (position.x > width) {
+        position.x = 0;
+    }
+    
+    if (position.y > height) {
+        position.y = 0;
     }
     
     // velocity
+    float2 newVelocity = float2(0,0);
+    for (uint i = 0; i < uint(particle_count); i++) {
+        
+        if (i == index) {
+            continue;
+        }
+        
+        LifeParticle other = particles[i];
+        float dist = distance(position, other.position);
+        if (dist > config.r_max_distance) {
+            continue;
+        }
+        
+        int otherSpecies = (int)other.species;
+        int forceIndex = (species * (int)config.flavour_count) + otherSpecies;
+        float weight  = weights[forceIndex] * config.speed_multiplier;
+        
+        float2 direction = normalize(position - other.position);
+        if (dist < config.r_min_distance) {
+            newVelocity += (dist / config.r_min_distance) * direction; // force = 0 -> 1 as distance goes from 0 -> r_min
+        } else {
+            float d = (dist - config.r_min_distance) / (config.r_max_distance - config.r_min_distance);
+            if (d < 0.5) {
+                newVelocity += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
+            } else {
+                newVelocity += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
+            }
+        }
+    }
+    
+    if (length(newVelocity) > 0.0) {
+        particle.velocity = limit_magnitude2(newVelocity, config.max_speed);
+    }
     
     
     // update particle
