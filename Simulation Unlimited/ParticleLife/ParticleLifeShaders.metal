@@ -149,9 +149,10 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         
         int otherSpecies = (int)other.species;
         int forceIndex = (species * (int)config.flavour_count) + otherSpecies;
-        float weight  = weights[forceIndex] * config.speed_multiplier;
+        float weight = -1.0 * weights[forceIndex];
+
         
-        float2 direction = normalize(position - other.position);
+        float2 direction = normalize(other.position - position);
         if (dist < config.r_min_distance) {
             newVelocity += (dist / config.r_min_distance) * direction; // force = 0 -> 1 as distance goes from 0 -> r_min
         } else {
@@ -170,7 +171,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     
     
     // update particle
-    particle.velocity = velocity;
+//    particle.velocity = velocity;
     particle.acceleration = acceleration;
     particle.position = position;
     

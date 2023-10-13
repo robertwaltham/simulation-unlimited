@@ -14,7 +14,7 @@ import SwiftUI
     var minSpeed: Float = 0.75
     var maxSpeed: Float = 1.0
     
-    var particleCount = 1024
+    var particleCount = 4096
     
     var margin: Float = 50
     var radius: Float = 50
@@ -90,13 +90,13 @@ struct ParticleLifeConfig {
     
     static func defaultConfig() -> ParticleLifeConfig {
         ParticleLifeConfig(rMinDistance: 1,
-                           rMaxDistance: 10,
+                           rMaxDistance: 15,
                            maxSpeed: 10,
                            drawRadius: 2,
                            trailRadius: 2,
                            cutoff: 0.01,
                            falloff: 0.02,
                            speedMultiplier: 2,
-                           flavourCount: 10)
+                           flavourCount: 2)
     }
 }

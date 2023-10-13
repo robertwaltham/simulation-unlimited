@@ -10,32 +10,52 @@ import SwiftUI
 struct ParticleLifeWorkshop: View {
     @State var viewModel = ParticleLifeViewModel()
     @State var showWeights = false
+    @State var stepper: Float = 0.5
     
     var body: some View {
         
         HStack(alignment: .center, spacing: 15) {
-            VStack {
+            HStack {
                 Text("Speed: \(viewModel.config.speedMultiplier, specifier: "%.2f")")
-                    .font(.title)
+                    .font(.title3)
                 Slider(value: $viewModel.config.speedMultiplier, in: 0...viewModel.maxMultiplier)
             }
             
-            VStack {
+            HStack {
                 Text("Falloff: \(viewModel.config.falloff, specifier: "%.3f")")
-                    .font(.title)
+                    .font(.title3)
                 Slider(value: $viewModel.config.falloff, in: 0...viewModel.maxFalloff)
             }
             
-            VStack() {
-                Text("Trail Size: \(Int(viewModel.config.trailRadius))").font(.title)
+            HStack() {
+                Text("Trail Size: \(Int(viewModel.config.trailRadius))").font(.title3)
                 Slider(value: $viewModel.config.trailRadius, in: 1...viewModel.maxRadius)
             }
             
-            VStack() {
-                Toggle("Particles", isOn: $viewModel.drawParticles)
-                Toggle("Path", isOn: $viewModel.drawPath)
+//            HStack() {
+//                Toggle("Particles", isOn: $viewModel.drawParticles)
+//                Toggle("Path", isOn: $viewModel.drawPath)
+//            }
+            
+        }
+        
+        HStack(alignment: .center, spacing: 15) {
+            HStack {
+                Text("R Min: \(viewModel.config.rMinDistance, specifier: "%.2f")")
+                    .font(.title3)
+                Slider(value: $viewModel.config.rMinDistance, in: 0...10)
             }
             
+            HStack {
+                Text("R MAx: \(viewModel.config.rMaxDistance, specifier: "%.1f")")
+                    .font(.title3)
+                Slider(value: $viewModel.config.rMaxDistance, in: 1...50)
+            }
+            
+            HStack() {
+                Text("S Max: \(Int(viewModel.config.maxSpeed))").font(.title3)
+                Slider(value: $viewModel.config.maxSpeed, in: 1...20)
+            }
         }
         
         ParticleLifeView(viewModel: viewModel)
@@ -101,6 +121,7 @@ struct ParticleLifeWorkshop: View {
         Text(weight, format: .number)
             .foregroundStyle( weight > 0 ? Color.green : Color.gray) // TODO: Scale color 
     }
+    
 }
 
 #Preview {
