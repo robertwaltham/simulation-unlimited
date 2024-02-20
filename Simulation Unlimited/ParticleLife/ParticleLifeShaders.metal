@@ -154,7 +154,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         
         float2 direction = normalize(other.position - position);
         if (dist < config.r_min_distance) {
-            newVelocity += (dist / config.r_min_distance) * direction; // force = 0 -> 1 as distance goes from 0 -> r_min
+            newVelocity += (dist / config.r_min_distance) * direction * 0.5; // force = 0 -> 1 as distance goes from 0 -> r_min
         } else {
             float d = (dist - config.r_min_distance) / (config.r_max_distance - config.r_min_distance);
             if (d < 0.5) {
@@ -165,7 +165,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         }
     }
     
-    if (length(newVelocity) > 0.0) {
+    if (length(newVelocity) > 0.1) {
         particle.velocity = limit_magnitude2(newVelocity, config.max_speed);
     }
     

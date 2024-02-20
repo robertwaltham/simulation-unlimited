@@ -14,7 +14,7 @@ import SwiftUI
     var minSpeed: Float = 0.75
     var maxSpeed: Float = 1.0
     
-    var particleCount = 1024
+    var particleCount = 4096
     
     var margin: Float = 50
     var radius: Float = 50
@@ -56,10 +56,10 @@ import SwiftUI
     }
     
     static func createDefaultWeights(flavourCount: Int) -> [Float] {
-        var defaultWeights: [Float] = Array(repeating: -0.5, count: flavourCount * flavourCount)
+        var defaultWeights: [Float] = Array(repeating: -1, count: flavourCount * flavourCount)
         
         for i in 0..<flavourCount {
-            defaultWeights[(i * flavourCount) + i] = 0.5
+            defaultWeights[(i * flavourCount) + i] = 1
         }
         
         return defaultWeights
@@ -88,8 +88,12 @@ import SwiftUI
     }
     
     func randomizeWeights() {
-        let values: [Float] = stride(from: -1.0, to: 1, by: 0.5).compactMap {$0}
+        let values: [Float] = stride(from: -1.0, to: 1.5, by: 0.5).compactMap {$0}
         weights = stride(from: 0, to: config.flavourCount * config.flavourCount, by: 1).compactMap { _ in values.randomElement()! }
+    }
+    
+    func invertWeights() {
+        weights = weights.map { -$0 }
     }
     
 }
@@ -109,12 +113,12 @@ struct ParticleLifeConfig {
     static func defaultConfig() -> ParticleLifeConfig {
         ParticleLifeConfig(rMinDistance: 1,
                            rMaxDistance: 15,
-                           maxSpeed: 10,
+                           maxSpeed: 1,
                            drawRadius: 4,
-                           trailRadius: 4,
+                           trailRadius: 5,
                            cutoff: 0.01,
-                           falloff: 0.02,
+                           falloff: 0.15,
                            speedMultiplier: 2,
-                           flavourCount: 2)
+                           flavourCount: 3)
     }
 }

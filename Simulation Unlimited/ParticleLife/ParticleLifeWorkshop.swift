@@ -53,8 +53,8 @@ struct ParticleLifeWorkshop: View {
             }
             
             HStack() {
-                Text("S Max: \(Int(viewModel.config.maxSpeed))").font(.title3)
-                Slider(value: $viewModel.config.maxSpeed, in: 0...20)
+                Text("S Max: \(viewModel.config.maxSpeed, specifier: "%.1f")").font(.title3)
+                Slider(value: $viewModel.config.maxSpeed, in: 0...5)
             }
         }
         
@@ -80,13 +80,21 @@ struct ParticleLifeWorkshop: View {
             
             
             
-            Button {
-                showWeights = true
-            } label: {
-                Label("Weights", systemImage: "figure.walk.circle.fill")
-            }.popover(isPresented: $showWeights) {
-                weightWidget()
-            }.padding()
+            HStack {
+                Button {
+                    showWeights = true
+                } label: {
+                    Label("Weights", systemImage: "figure.walk.circle.fill")
+                }.popover(isPresented: $showWeights) {
+                    weightWidget()
+                }.padding()
+                
+                Button {
+                    viewModel.resetOnNext = true
+                } label: {
+                    Label("Reset Particles", systemImage: "arrow.counterclockwise.circle.fill")
+                }.padding()
+            }
             
 
 
@@ -113,18 +121,22 @@ struct ParticleLifeWorkshop: View {
         let colors = viewModel.getSwiftUIColors()
         VStack {
             HStack {
-                GridRow {
-                    Button {
-                        viewModel.randomizeWeights()
-                    } label: {
-                        Label("Randomize", systemImage: "shuffle.circle.fill")
-                    }.padding()
-                }
+                Button {
+                    viewModel.randomizeWeights()
+                } label: {
+                    Label("Randomize", systemImage: "shuffle.circle.fill")
+                }.padding()
                 
                 Button {
                     viewModel.resetWeights()
                 } label: {
                     Label("Reset", systemImage: "arrow.counterclockwise.circle.fill")
+                }.padding()
+                
+                Button {
+                    viewModel.invertWeights()
+                } label: {
+                    Label("Invert", systemImage: "arrow.up.arrow.down.circle.fill")
                 }.padding()
                 
             }
@@ -161,7 +173,7 @@ struct ParticleLifeWorkshop: View {
                                             Text("\(i, specifier: "%.1f")")
 
                                         }
-                                    }                                                
+                                    }
                                     .frame(width: 75)
 
                                 }
