@@ -54,57 +54,43 @@ struct ParticleLifeWorkshop: View {
             
             HStack() {
                 Text("S Max: \(Int(viewModel.config.maxSpeed))").font(.title3)
-                Slider(value: $viewModel.config.maxSpeed, in: 1...20)
+                Slider(value: $viewModel.config.maxSpeed, in: 0...20)
             }
         }
         
         ParticleLifeView(viewModel: viewModel)
         
         HStack {
-            ForEach(viewModel.getSwiftUIColors(), id: \.self) { c in
-                rectangle(color: c)
-            }
+//            ForEach(viewModel.getSwiftUIColors(), id: \.self) { c in
+//                rectangle(color: c)
+//            }
+//            HStack(alignment: .center, spacing: 15) {
+//                HStack {
+//                    Text("Draw Radius: \(viewModel.config.drawRadius, specifier: "%.f")")
+//                        .font(.title3)
+//                    Slider(value: $viewModel.config.drawRadius, in: 1...10)
+//                }
+//
+//                HStack {
+//                    Text("Trail Radius: \(viewModel.config.trailRadius, specifier: "%.f")")
+//                        .font(.title3)
+//                    Slider(value: $viewModel.config.trailRadius, in: 1...10)
+//                }
+//            }
+            
+            
             
             Button {
                 showWeights = true
             } label: {
                 Label("Weights", systemImage: "figure.walk.circle.fill")
             }.popover(isPresented: $showWeights) {
-                let colors = viewModel.getSwiftUIColors()
-                Grid {
-                    ForEach(0...viewModel.config.flavourCount, id: \.self) { j in
-                        
-                        if j == 0 {
-                            GridRow {
-                                ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
-                                    if i > 0 {
-                                        rectangle(color: colors[i-1])
-                                    } else {
-                                        rectangle(color: Color.white)
-                                    }
-                                }
-                            }
-                        } else {
-                            GridRow {
-                                ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
-                                    if i == 0 {
-                                        rectangle(color: colors[j-1])
-                                    } else {
-                                        RoundedRectangle(cornerSize: CGSize(width: 5, height: 5))
-                                            .stroke(.gray, lineWidth: 1)
-                                            .foregroundColor(Color.white)
-                                            .padding(1)
-                                            .frame(width: 50, height: 50)
-                                            .overlay {
-                                                text(weight: viewModel.weight(x: j-1, y: i-1))
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }.padding(5)
-            }
+                weightWidget()
+            }.padding()
+            
+
+
+
         }
     }
     
@@ -119,7 +105,73 @@ struct ParticleLifeWorkshop: View {
     @ViewBuilder
     private func text(weight: Float) -> some View {
         Text(weight, format: .number)
-            .foregroundStyle( weight > 0 ? Color.green : Color.gray) // TODO: Scale color 
+            .foregroundStyle( weight > 0 ? Color.green : Color.gray) // TODO: Scale color
+    }
+    
+    @ViewBuilder
+    private func weightWidget() -> some View {
+        let colors = viewModel.getSwiftUIColors()
+        VStack {
+            HStack {
+                GridRow {
+                    Button {
+                        viewModel.randomizeWeights()
+                    } label: {
+                        Label("Randomize", systemImage: "shuffle.circle.fill")
+                    }.padding()
+                }
+                
+                Button {
+                    viewModel.resetWeights()
+                } label: {
+                    Label("Reset", systemImage: "arrow.counterclockwise.circle.fill")
+                }.padding()
+                
+            }
+            Grid {
+
+                ForEach(0...viewModel.config.flavourCount, id: \.self) { j in
+                    
+                    if j == 0 {
+                        GridRow {
+                            ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
+                                if i > 0 {
+                                    rectangle(color: colors[i-1])
+                                } else {
+                                    rectangle(color: Color.white)
+                                }
+                            }
+                        }
+                    } else {
+                        GridRow {
+                            ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
+                                if i == 0 {
+                                    rectangle(color: colors[j-1])
+                                } else {
+
+                                    let binding = Binding<Float> {
+                                        viewModel.weight(x: j-1, y: i-1)
+                                    } set: { newValue in
+                                        viewModel.setWeight(x: j-1, y: i-1, value: newValue)
+                                    }
+                                    
+                                    let stride: [Float] = stride(from: -1.0, to: 1.5, by: 0.5).compactMap { $0 }
+                                    Picker("Weight", selection: binding) {
+                                        ForEach(stride, id: \.self) { i in
+                                            Text("\(i, specifier: "%.1f")")
+
+                                        }
+                                    }                                                
+                                    .frame(width: 75)
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }.padding(5)
+        }
+        
     }
     
 }
