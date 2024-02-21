@@ -37,7 +37,7 @@ enum StartType: Int, CaseIterable, Identifiable {
     var config = SlimeConfig.defaultConfig()
     
     var minSpeed: Float = 0.75
-    var maxSpeed: Float = 1.0
+    var maxSpeed: Float = 2.0
     
     var particleCount = 8192
     
@@ -47,6 +47,8 @@ enum StartType: Int, CaseIterable, Identifiable {
     var drawParticles = false
     var drawPath = true
     var resetOnNext = false
+    
+    var time = 0.0
 
     var startType: StartType = .circle
     
@@ -55,9 +57,19 @@ enum StartType: Int, CaseIterable, Identifiable {
     let maxTurnAngle = Float.pi / 4
     
     let maxCutoff: Float = 1
-    let maxFalloff: Float = 0.15
+    let maxFalloff: Float = 0.1
     let maxRadius: Float = 4
     let maxMultiplier: Float = 6
+    
+    var speedLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.5)
+    var angleLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.25)
+    var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.3)
+
+    func update() {
+        config.speedMultiplier = Float(speedLFO.value(at: time)) * maxSpeed
+        config.sensorAngle = Float(angleLFO.value(at: time)) * maxSensorAngle
+        config.falloff = Float(falloffLFO.value(at: time)) * maxFalloff
+    }
 }
 
 struct SlimeConfig {
