@@ -19,7 +19,7 @@ struct SimulationPicker: View {
                 }, text: "Boids", icon: "bird.circle")
                 
                 simulationTile(content: {
-                    SlimeWorkshop().navigationTitle("Slime")
+                    SlimeLFOWorkshop().navigationTitle("Slime")
                 }, sim: {
                     SlimeView(viewModel: SlimeViewModel())
                 }, text: "Slime", icon: "drop.circle")
