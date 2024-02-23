@@ -11,7 +11,10 @@ struct SlimeLFOWorkshop: View {
     @State var viewModel = SlimeViewModel()
     @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     @State var showLFO = false
-    
+    @State var showSpeed = false
+    @State var showAngle = false
+    @State var showTurn = false
+
     @ViewBuilder
     private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
         HStack {
@@ -19,8 +22,7 @@ struct SlimeLFOWorkshop: View {
             LFOSlider(oscillator, offset: offset).frame(minWidth: 400)
             LFOGraph(oscillator.wrappedValue).frame(minWidth: 250, maxWidth: .infinity, maxHeight: 100)
         }
-        .padding()
-        .foregroundColor(.blue)
+        .padding(5)
         .frame(maxWidth: .infinity)
     }
     
@@ -58,9 +60,10 @@ struct SlimeLFOWorkshop: View {
             }
             
             VStack {
-                Text("Offset: \(oscillator.wrappedValue.offset, specifier: "%.1f")")
+                Text("Offset: \(oscillator.wrappedValue.offset, specifier: "%.2f")")
                 Slider(value: oscillator.offset, in: offset)
             }
+
         }
     }
     
@@ -77,8 +80,8 @@ struct SlimeLFOWorkshop: View {
                     let y = h/2 - CGFloat(osc.value(at: (Double(i) / 40) + viewModel.time) / 2.0) * h/2
                     path.addLine(to: CGPoint(x: x, y: y))
                 }
-
-            }.stroke()
+            }
+            .stroke()
         }.clipped()
     }
 
@@ -106,23 +109,69 @@ struct SlimeLFOWorkshop: View {
                         viewModel.time = 0
                     }
                     
+                    Spacer()
+
+                    Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
+                    Text("\(viewModel.cycleLength, specifier: "%.f")").foregroundStyle(Color.blue)
+
+                    Spacer()
+                    
                     Button {
                         showLFO = true
                     } label: {
-                        Label("Oscillators", systemImage: "figure.walk.circle.fill")
+                        Label("Falloff", systemImage: "figure.walk.circle.fill")
                     }.popover(isPresented: $showLFO) {
                         VStack {
-                            LFOWidget(oscillator: $viewModel.speedLFO, name: "Speed", offset: -1.5...1.5)
-                            LFOWidget(oscillator: $viewModel.angleLFO, name: "Angle", offset: 0...1)
-                            LFOWidget(oscillator: $viewModel.falloffLFO, name: "Falloff", offset: 0...1)
-
+                            LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
+                            
                         }
-                        .background(Color(white: 0.9))
                     }.padding()
                     
+                    Button {
+                        showSpeed = true
+                    } label: {
+                        Label("Speed", systemImage: "figure.walk.circle.fill")
+                    }.popover(isPresented: $showSpeed) {
+                        VStack {
+                            LFOWidget(oscillator: $viewModel.redConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                                .tint(Color.red)
+                            LFOWidget(oscillator: $viewModel.greenConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                                .tint(Color.green)
+                            LFOWidget(oscillator: $viewModel.blueConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                                .tint(Color.blue)
+                        }
+                    }.padding()
                     
+                    Button {
+                        showTurn = true
+                    } label: {
+                        Label("Turn Angle", systemImage: "figure.walk.circle.fill")
+                    }.popover(isPresented: $showTurn) {
+                        VStack {
+                            LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...1)
+                                .tint(Color.red)
+                            LFOWidget(oscillator: $viewModel.greenConfig.turnLFO, name: "Turn", offset: 0...1)
+                                .tint(Color.green)
+                            LFOWidget(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...1)
+                                .tint(Color.blue)
+                        }
+                    }.padding()
+                    
+//                    Button {
+//                        showAngle = true
+//                    } label: {
+//                        Label("Sensor Angle", systemImage: "figure.walk.circle.fill")
+//                    }.popover(isPresented: $showAngle) {
+//                        VStack {
+//                            LFOWidget(oscillator: $viewModel.redConfig.angleLFO, name: "Angle", offset: 0...1)
+//                                .tint(Color.red)
+//                            LFOWidget(oscillator: $viewModel.greenConfig.angleLFO, name: "Angle", offset: 0...1)
+//                                .tint(Color.green)
+//                            LFOWidget(oscillator: $viewModel.blueConfig.angleLFO, name: "Angle", offset: 0...1)
+//                                .tint(Color.blue)
+//                        }
+//                    }.padding()
                 }
-                .tint(.red)
 
             }.padding()
         }

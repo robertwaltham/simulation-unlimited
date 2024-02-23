@@ -59,6 +59,7 @@ struct SlimeView: UIViewRepresentable {
         private var pathTextures: [MTLTexture] = []
         private var states: [MTLComputePipelineState] = []
         private var particleBuffer: MTLBuffer!
+        private var configBuffer: MTLBuffer!
         private var viewPortSize = vector_uint2(x: 0, y: 0)
         
         private var particles = [SlimeParticle]()
@@ -134,21 +135,11 @@ extension SlimeView.Coordinator {
     
     func draw() {
         
-        //        let time = Date().timeIntervalSince1970
-        //
-        //        if viewModel.mutateDistance {
-        //            viewModel.sensorDistance = wave(time: time, phase: viewModel.mutateDistancePhase, phaseOffset: 0, magitude: 5, magnitudeOffset: 2)
-        //        }
-        //
-        //        if viewModel.mutateAngle {
-        //            viewModel.turnAngle = wave(time: time, phase: viewModel.mutateAnglePhase, phaseOffset: 0, magitude: 0.35, magnitudeOffset: 1.2)
-        //        }
-        //
-        //        if viewModel.mutateSpeed {
-        //            viewModel.speedMultiplier = wave(time: time, phase: viewModel.mutateSpeedPhase, phaseOffset: 0, magitude: 1.75, magnitudeOffset: 1.5)
-        //        }
-        
         initializeParticlesIfNeeded()
+        initializeConfigBufferIfNeeded()
+        
+        configBuffer.contents().copyMemory(from: [viewModel.redConfig.config, viewModel.greenConfig.config, viewModel.blueConfig.config], byteCount: 3 * MemoryLayout<SlimeConfig>.size)
+
         
         if viewModel.resetOnNext {
             resetParticles()
@@ -178,7 +169,7 @@ extension SlimeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
-            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<SlimeConfig>.stride, index: Int(InputIndexConfig.rawValue))
+            commandEncoder.setBuffer(configBuffer, offset: 0, index: Int(InputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
             
             if let particleBuffer = particleBuffer {
@@ -258,6 +249,14 @@ extension SlimeView.Coordinator {
         }
     }
     
+    private func initializeConfigBufferIfNeeded() {
+        guard configBuffer == nil else {
+            return
+        }
+            
+        configBuffer = metalDevice.makeBuffer(length: 3 * MemoryLayout<SlimeConfig>.size)
+    }
+    
     
     private func initializeParticlesIfNeeded() {
         
@@ -299,7 +298,7 @@ extension SlimeView.Coordinator {
         
         var result = [SlimeParticle]()
         
-        let speedRange = viewModel.minSpeed...viewModel.maxSpeed
+        let speedRange = SlimeConfig.minSpeed...SlimeConfig.maxSpeed
         let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
         let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
         let lineSpace: Float = 100

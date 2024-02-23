@@ -34,10 +34,9 @@ enum StartType: Int, CaseIterable, Identifiable {
 
 
 @Observable class SlimeViewModel {
-    var config = SlimeConfig.defaultConfig()
-    
-    var minSpeed: Float = 0.75
-    var maxSpeed: Float = 2.0
+    var redConfig = ColorConfig(color: .red)
+    var greenConfig = ColorConfig(color: .green)
+    var blueConfig = ColorConfig(color: .blue)
     
     var particleCount = 8192
     
@@ -49,26 +48,44 @@ enum StartType: Int, CaseIterable, Identifiable {
     var resetOnNext = false
     
     var time = 0.0
+    var cycleLength = 5.0
+    static let maxCycleLength = 10.0
+    static let minCycleLength = 1.0
 
     var startType: StartType = .circle
-    
-    let maxSensorAngle = Float.pi / 2
-    let maxDistance: Float = 15
-    let maxTurnAngle = Float.pi / 4
-    
-    let maxCutoff: Float = 1
-    let maxFalloff: Float = 0.1
-    let maxRadius: Float = 4
-    let maxMultiplier: Float = 6
-    
-    var speedLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.5)
-    var angleLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.25)
-    var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.3)
 
     func update() {
-        config.speedMultiplier = Float(speedLFO.value(at: time)) * maxSpeed
-        config.sensorAngle = Float(angleLFO.value(at: time)) * maxSensorAngle
-        config.falloff = Float(falloffLFO.value(at: time)) * maxFalloff
+        redConfig.updateConfig(time: time)
+        greenConfig.updateConfig(time: time)
+        blueConfig.updateConfig(time: time)
+        if time > cycleLength {
+            resetOnNext = true
+            time = 0.0
+        }
+    }
+}
+
+enum SlimeColor {
+    case red
+    case green
+    case blue
+}
+
+struct ColorConfig {
+    let color: SlimeColor
+    
+    var config = SlimeConfig.defaultConfig()
+    
+    var speedLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.7)
+    var angleLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.25)
+    var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.2)
+    var turnLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.7)
+    
+    mutating func updateConfig(time: Double) {
+        config.speedMultiplier = Float(speedLFO.value(at: time)) * SlimeConfig.maxSpeed
+        config.sensorAngle = Float(angleLFO.value(at: time)) * SlimeConfig.maxSensorAngle
+        config.falloff = Float(falloffLFO.value(at: time)) * SlimeConfig.maxFalloff
+        config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxFalloff
     }
 }
 
@@ -81,6 +98,18 @@ struct SlimeConfig {
     var cutoff: Float = 0
     var falloff: Float = 0
     var speedMultiplier: Float = 0
+    
+    static let maxSensorAngle = Float.pi / 2
+    static let maxDistance: Float = 15
+    static let maxTurnAngle = Float.pi / 4
+    
+    static let maxCutoff: Float = 1
+    static let maxFalloff: Float = 0.1
+    static let maxRadius: Float = 4
+    static let maxMultiplier: Float = 6
+    
+    static let minSpeed: Float = 0.75
+    static let maxSpeed: Float = 2.0
 }
 
 extension SlimeConfig {
@@ -88,8 +117,8 @@ extension SlimeConfig {
         SlimeConfig(sensorAngle: Float.pi / 8,
                     sensorDistance: 10,
                     turnAngle: Float.pi / 16,
-                    drawRadius: 2,
-                    trailRadius: 2,
+                    drawRadius: 3,
+                    trailRadius: 3,
                     cutoff: 0.01,
                     falloff: 0.02,
                     speedMultiplier: 2)

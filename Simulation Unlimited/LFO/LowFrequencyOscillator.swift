@@ -30,9 +30,9 @@ struct LowFrequencyOscillator {
         case .none:
             return offset
         case .sine:
-            return offset + sin(t) * amplitude
+            return offset + sin(t * 4) * amplitude
         case .square:
-            return (sin(t) > 0 ? amplitude : -amplitude) + offset
+            return (sin(t * 4) > 0 ? amplitude : -amplitude) + offset
         case .sawtooth:
             let t = time * frequency + (phase / 4)
             return (2 * (t - floor(0.5 + t)) * amplitude) + offset

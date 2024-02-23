@@ -51,7 +51,7 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
                             device Particle *particles [[buffer(InputIndexParticles)]],
                             const device float *random [[buffer(InputIndexRandom)]],
                             const device int& particle_count [[ buffer(InputIndexParticleCount)]],
-                            const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                            const device ParticleConfig *configs [[ buffer(InputIndexConfig)]],
                             uint id [[ thread_position_in_grid ]],
                             uint tid [[ thread_index_in_threadgroup ]],
                             uint bid [[ threadgroup_position_in_grid ]],
@@ -64,6 +64,8 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     float2 velocity = particle.velocity;
     float2 acceleration = particle.acceleration;
     int species = (int)clamp(particle.species, 0.0, 3.0);
+    
+    ParticleConfig config = configs[species];
     
     uint width = output.get_width();
     uint height = output.get_height();
