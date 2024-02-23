@@ -19,7 +19,7 @@ struct SlimeLFOWorkshop: View {
     private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
         HStack {
             LFOPicker(oscillator, name: name)
-            LFOSlider(oscillator, offset: offset).frame(minWidth: 400)
+            LFOSlider(oscillator, offset: offset).frame(minWidth: 420)
             LFOGraph(oscillator.wrappedValue).frame(minWidth: 250, maxWidth: .infinity, maxHeight: 100)
         }
         .padding(5)

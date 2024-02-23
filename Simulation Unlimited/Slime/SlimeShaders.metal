@@ -73,6 +73,11 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     // position
     position += (velocity * config.speed_multiplier);
     
+    float isSpeedNegative = 1.0;
+    if (config.speed_multiplier < 0.0) {
+        isSpeedNegative = -1.0;
+    }
+    
     // bounds
     if (position.x < 0 || position.x > width) {
         velocity.x *= -1;
@@ -88,9 +93,9 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     float turn_angle = config.turn_angle;
     float sensor_distance = config.sensor_distance;
     
-    float2 center_direction = normalize(-velocity) * sensor_distance;
-    float2 left_direction = rotate_vector(center_direction, sensor_angle);
-    float2 right_direction = rotate_vector(center_direction, -sensor_angle);
+    float2 center_direction = normalize(-velocity * isSpeedNegative) * sensor_distance;
+    float2 left_direction = rotate_vector(center_direction, sensor_angle * isSpeedNegative);
+    float2 right_direction = rotate_vector(center_direction, -sensor_angle * isSpeedNegative);
     
     ushort2 center_coord = (ushort2)floor(position - center_direction);
     ushort2 left_coord = (ushort2)floor(position - left_direction);
@@ -102,15 +107,17 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     
     int channel = species;
     float tolerance = 0.1;
+    
+
     if (left_colour[channel] - center_colour[channel] > tolerance && left_colour[channel] - right_colour[channel] > tolerance) {
-        velocity = rotate_vector(velocity, turn_angle);
+        velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
     } else if (right_colour[channel] - center_colour[channel] > tolerance && right_colour[channel] - left_colour[channel] > tolerance) {
-        velocity = rotate_vector(velocity, -turn_angle);
+        velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
     } else if (abs(right_colour[channel] - left_colour[channel]) < tolerance) {
         if (random[index % 1024] < 0.5) {
-            velocity = rotate_vector(velocity, -turn_angle);
+            velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
         } else {
-            velocity = rotate_vector(velocity, turn_angle);
+            velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
         }
     }
     
