@@ -135,7 +135,7 @@ struct SlimeLFOWorkshop: View {
                         VStack {
                             HStack {
                                 Text("Starting Variance: \(viewModel.speedVariance, specifier: "%.1f")")
-                                Slider(value: $viewModel.speedVariance, in: 0...5)
+                                Slider(value: $viewModel.speedVariance, in: 0...3)
                             }.padding()
                             Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
@@ -153,11 +153,11 @@ struct SlimeLFOWorkshop: View {
                         Label("Turn Angle", systemImage: "angle")
                     }.popover(isPresented: $showTurn) {
                         VStack {
-                            LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...1)
+                            LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...2)
                                 .tint(Color.red)
-                            LFOWidget(oscillator: $viewModel.greenConfig.turnLFO, name: "Turn", offset: 0...1)
+                            LFOWidget(oscillator: $viewModel.greenConfig.turnLFO, name: "Turn", offset: 0...2)
                                 .tint(Color.green)
-                            LFOWidget(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...1)
+                            LFOWidget(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...2)
                                 .tint(Color.blue)
                         }
                     }.padding()

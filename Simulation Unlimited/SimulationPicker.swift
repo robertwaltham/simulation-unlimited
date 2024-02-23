@@ -27,7 +27,9 @@ struct SimulationPicker: View {
                 }, text: "Slime", icon: "drop.circle")
                 
                 simulationTile(content: {
-                    ParticleLifeView(viewModel: ParticleLifeViewModel())
+                    ParticleLifeWorkshop()        
+                        .edgesIgnoringSafeArea(.all)
+                        .statusBar(hidden: true)
                 }, sim: {
                     ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, text: "Particle Life", icon: "sun.dust.circle")

@@ -49,7 +49,7 @@ enum StartType: Int, CaseIterable, Identifiable {
     
     var time = 0.0
     var cycleLength = 5.0
-    static let maxCycleLength = 10.0
+    static let maxCycleLength = 100.0
     static let minCycleLength = 1.0
     
     var speedVariance: Float = 1.3
@@ -82,13 +82,13 @@ struct ColorConfig {
     var speedLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.7)
     var angleLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.25)
     var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.2)
-    var turnLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.7)
+    var turnLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.3)
     
     mutating func updateConfig(time: Double) {
         config.speedMultiplier = Float(speedLFO.value(at: time)) * SlimeConfig.maxSpeed
         config.sensorAngle = Float(angleLFO.value(at: time)) * SlimeConfig.maxSensorAngle
         config.falloff = Float(falloffLFO.value(at: time)) * SlimeConfig.maxFalloff
-        config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxFalloff
+        config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxTurnAngle
     }
 }
 
