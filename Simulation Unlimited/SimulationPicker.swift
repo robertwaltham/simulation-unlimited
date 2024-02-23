@@ -13,19 +13,21 @@ struct SimulationPicker: View {
         NavigationStack {
             VStack {
                 simulationTile(content: {
-                    BoidsView().navigationTitle("Boids")
-                }, sim: {
                     BoidsView()
+                        .edgesIgnoringSafeArea(.all)
+                        .statusBar(hidden: true)
+                }, sim: {
+                    BoidsView()        
                 }, text: "Boids", icon: "bird.circle")
                 
                 simulationTile(content: {
-                    SlimeLFOWorkshop().navigationTitle("Slime")
+                    SlimeLFOWorkshop()
                 }, sim: {
                     SlimeView(viewModel: SlimeViewModel())
                 }, text: "Slime", icon: "drop.circle")
                 
                 simulationTile(content: {
-                    ParticleLifeView(viewModel: ParticleLifeViewModel()).navigationTitle("Particle Life")
+                    ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, sim: {
                     ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, text: "Particle Life", icon: "sun.dust.circle")

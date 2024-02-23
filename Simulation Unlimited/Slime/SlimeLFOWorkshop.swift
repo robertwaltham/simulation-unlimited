@@ -119,7 +119,7 @@ struct SlimeLFOWorkshop: View {
                     Button {
                         showLFO = true
                     } label: {
-                        Label("Falloff", systemImage: "figure.walk.circle.fill")
+                        Label("Falloff", systemImage: "smallcircle.filled.circle.fill")
                     }.popover(isPresented: $showLFO) {
                         VStack {
                             LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
@@ -133,6 +133,11 @@ struct SlimeLFOWorkshop: View {
                         Label("Speed", systemImage: "figure.walk.circle.fill")
                     }.popover(isPresented: $showSpeed) {
                         VStack {
+                            HStack {
+                                Text("Starting Variance: \(viewModel.speedVariance, specifier: "%.1f")")
+                                Slider(value: $viewModel.speedVariance, in: 0...5)
+                            }.padding()
+                            Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
                                 .tint(Color.red)
                             LFOWidget(oscillator: $viewModel.greenConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
@@ -145,7 +150,7 @@ struct SlimeLFOWorkshop: View {
                     Button {
                         showTurn = true
                     } label: {
-                        Label("Turn Angle", systemImage: "figure.walk.circle.fill")
+                        Label("Turn Angle", systemImage: "angle")
                     }.popover(isPresented: $showTurn) {
                         VStack {
                             LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...1)

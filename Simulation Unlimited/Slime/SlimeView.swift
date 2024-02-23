@@ -298,7 +298,7 @@ extension SlimeView.Coordinator {
         
         var result = [SlimeParticle]()
         
-        let speedRange = SlimeConfig.minSpeed...SlimeConfig.maxSpeed
+        let speedRange = SlimeViewModel.baseSpeed...(SlimeViewModel.baseSpeed + viewModel.speedVariance)
         let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
         let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
         let lineSpace: Float = 100

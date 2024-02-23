@@ -99,7 +99,9 @@ struct ParticleLifeWorkshop: View {
 
 
 
-        }
+        }        
+        .edgesIgnoringSafeArea(.all)
+//        .statusBar(hidden: true)
     }
     
     @ViewBuilder

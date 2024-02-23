@@ -51,6 +51,9 @@ enum StartType: Int, CaseIterable, Identifiable {
     var cycleLength = 5.0
     static let maxCycleLength = 10.0
     static let minCycleLength = 1.0
+    
+    var speedVariance: Float = 1.3
+    static let baseSpeed: Float = 0.7
 
     var startType: StartType = .circle
 
@@ -107,8 +110,6 @@ struct SlimeConfig {
     static let maxFalloff: Float = 0.1
     static let maxRadius: Float = 4
     static let maxMultiplier: Float = 6
-    
-    static let minSpeed: Float = 0.75
     static let maxSpeed: Float = 2.0
 }
 
