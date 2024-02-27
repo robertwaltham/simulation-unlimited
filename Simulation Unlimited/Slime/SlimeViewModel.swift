@@ -83,12 +83,14 @@ struct ColorConfig {
     var angleLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.25)
     var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.2)
     var turnLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.3)
-    
+    var biasLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.5)
+
     mutating func updateConfig(time: Double) {
         config.speedMultiplier = Float(speedLFO.value(at: time)) * SlimeConfig.maxSpeed
         config.sensorAngle = Float(angleLFO.value(at: time)) * SlimeConfig.maxSensorAngle
         config.falloff = Float(falloffLFO.value(at: time)) * SlimeConfig.maxFalloff
         config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxTurnAngle
+        config.randomBias = Float(biasLFO.value(at: time))
     }
 }
 
@@ -101,6 +103,7 @@ struct SlimeConfig {
     var cutoff: Float = 0
     var falloff: Float = 0
     var speedMultiplier: Float = 0
+    var randomBias: Float = 0
     
     static let maxSensorAngle = Float.pi / 2
     static let maxDistance: Float = 15
@@ -122,7 +125,8 @@ extension SlimeConfig {
                     trailRadius: 3,
                     cutoff: 0.01,
                     falloff: 0.02,
-                    speedMultiplier: 2)
+                    speedMultiplier: 2,
+                    randomBias: 0.5)
     }
 }
 

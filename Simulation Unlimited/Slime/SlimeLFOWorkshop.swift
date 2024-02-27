@@ -119,9 +119,17 @@ struct SlimeLFOWorkshop: View {
                     Button {
                         showLFO = true
                     } label: {
-                        Label("Falloff", systemImage: "smallcircle.filled.circle.fill")
+                        Label("Falloff/Bias", systemImage: "smallcircle.filled.circle.fill")
                     }.popover(isPresented: $showLFO) {
                         VStack {
+                            Divider()
+                            LFOWidget(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                .tint(Color.red)
+                            LFOWidget(oscillator: $viewModel.greenConfig.biasLFO, name: "Bias \(viewModel.greenConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                .tint(Color.green)
+                            LFOWidget(oscillator: $viewModel.blueConfig.biasLFO, name: "Bias \(viewModel.blueConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                .tint(Color.blue)
+                            Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
                             
                         }

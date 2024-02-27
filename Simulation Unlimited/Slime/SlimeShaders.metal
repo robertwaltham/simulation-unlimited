@@ -33,6 +33,7 @@ struct ParticleConfig {
     float cutoff;
     float falloff;
     float speed_multiplier;
+    float random_bias;
 };
 
 float2 rotate_vector(float2 vector, float angle) {
@@ -114,7 +115,7 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     } else if (right_colour[channel] - center_colour[channel] > tolerance && right_colour[channel] - left_colour[channel] > tolerance) {
         velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
     } else if (abs(right_colour[channel] - left_colour[channel]) < tolerance) {
-        if (random[index % 1024] < 0.5) {
+        if (random[index % 1024] < config.random_bias) {
             velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
         } else {
             velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
