@@ -165,11 +165,11 @@ struct ParticleLifeWorkshop: View {
             }
             Grid {
                 
-                ForEach(0...viewModel.config.flavourCount, id: \.self) { j in
+                ForEach(0...Int(viewModel.config.flavourCount), id: \.self) { j in
                     
                     if j == 0 {
                         GridRow {
-                            ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
+                            ForEach(0...Int(viewModel.config.flavourCount), id: \.self) { i in
                                 if i > 0 {
                                     rectangle(color: colors[i-1])
                                 } else {
@@ -179,7 +179,7 @@ struct ParticleLifeWorkshop: View {
                         }
                     } else {
                         GridRow {
-                            ForEach(0...viewModel.config.flavourCount, id: \.self) { i in
+                            ForEach(0...Int(viewModel.config.flavourCount), id: \.self) { i in
                                 if i == 0 {
                                     rectangle(color: colors[j-1])
                                 } else {

@@ -307,7 +307,7 @@ extension ParticleLifeView.Coordinator {
         
         for i in 0 ..< viewModel.particleCount {
             var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-            var species = Float(Int.random(in: 0..<viewModel.config.flavourCount))
+            var species = Float(Int.random(in: 0..<Int(viewModel.config.flavourCount)))
             let position: SIMD2<Float>
             
             switch viewModel.startType {

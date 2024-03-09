@@ -48,7 +48,7 @@ enum StartType: Int, CaseIterable, Identifiable {
     var resetOnNext = false
     
     var time = 0.0
-    var cycleLength = 20.0
+    var cycleLength = 100.0
     static let maxCycleLength = 100.0
     static let minCycleLength = 1.0
     
@@ -124,13 +124,13 @@ extension SlimeConfig {
         SlimeConfig(sensorAngle: Float.pi / 8,
                     sensorDistance: 10,
                     turnAngle: Float.pi / 16,
-                    drawRadius: 3,
-                    trailRadius: 3,
+                    drawRadius: 5,
+                    trailRadius: 4,
                     cutoff: 0.01,
                     falloff: 0.02,
                     speedMultiplier: 2,
                     randomBias: 0.5,
-                    blurSize: 5.0)
+                    blurSize: 1.0)
     }
 }
 

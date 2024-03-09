@@ -28,6 +28,7 @@ struct ParticleLifeConfig {
     float falloff;
     float speed_multiplier;
     float flavour_count;
+    float blur_radius;
 };
 
 struct RenderLifeColours {

@@ -66,7 +66,7 @@ import SwiftUI
     }
     
     func weight(x: Int, y: Int) -> Float {
-        let index = x * config.flavourCount + y
+        let index = x * Int(config.flavourCount) + y
         guard index < weights.count else {
             fatalError("out of bounds")
         }
@@ -75,7 +75,7 @@ import SwiftUI
     }
     
     func setWeight(x: Int, y: Int, value: Float) {
-        let index = x * config.flavourCount + y
+        let index = x * Int(config.flavourCount) + y
         guard index < weights.count else {
             fatalError("out of bounds")
         }
@@ -84,7 +84,7 @@ import SwiftUI
     }
     
     func resetWeights() {
-        weights = ParticleLifeViewModel.createDefaultWeights(flavourCount: config.flavourCount)
+        weights = ParticleLifeViewModel.createDefaultWeights(flavourCount: Int(config.flavourCount))
     }
     
     func randomizeWeights() {
@@ -108,7 +108,8 @@ struct ParticleLifeConfig {
     var cutoff: Float = 0
     var falloff: Float = 0
     var speedMultiplier: Float = 0
-    var flavourCount = 0
+    var flavourCount: Float = 0
+    var blurRadius: Float = 0
     
     static func defaultConfig() -> ParticleLifeConfig {
         ParticleLifeConfig(rMinDistance: 1,
@@ -119,6 +120,7 @@ struct ParticleLifeConfig {
                            cutoff: 0.01,
                            falloff: 0.15,
                            speedMultiplier: 2,
-                           flavourCount: 3)
+                           flavourCount: 3,
+                           blurRadius: 3)
     }
 }
