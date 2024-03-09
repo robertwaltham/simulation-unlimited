@@ -14,7 +14,7 @@ struct SlimeLFOWorkshop: View {
     @State var showSpeed = false
     @State var showAngle = false
     @State var showTurn = false
-
+    
     @ViewBuilder
     private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
         HStack {
@@ -63,7 +63,7 @@ struct SlimeLFOWorkshop: View {
                 Text("Offset: \(oscillator.wrappedValue.offset, specifier: "%.2f")")
                 Slider(value: oscillator.offset, in: offset)
             }
-
+            
         }
     }
     
@@ -84,15 +84,15 @@ struct SlimeLFOWorkshop: View {
             .stroke()
         }.clipped()
     }
-
+    
     
     var body: some View {
         ZStack {
             SlimeView(viewModel: viewModel)
-            .onReceive(timer, perform: { _ in
-                viewModel.time += 0.01
-                viewModel.update()
-            })
+                .onReceive(timer, perform: { _ in
+                    viewModel.time += 0.01
+                    viewModel.update()
+                })
             
             VStack {
                 Spacer()
@@ -110,10 +110,10 @@ struct SlimeLFOWorkshop: View {
                     }
                     
                     Spacer()
-
+                    
                     Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
                     Text("\(viewModel.cycleLength, specifier: "%.f")").foregroundStyle(Color.blue)
-
+                    
                     Spacer()
                     
                     Button {
@@ -132,6 +132,14 @@ struct SlimeLFOWorkshop: View {
                             Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
                             
+                            HStack {
+                                Text("Blur Radius")
+                                Picker(selection: $viewModel.redConfig.config.blurSize, label: Text("Blur")) {
+                                    ForEach(1...5, id: \.self) { sec in
+                                        Text("\(sec)").tag(Float(sec))
+                                    }
+                                }
+                            }.padding()
                         }
                     }.padding()
                     
@@ -170,26 +178,30 @@ struct SlimeLFOWorkshop: View {
                         }
                     }.padding()
                     
-//                    Button {
-//                        showAngle = true
-//                    } label: {
-//                        Label("Sensor Angle", systemImage: "figure.walk.circle.fill")
-//                    }.popover(isPresented: $showAngle) {
-//                        VStack {
-//                            LFOWidget(oscillator: $viewModel.redConfig.angleLFO, name: "Angle", offset: 0...1)
-//                                .tint(Color.red)
-//                            LFOWidget(oscillator: $viewModel.greenConfig.angleLFO, name: "Angle", offset: 0...1)
-//                                .tint(Color.green)
-//                            LFOWidget(oscillator: $viewModel.blueConfig.angleLFO, name: "Angle", offset: 0...1)
-//                                .tint(Color.blue)
-//                        }
-//                    }.padding()
+                    //                    Button {
+                    //                        showAngle = true
+                    //                    } label: {
+                    //                        Label("Sensor Angle", systemImage: "figure.walk.circle.fill")
+                    //                    }.popover(isPresented: $showAngle) {
+                    //                        VStack {
+                    //                            LFOWidget(oscillator: $viewModel.redConfig.angleLFO, name: "Angle", offset: 0...1)
+                    //                                .tint(Color.red)
+                    //                            LFOWidget(oscillator: $viewModel.greenConfig.angleLFO, name: "Angle", offset: 0...1)
+                    //                                .tint(Color.green)
+                    //                            LFOWidget(oscillator: $viewModel.blueConfig.angleLFO, name: "Angle", offset: 0...1)
+                    //                                .tint(Color.blue)
+                    //                        }
+                    //                    }.padding()
                 }
-
+                
             }.padding()
         }
         .edgesIgnoringSafeArea(.all)
         .statusBar(hidden: true)
+        .onReceive(timer, perform: { _ in
+            viewModel.time += 0.01
+            viewModel.update()
+        })
     }
 }
 

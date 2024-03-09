@@ -13,11 +13,9 @@ struct LowFrequencyOscillatorView: View {
     @State var time: Double = 0.0
     
     var body: some View {
-
         
         VStack (spacing: 40) {
 
-            
             HStack {
                 Text("\(time, specifier: "%.2f")")
                 Text("\(oscillator.value(at: time), specifier: "%.2f")")

@@ -48,12 +48,14 @@ enum StartType: Int, CaseIterable, Identifiable {
     var resetOnNext = false
     
     var time = 0.0
-    var cycleLength = 5.0
+    var cycleLength = 20.0
     static let maxCycleLength = 100.0
     static let minCycleLength = 1.0
     
     var speedVariance: Float = 1.3
     static let baseSpeed: Float = 0.7
+    
+//    var renderedImage: CGImage?
 
     var startType: StartType = .circle
 
@@ -90,7 +92,7 @@ struct ColorConfig {
         config.sensorAngle = Float(angleLFO.value(at: time)) * SlimeConfig.maxSensorAngle
         config.falloff = Float(falloffLFO.value(at: time)) * SlimeConfig.maxFalloff
         config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxTurnAngle
-        config.randomBias = Float(biasLFO.value(at: time))
+        config.randomBias = Float(biasLFO.value(at: time)) // 0 -> 1
     }
 }
 
@@ -104,6 +106,7 @@ struct SlimeConfig {
     var falloff: Float = 0
     var speedMultiplier: Float = 0
     var randomBias: Float = 0
+    var blurSize: Float = 0
     
     static let maxSensorAngle = Float.pi / 2
     static let maxDistance: Float = 15
@@ -126,7 +129,8 @@ extension SlimeConfig {
                     cutoff: 0.01,
                     falloff: 0.02,
                     speedMultiplier: 2,
-                    randomBias: 0.5)
+                    randomBias: 0.5,
+                    blurSize: 5.0)
     }
 }
 

@@ -34,6 +34,7 @@ struct ParticleConfig {
     float falloff;
     float speed_multiplier;
     float random_bias;
+    float blur_size;
 };
 
 float2 rotate_vector(float2 vector, float angle) {
@@ -225,7 +226,7 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
                     const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
                     uint2 gid [[ thread_position_in_grid ]]) {
     
-    const int blurSize = 5;
+    int blurSize = floor(config.blur_size);
     int range = floor(blurSize/2.0);
     
     half4 colors = half4(0);
