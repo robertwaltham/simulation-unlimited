@@ -34,6 +34,15 @@ struct SimulationPicker: View {
                     ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
+                simulationTile(content: {
+                    HexagonWorkshop()
+                        .edgesIgnoringSafeArea(.all)
+                        .statusBar(hidden: true)
+                }, sim: {
+                    HexagonView(viewModel: HexagonViewModel())
+                }, text: "Hexagons", icon: "hexagon")
+                
+                
             }.navigationTitle("Simulations")
         }
     }

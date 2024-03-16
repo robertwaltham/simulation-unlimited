@@ -9,8 +9,6 @@ import Foundation
 import MetalKit
 import SwiftUI
 import simd
-import CoreImage
-import CoreImage.CIFilterBuiltins
 
 struct SlimeView: UIViewRepresentable {
     
@@ -39,15 +37,6 @@ struct SlimeView: UIViewRepresentable {
         mtkView.isMultipleTouchEnabled = true
         context.coordinator.view = mtkView
         context.coordinator.viewModel = viewModel
-        
-//        private func makeImage() {
-//            let imageGenerator = CIFilter.textImageGenerator()
-//            imageGenerator.text = "hello world"
-//            imageGenerator.fontSize = 40
-//            let textImage = imageGenerator.outputImage!
-//            
-//        print("\(textImage.)")
-//        }
         
         return mtkView
     }

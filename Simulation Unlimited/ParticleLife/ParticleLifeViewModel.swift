@@ -88,7 +88,7 @@ import SwiftUI
     }
     
     func randomizeWeights() {
-        let values: [Float] = stride(from: -1.0, to: 1.5, by: 0.5).compactMap {$0}
+        let values: [Float] = stride(from: -1.0, to: 1.5, by: 0.1).compactMap {$0}
         weights = stride(from: 0, to: config.flavourCount * config.flavourCount, by: 1).compactMap { _ in values.randomElement()! }
     }
     

@@ -55,8 +55,6 @@ enum StartType: Int, CaseIterable, Identifiable {
     var speedVariance: Float = 1.3
     static let baseSpeed: Float = 0.7
     
-//    var renderedImage: CGImage?
-
     var startType: StartType = .circle
 
     func update() {

@@ -17,6 +17,10 @@
 		D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D197F0792AC7ABBB00324D6D /* BoidShaders.metal */; };
 		D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */; };
 		D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F0802ACDF71500324D6D /* SlimeViewModel.swift */; };
+		D1CDE3302BA656B70053D3A5 /* HexagonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1CDE32F2BA656B70053D3A5 /* HexagonView.swift */; };
+		D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D1CDE3312BA658390053D3A5 /* HexagonShaders.metal */; };
+		D1CDE3342BA6612D0053D3A5 /* HexagonWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1CDE3332BA6612D0053D3A5 /* HexagonWorkshop.swift */; };
+		D1CDE3362BA6619B0053D3A5 /* HexagonViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1CDE3352BA6619B0053D3A5 /* HexagonViewModel.swift */; };
 		D1D0C16A2B8555F800EADC5D /* LowFrequencyOscillator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D0C1692B8555F800EADC5D /* LowFrequencyOscillator.swift */; };
 		D1D0C16C2B85579300EADC5D /* LowFrequencyOscillatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D0C16B2B85579300EADC5D /* LowFrequencyOscillatorView.swift */; };
 		D1D0C16E2B85639F00EADC5D /* SlimeLFOWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D0C16D2B85639F00EADC5D /* SlimeLFOWorkshop.swift */; };
@@ -39,6 +43,10 @@
 		D197F0792AC7ABBB00324D6D /* BoidShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = BoidShaders.metal; sourceTree = "<group>"; };
 		D197F07D2AC8ABF400324D6D /* SlimeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeWorkshop.swift; sourceTree = "<group>"; };
 		D197F0802ACDF71500324D6D /* SlimeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeViewModel.swift; sourceTree = "<group>"; };
+		D1CDE32F2BA656B70053D3A5 /* HexagonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexagonView.swift; sourceTree = "<group>"; };
+		D1CDE3312BA658390053D3A5 /* HexagonShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = HexagonShaders.metal; sourceTree = "<group>"; };
+		D1CDE3332BA6612D0053D3A5 /* HexagonWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexagonWorkshop.swift; sourceTree = "<group>"; };
+		D1CDE3352BA6619B0053D3A5 /* HexagonViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexagonViewModel.swift; sourceTree = "<group>"; };
 		D1D0C1692B8555F800EADC5D /* LowFrequencyOscillator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LowFrequencyOscillator.swift; sourceTree = "<group>"; };
 		D1D0C16B2B85579300EADC5D /* LowFrequencyOscillatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LowFrequencyOscillatorView.swift; sourceTree = "<group>"; };
 		D1D0C16D2B85639F00EADC5D /* SlimeLFOWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlimeLFOWorkshop.swift; sourceTree = "<group>"; };
@@ -84,6 +92,7 @@
 				D197F0822ACE067000324D6D /* Boids */,
 				D197F07F2ACDF70000324D6D /* Slime */,
 				D1D6E9292AD78879007F03F0 /* ParticleLife */,
+				D1CDE32E2BA6569D0053D3A5 /* Bestagons */,
 				D1D0C1682B8555DD00EADC5D /* LFO */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
@@ -118,6 +127,17 @@
 				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
 			);
 			path = Boids;
+			sourceTree = "<group>";
+		};
+		D1CDE32E2BA6569D0053D3A5 /* Bestagons */ = {
+			isa = PBXGroup;
+			children = (
+				D1CDE32F2BA656B70053D3A5 /* HexagonView.swift */,
+				D1CDE3312BA658390053D3A5 /* HexagonShaders.metal */,
+				D1CDE3332BA6612D0053D3A5 /* HexagonWorkshop.swift */,
+				D1CDE3352BA6619B0053D3A5 /* HexagonViewModel.swift */,
+			);
+			path = Bestagons;
 			sourceTree = "<group>";
 		};
 		D1D0C1682B8555DD00EADC5D /* LFO */ = {
@@ -211,6 +231,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1D0C16E2B85639F00EADC5D /* SlimeLFOWorkshop.swift in Sources */,
+				D1CDE3302BA656B70053D3A5 /* HexagonView.swift in Sources */,
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
 				D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */,
 				D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */,
@@ -218,12 +239,15 @@
 				D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */,
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
+				D1CDE3342BA6612D0053D3A5 /* HexagonWorkshop.swift in Sources */,
 				D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
+				D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,
 				D1D0C16C2B85579300EADC5D /* LowFrequencyOscillatorView.swift in Sources */,
+				D1CDE3362BA6619B0053D3A5 /* HexagonViewModel.swift in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

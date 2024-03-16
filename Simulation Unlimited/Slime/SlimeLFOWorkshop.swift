@@ -198,10 +198,6 @@ struct SlimeLFOWorkshop: View {
         }
         .edgesIgnoringSafeArea(.all)
         .statusBar(hidden: true)
-        .onReceive(timer, perform: { _ in
-            viewModel.time += 0.01
-            viewModel.update()
-        })
     }
 }
 

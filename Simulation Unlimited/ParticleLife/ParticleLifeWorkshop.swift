@@ -190,7 +190,7 @@ struct ParticleLifeWorkshop: View {
                                         viewModel.setWeight(x: j-1, y: i-1, value: newValue)
                                     }
                                     
-                                    let stride: [Float] = stride(from: -1.0, to: 1.5, by: 0.5).compactMap { $0 }
+                                    let stride: [Float] = stride(from: -1.0, to: 1.5, by: 0.1).compactMap { $0 }
                                     Picker("Weight", selection: binding) {
                                         ForEach(stride, id: \.self) { i in
                                             Text("\(i, specifier: "%.1f")")
