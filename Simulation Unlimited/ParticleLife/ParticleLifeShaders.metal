@@ -29,6 +29,7 @@ struct ParticleLifeConfig {
     float speed_multiplier;
     float flavour_count;
     float blur_radius;
+    float padding; //TODO: Fix boxBlur function sharing
 };
 
 struct RenderLifeColours {

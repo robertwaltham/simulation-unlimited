@@ -30,7 +30,7 @@ struct SlimeLFOWorkshop: View {
     @ViewBuilder
     private func LFOPicker(_ oscillator: Binding<LowFrequencyOscillator>, name: String) -> some View {
         VStack {
-            Text(name)
+            Text(name).frame(minWidth: 100)
             Picker("Waveform", selection: oscillator.type) {
                 Text("None").tag(OscillatorType.none)
                 Text("Sine").tag(OscillatorType.sine)
@@ -134,13 +134,13 @@ struct SlimeLFOWorkshop: View {
                             }.padding()
                             Text("Hexagons")
 
-                            HStack {
-                                Slider(value: $viewModel.redConfig.config.hexagonWeight)
-                                    .tint(.red)
-                                Slider(value: $viewModel.greenConfig.config.hexagonWeight)
-                                    .tint(.green)
-                                Slider(value: $viewModel.blueConfig.config.hexagonWeight)
-                                    .tint(.blue)
+                            VStack {
+                                LFOWidget(oscillator: $viewModel.redConfig.hexagonLFO, name: "Weight \(viewModel.redConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                    .tint(Color.red)
+                                LFOWidget(oscillator: $viewModel.greenConfig.hexagonLFO, name: "Weight \(viewModel.greenConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                    .tint(Color.green)
+                                LFOWidget(oscillator: $viewModel.blueConfig.hexagonLFO, name: "Weight \(viewModel.blueConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                    .tint(Color.blue)
                             }.padding()
                             
                             HStack {

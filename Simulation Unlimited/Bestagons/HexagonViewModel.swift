@@ -16,7 +16,7 @@ class HexagonViewModel {
 }
 
 struct HexagonConfig {
-    
+    // TODO: fix these for different resolutions
     var offsetX: Float = 1.1
     var offsetY: Float = 1.0
     var shiftX: Float = 136.5

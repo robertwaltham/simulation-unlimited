@@ -86,6 +86,7 @@ struct ColorConfig {
     var falloffLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.2)
     var turnLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.3)
     var biasLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.5)
+    var hexagonLFO = LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: 0.0)
 
     mutating func updateConfig(time: Double) {
         config.speedMultiplier = Float(speedLFO.value(at: time)) * SlimeConfig.maxSpeed
@@ -93,6 +94,7 @@ struct ColorConfig {
         config.falloff = Float(falloffLFO.value(at: time)) * SlimeConfig.maxFalloff
         config.turnAngle = Float(turnLFO.value(at: time)) * SlimeConfig.maxTurnAngle
         config.randomBias = Float(biasLFO.value(at: time)) // 0 -> 1
+        config.hexagonWeight = max(min(Float(hexagonLFO.value(at: time)), 1.0), 0.0)
     }
 }
 

@@ -110,6 +110,7 @@ struct ParticleLifeConfig {
     var speedMultiplier: Float = 0
     var flavourCount: Float = 0
     var blurRadius: Float = 0
+    var padding: Float = 0 //TODO: fix boxBlur
     
     static func defaultConfig() -> ParticleLifeConfig {
         ParticleLifeConfig(rMinDistance: 1,
