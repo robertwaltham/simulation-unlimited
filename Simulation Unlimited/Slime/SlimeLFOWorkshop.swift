@@ -121,9 +121,10 @@ struct SlimeLFOWorkshop: View {
                             HStack {
                                 Text("Blur Radius")
                                 Picker(selection: $viewModel.redConfig.config.blurSize, label: Text("Blur")) {
-                                    ForEach(1...5, id: \.self) { sec in
-                                        Text("\(sec)").tag(Float(sec))
-                                    }
+                                    Text("\(1)").tag(Float(1))
+                                    Text("\(2)").tag(Float(3))
+                                    Text("\(3)").tag(Float(5))
+                                    Text("\(4)").tag(Float(7))
                                 }
                             }.padding()
                             

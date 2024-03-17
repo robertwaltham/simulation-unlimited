@@ -39,7 +39,7 @@ struct SimulationPicker: View {
                         .edgesIgnoringSafeArea(.all)
                         .statusBar(hidden: true)
                 }, sim: {
-                    HexagonView(viewModel: HexagonViewModel())
+                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
                 }, text: "Hexagons", icon: "hexagon")
                 
                 

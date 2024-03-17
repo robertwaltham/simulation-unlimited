@@ -11,7 +11,11 @@ import Observation
 @Observable
 class HexagonViewModel {
     
-    var config = HexagonConfig()
+    var config: HexagonConfig
+    
+    init(config: HexagonConfig = HexagonConfig()) {
+        self.config = config
+    }
     
 }
 

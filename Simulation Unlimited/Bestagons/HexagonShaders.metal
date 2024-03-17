@@ -73,7 +73,7 @@ kernel void hexagonPass(texture2d<half, access::write> output [[texture(InputTex
         p1.x = fmod(p1.x, config.mod_x) - config.offset_x;
         p1.y = fmod(p1.y, config.mod_y) - config.offset_y;
         
-        float2 q = ((fragCoord+float2(config.shift_x, config.shift_y + colorOffset)))/denom;
+        float2 q = ((fragCoord+float2(config.shift_x, config.shift_y + colorOffset)))/denom; //TODO: calculate shift_x/y from size
         float2 p2 = q * config.multiplier;
         p2.x = fmod(p2.x, config.mod_x) - config.offset_x;
         p2.y = fmod(p2.y, config.mod_y) - config.offset_y;
