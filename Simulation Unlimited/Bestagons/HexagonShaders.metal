@@ -63,15 +63,17 @@ kernel void hexagonPass(texture2d<half, access::write> output [[texture(InputTex
     
     half4 col = half4(0.0, 0.0, 0.0, 1.0);
     
+    float denom = iResolution.x > iResolution.y ? iResolution.x : iResolution.y;
+    
     for(int i = 0; i < 3; i++) {
         float colorOffset = i * config.color_offset;
         
-        float2 p = (fragCoord +float2(0.0, colorOffset))/iResolution.y;
+        float2 p = (fragCoord +float2(0.0, colorOffset))/denom;
         float2 p1 = p * config.multiplier;
         p1.x = fmod(p1.x, config.mod_x) - config.offset_x;
         p1.y = fmod(p1.y, config.mod_y) - config.offset_y;
         
-        float2 q = ((fragCoord+float2(config.shift_x, config.shift_y + colorOffset)))/iResolution.y;
+        float2 q = ((fragCoord+float2(config.shift_x, config.shift_y + colorOffset)))/denom;
         float2 p2 = q * config.multiplier;
         p2.x = fmod(p2.x, config.mod_x) - config.offset_x;
         p2.y = fmod(p2.y, config.mod_y) - config.offset_y;

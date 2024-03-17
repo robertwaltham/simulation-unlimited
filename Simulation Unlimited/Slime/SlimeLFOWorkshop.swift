@@ -14,6 +14,7 @@ struct SlimeLFOWorkshop: View {
     @State var showSpeed = false
     @State var showAngle = false
     @State var showTurn = false
+    @State var showSettings = false
     
     @ViewBuilder
     private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
@@ -112,6 +113,44 @@ struct SlimeLFOWorkshop: View {
                     Spacer()
                     
                     Button {
+                        showSettings = true
+                    } label: {
+                        Label("Settings", systemImage: "hexagon")
+                    }.popover(isPresented: $showSettings) {
+                        VStack {
+                            HStack {
+                                Text("Blur Radius")
+                                Picker(selection: $viewModel.redConfig.config.blurSize, label: Text("Blur")) {
+                                    ForEach(1...5, id: \.self) { sec in
+                                        Text("\(sec)").tag(Float(sec))
+                                    }
+                                }
+                            }.padding()
+                            
+                            HStack {
+                                Text("Cycle Length: \(viewModel.time, specifier: "%.f")/\(viewModel.cycleLength, specifier: "%.f") ").foregroundStyle(Color.blue)
+                                
+                                Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
+                            }.padding()
+                            Text("Hexagons")
+
+                            HStack {
+                                Slider(value: $viewModel.redConfig.config.hexagonWeight)
+                                    .tint(.red)
+                                Slider(value: $viewModel.greenConfig.config.hexagonWeight)
+                                    .tint(.green)
+                                Slider(value: $viewModel.blueConfig.config.hexagonWeight)
+                                    .tint(.blue)
+                            }.padding()
+                            
+                            HStack {
+                                Text("Color Offset")
+                                Slider(value: $viewModel.hexagonConfig.colorOffset, in: 0.0...200.0)
+                            }.padding()
+                        }.frame(minWidth: 500)
+                    }
+                    
+                    Button {
                         showLFO = true
                     } label: {
                         Label("Falloff/Bias", systemImage: "smallcircle.filled.circle.fill")
@@ -126,20 +165,6 @@ struct SlimeLFOWorkshop: View {
                                 .tint(Color.blue)
                             Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
-                            
-                            HStack {
-                                Text("Blur Radius")
-                                Picker(selection: $viewModel.redConfig.config.blurSize, label: Text("Blur")) {
-                                    ForEach(1...5, id: \.self) { sec in
-                                        Text("\(sec)").tag(Float(sec))
-                                    }
-                                }
-                            }.padding()
-                            
-                            HStack {
-                                Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
-                                Text("Cycle Length: \(viewModel.time, specifier: "%.f")/\(viewModel.cycleLength, specifier: "%.f") ").foregroundStyle(Color.blue)
-                            }.padding()
                         }
                     }.padding()
                     

@@ -35,6 +35,7 @@ struct ParticleConfig {
     float speed_multiplier;
     float random_bias;
     float blur_size;
+    float hexagon_weight;
 };
 
 float2 rotate_vector(float2 vector, float angle) {
@@ -104,24 +105,47 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     ushort2 left_coord = (ushort2)floor(position - left_direction);
     ushort2 right_coord = (ushort2)floor(position - right_direction);
     
+    int channel = species;
+    float tolerance = 0.1;
+    
     half4 center_colour = hexagon.read(center_coord);
     half4 left_colour = hexagon.read(left_coord);
     half4 right_colour = hexagon.read(right_coord);
     
-    int channel = species;
-    float tolerance = 0.1;
-
+    float hexagon_turn_angle = 0.0;
+    
     if (left_colour[channel] - center_colour[channel] > tolerance && left_colour[channel] - right_colour[channel] > tolerance) {
-        velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
+        hexagon_turn_angle = turn_angle * isSpeedNegative;
     } else if (right_colour[channel] - center_colour[channel] > tolerance && right_colour[channel] - left_colour[channel] > tolerance) {
-        velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
+        hexagon_turn_angle =  -turn_angle * isSpeedNegative;
     } else if (abs(right_colour[channel] - left_colour[channel]) < tolerance) {
         if (random[index % 1024] < config.random_bias) {
-            velocity = rotate_vector(velocity, -turn_angle * isSpeedNegative);
+            hexagon_turn_angle = -turn_angle * isSpeedNegative;
         } else {
-            velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
+            hexagon_turn_angle = turn_angle * isSpeedNegative;
         }
     }
+    
+    center_colour = output.read(center_coord);
+    left_colour = output.read(left_coord);
+    right_colour = output.read(right_coord);
+    
+    float path_turn_angle = 0.0;
+    
+    if (left_colour[channel] - center_colour[channel] > tolerance && left_colour[channel] - right_colour[channel] > tolerance) {
+        path_turn_angle = turn_angle * isSpeedNegative;
+    } else if (right_colour[channel] - center_colour[channel] > tolerance && right_colour[channel] - left_colour[channel] > tolerance) {
+        path_turn_angle =  -turn_angle * isSpeedNegative;
+    } else if (abs(right_colour[channel] - left_colour[channel]) < tolerance) {
+        if (random[index % 1024] < config.random_bias) {
+            path_turn_angle = -turn_angle * isSpeedNegative;
+        } else {
+            path_turn_angle = turn_angle * isSpeedNegative;
+        }
+    }
+    
+    float calculated_turn_angle = (hexagon_turn_angle * config.hexagon_weight) + (path_turn_angle * (1.0 - config.hexagon_weight));
+    velocity = rotate_vector(velocity, calculated_turn_angle);
     
     // update particle
     particle.velocity = velocity;

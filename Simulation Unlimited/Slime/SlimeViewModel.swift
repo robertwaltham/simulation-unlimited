@@ -107,6 +107,7 @@ struct SlimeConfig {
     var speedMultiplier: Float = 0
     var randomBias: Float = 0
     var blurSize: Float = 0
+    var hexagonWeight: Float = 0
     
     static let maxSensorAngle = Float.pi / 2
     static let maxDistance: Float = 15
