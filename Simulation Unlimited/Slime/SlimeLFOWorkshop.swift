@@ -111,11 +111,6 @@ struct SlimeLFOWorkshop: View {
                     
                     Spacer()
                     
-                    Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
-                    Text("\(viewModel.cycleLength, specifier: "%.f")").foregroundStyle(Color.blue)
-                    
-                    Spacer()
-                    
                     Button {
                         showLFO = true
                     } label: {
@@ -139,6 +134,11 @@ struct SlimeLFOWorkshop: View {
                                         Text("\(sec)").tag(Float(sec))
                                     }
                                 }
+                            }.padding()
+                            
+                            HStack {
+                                Slider(value: $viewModel.cycleLength, in: SlimeViewModel.minCycleLength...SlimeViewModel.maxCycleLength)
+                                Text("Cycle Length: \(viewModel.time, specifier: "%.f")/\(viewModel.cycleLength, specifier: "%.f") ").foregroundStyle(Color.blue)
                             }.padding()
                         }
                     }.padding()

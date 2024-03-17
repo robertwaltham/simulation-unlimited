@@ -45,39 +45,51 @@ float3 sdgHexagon(float2 p, float r) {
 struct HexagonConfig {
     float offset_x;
     float offset_y;
-    float scale_x;
-    float scale_y;
+    float shift_x;
+    float shift_y;
     float size;
+    float mod_x;
+    float mod_y;
+    float multiplier;
+    float color_offset;
 };
 
 
-kernel void hexagonPass(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+kernel void hexagonPass(texture2d<half, access::write> output [[texture(InputTextureIndexPathHexagon)]],
                            const device HexagonConfig& config [[ buffer(7)]],
                            uint2 id [[thread_position_in_grid]]) {
     float2 fragCoord = float2(id);
     float2 iResolution = float2(output.get_width(), output.get_height());
     
-    float2 p = (2.0*fragCoord-iResolution.xy)/iResolution.y;
-    float2 p1 = p * 4.0;
-    p1.x = fmod(p1.x, 3.5) - config.offset_x;
-    p1.y = fmod(p1.y, 2.0) - config.offset_y;
+    half4 col = half4(0.0, 0.0, 0.0, 1.0);
     
-    float2 q = (2.0*(fragCoord+float2(config.scale_x, config.scale_y))-iResolution.xy)/iResolution.y;
-    float2 p2 = q * 4.0;
-    p2.x = fmod(p2.x, 3.5) - config.offset_x;
-    p2.y = fmod(p2.y, 2.0) - config.offset_y;
+    for(int i = 0; i < 3; i++) {
+        float colorOffset = i * config.color_offset;
+        
+        float2 p = (fragCoord +float2(0.0, colorOffset))/iResolution.y;
+        float2 p1 = p * config.multiplier;
+        p1.x = fmod(p1.x, config.mod_x) - config.offset_x;
+        p1.y = fmod(p1.y, config.mod_y) - config.offset_y;
+        
+        float2 q = ((fragCoord+float2(config.shift_x, config.shift_y + colorOffset)))/iResolution.y;
+        float2 p2 = q * config.multiplier;
+        p2.x = fmod(p2.x, config.mod_x) - config.offset_x;
+        p2.y = fmod(p2.y, config.mod_y) - config.offset_y;
 
-    //size
-    float si = config.size;
+        //size
+        float si = config.size;
 
-    // sdf(p) and gradient(sdf(p))
-    float3 dg1 = sdgHexagon(p1,si);
-    float3 dg2 = sdgHexagon(p2,si);
-    
-    float d = min(dg1.x, dg2.x);
-    
-    // coloring
-    half4 col = (d>0.0) ? half4(0.9,0.6,0.3,1.0) : half4(0.4,0.7,0.85,1.0);
+        // sdf(p) and gradient(sdf(p))
+        float3 dg1 = sdgHexagon(p1,si);
+        float3 dg2 = sdgHexagon(p2,si);
+        
+        float d = min(dg1.x, dg2.x);
+        
+        // coloring
+        if (d > 0.0) {
+            col[i] = 1.0;
+        }
+    }
     
     output.write(col, id);
 }

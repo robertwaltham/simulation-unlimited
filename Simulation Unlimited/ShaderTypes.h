@@ -30,7 +30,8 @@ typedef enum InputIndex {
 typedef enum InputTextureIndex {
     InputTextureIndexDrawable = 0,
     InputTextureIndexPathInput = 1,
-    InputTextureIndexPathOutput = 2
+    InputTextureIndexPathOutput = 2,
+    InputTextureIndexPathHexagon = 3
 } InputTextureIndex;
 
 // Boids

@@ -38,6 +38,8 @@ enum StartType: Int, CaseIterable, Identifiable {
     var greenConfig = ColorConfig(color: .green)
     var blueConfig = ColorConfig(color: .blue)
     
+    var hexagonConfig = HexagonConfig()
+
     var particleCount = 8192
     
     var margin: Float = 50

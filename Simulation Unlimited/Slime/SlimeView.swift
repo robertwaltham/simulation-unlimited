@@ -57,6 +57,7 @@ struct SlimeView: UIViewRepresentable {
         private var metalCommandQueue: MTLCommandQueue!
         
         private var pathTextures: [MTLTexture] = []
+        private var hexagonTexture: MTLTexture!
         private var states: [MTLComputePipelineState] = []
         private var particleBuffer: MTLBuffer!
         private var configBuffer: MTLBuffer!
@@ -150,6 +151,11 @@ extension SlimeView.Coordinator {
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
         }
+        
+        if hexagonTexture == nil {
+            hexagonTexture = makeTexture(device: metalDevice, drawableSize: viewPortSize)
+        }
+        
         let randomCount = 1024
         var random: [Float] = (0..<randomCount).map { _ in Float.random(in: 0...1) }
         
@@ -169,6 +175,7 @@ extension SlimeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
+            commandEncoder.setTexture(hexagonTexture, index: Int(InputTextureIndexPathHexagon.rawValue))
             commandEncoder.setBuffer(configBuffer, offset: 0, index: Int(InputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
             
@@ -191,6 +198,11 @@ extension SlimeView.Coordinator {
                 // Draw Background Colour
                 commandEncoder.setComputePipelineState(states[0])
                 commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
+                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                
+                // Draw Hexagons
+                commandEncoder.setComputePipelineState(states[5])
+                commandEncoder.setBytes(&viewModel.hexagonConfig, length: MemoryLayout<HexagonConfig>.stride, index: 7)
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 
                 if viewModel.drawPath {
@@ -241,7 +253,7 @@ extension SlimeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPassSlime", "secondPassSlime", "thirdPassSlime", "fourthPassSlime", "boxBlur"].map {
+        states = try ["firstPassSlime", "secondPassSlime", "thirdPassSlime", "fourthPassSlime", "boxBlur", "hexagonPass"].map {
             guard let function = library.makeFunction(name: $0) else {
                 fatalError("Can't make function \($0)")
             }

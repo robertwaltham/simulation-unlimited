@@ -17,9 +17,13 @@ class HexagonViewModel {
 
 struct HexagonConfig {
     
-    var offsetX: Float = 1.0
-    var offsetY: Float = 1.2
-    var scaleX: Float = 126.0
-    var scaleY: Float = 70.0
+    var offsetX: Float = 1.1
+    var offsetY: Float = 1.0
+    var shiftX: Float = 136.5
+    var shiftY: Float = 76.5
     var size: Float = 0.95
+    var modX: Float = 3.5
+    var modY: Float = 2.0
+    var multiplier: Float = 30.0
+    var colorOffset: Float = 0.0
 }

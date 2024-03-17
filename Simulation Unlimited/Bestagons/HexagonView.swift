@@ -111,7 +111,7 @@ extension HexagonView.Coordinator {
         if let drawable = view?.currentDrawable {
             // Draw Background Colour
             commandEncoder.setComputePipelineState(states[0])
-            commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
+            commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexPathHexagon.rawValue))
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<HexagonConfig>.stride, index: 7)
             commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
             

@@ -49,6 +49,7 @@ kernel void firstPassSlime(texture2d<half, access::write> output [[texture(Input
 }
 
 kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
+                            texture2d<half, access::read_write> hexagon [[texture(InputTextureIndexPathHexagon)]],
                             const device RenderColours& colours [[buffer(InputIndexColours)]],
                             device Particle *particles [[buffer(InputIndexParticles)]],
                             const device float *random [[buffer(InputIndexRandom)]],
@@ -103,13 +104,12 @@ kernel void secondPassSlime(texture2d<half, access::read_write> output [[texture
     ushort2 left_coord = (ushort2)floor(position - left_direction);
     ushort2 right_coord = (ushort2)floor(position - right_direction);
     
-    half4 center_colour = output.read(center_coord);
-    half4 left_colour = output.read(left_coord);
-    half4 right_colour = output.read(right_coord);
+    half4 center_colour = hexagon.read(center_coord);
+    half4 left_colour = hexagon.read(left_coord);
+    half4 right_colour = hexagon.read(right_coord);
     
     int channel = species;
     float tolerance = 0.1;
-    
 
     if (left_colour[channel] - center_colour[channel] > tolerance && left_colour[channel] - right_colour[channel] > tolerance) {
         velocity = rotate_vector(velocity, turn_angle * isSpeedNegative);
