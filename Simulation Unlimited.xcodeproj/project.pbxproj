@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D108C08F2BA9DEE500E7EF7F /* ApollonianGasket.swift in Sources */ = {isa = PBXBuildFile; fileRef = D108C08E2BA9DEE500E7EF7F /* ApollonianGasket.swift */; };
+		D108C0922BA9DF1500E7EF7F /* ComplexModule in Frameworks */ = {isa = PBXBuildFile; productRef = D108C0912BA9DF1500E7EF7F /* ComplexModule */; };
+		D108C0942BA9DF1500E7EF7F /* Numerics in Frameworks */ = {isa = PBXBuildFile; productRef = D108C0932BA9DF1500E7EF7F /* Numerics */; };
+		D108C0962BA9DF1500E7EF7F /* RealModule in Frameworks */ = {isa = PBXBuildFile; productRef = D108C0952BA9DF1500E7EF7F /* RealModule */; };
+		D108C0982BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */; };
 		D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */; };
 		D197F0662AC78E0800324D6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0652AC78E0800324D6D /* Assets.xcassets */; };
 		D197F0692AC78E0800324D6D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0682AC78E0800324D6D /* Preview Assets.xcassets */; };
@@ -28,9 +33,12 @@
 		D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */; };
 		D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */; };
 		D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */; };
+		D1EB89C62BA9E5140010E1BC /* TapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1EB89C52BA9E5140010E1BC /* TapView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D108C08E2BA9DEE500E7EF7F /* ApollonianGasket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApollonianGasket.swift; sourceTree = "<group>"; };
+		D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApollonianGasketWorkshop.swift; sourceTree = "<group>"; };
 		D197F05C2AC78E0800324D6D /* Simulation Unlimited.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Simulation Unlimited.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation_UnlimitedApp.swift; sourceTree = "<group>"; };
 		D197F0652AC78E0800324D6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -54,6 +62,7 @@
 		D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeView.swift; sourceTree = "<group>"; };
 		D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeViewModel.swift; sourceTree = "<group>"; };
 		D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeWorkshop.swift; sourceTree = "<group>"; };
+		D1EB89C52BA9E5140010E1BC /* TapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,12 +70,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D108C0942BA9DF1500E7EF7F /* Numerics in Frameworks */,
+				D108C0922BA9DF1500E7EF7F /* ComplexModule in Frameworks */,
+				D108C0962BA9DF1500E7EF7F /* RealModule in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D108C08D2BA9DEBC00E7EF7F /* ApollonianGasket */ = {
+			isa = PBXGroup;
+			children = (
+				D108C08E2BA9DEE500E7EF7F /* ApollonianGasket.swift */,
+				D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */,
+				D1EB89C52BA9E5140010E1BC /* TapView.swift */,
+			);
+			path = ApollonianGasket;
+			sourceTree = "<group>";
+		};
 		D197F0532AC78E0800324D6D = {
 			isa = PBXGroup;
 			children = (
@@ -93,6 +115,7 @@
 				D197F07F2ACDF70000324D6D /* Slime */,
 				D1D6E9292AD78879007F03F0 /* ParticleLife */,
 				D1CDE32E2BA6569D0053D3A5 /* Bestagons */,
+				D108C08D2BA9DEBC00E7EF7F /* ApollonianGasket */,
 				D1D0C1682B8555DD00EADC5D /* LFO */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
@@ -176,6 +199,11 @@
 			dependencies = (
 			);
 			name = "Simulation Unlimited";
+			packageProductDependencies = (
+				D108C0912BA9DF1500E7EF7F /* ComplexModule */,
+				D108C0932BA9DF1500E7EF7F /* Numerics */,
+				D108C0952BA9DF1500E7EF7F /* RealModule */,
+			);
 			productName = "Simulation Unlimited";
 			productReference = D197F05C2AC78E0800324D6D /* Simulation Unlimited.app */;
 			productType = "com.apple.product-type.application";
@@ -204,6 +232,9 @@
 				Base,
 			);
 			mainGroup = D197F0532AC78E0800324D6D;
+			packageReferences = (
+				D108C0902BA9DF1500E7EF7F /* XCRemoteSwiftPackageReference "swift-numerics" */,
+			);
 			productRefGroup = D197F05D2AC78E0800324D6D /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -241,12 +272,15 @@
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
 				D1CDE3342BA6612D0053D3A5 /* HexagonWorkshop.swift in Sources */,
 				D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */,
+				D108C0982BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift in Sources */,
+				D1EB89C62BA9E5140010E1BC /* TapView.swift in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
 				D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,
 				D1D0C16C2B85579300EADC5D /* LowFrequencyOscillatorView.swift in Sources */,
+				D108C08F2BA9DEE500E7EF7F /* ApollonianGasket.swift in Sources */,
 				D1CDE3362BA6619B0053D3A5 /* HexagonViewModel.swift in Sources */,
 				D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */,
 			);
@@ -456,6 +490,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D108C0902BA9DF1500E7EF7F /* XCRemoteSwiftPackageReference "swift-numerics" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-numerics.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D108C0912BA9DF1500E7EF7F /* ComplexModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D108C0902BA9DF1500E7EF7F /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = ComplexModule;
+		};
+		D108C0932BA9DF1500E7EF7F /* Numerics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D108C0902BA9DF1500E7EF7F /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = Numerics;
+		};
+		D108C0952BA9DF1500E7EF7F /* RealModule */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D108C0902BA9DF1500E7EF7F /* XCRemoteSwiftPackageReference "swift-numerics" */;
+			productName = RealModule;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D197F0542AC78E0800324D6D /* Project object */;
 }
