@@ -21,9 +21,9 @@ struct Circle {
     
     init(center: CGPoint, radius: CGFloat) {
         self.center = center
-        self.radius = abs(radius)
+        self.radius = radius
         
-        self.bend = 1.0 / abs(radius);
+        self.bend = 1.0 / radius;
         self.complexCenter = Complex(Float(center.x), Float(center.y))
     }
     
@@ -87,7 +87,7 @@ struct ApollonianGasket {
         let sum = zk1 + zk2 + zk3
         
         var root = (zk1 * zk2) + (zk2 * zk3) + (zk1 * zk3)
-        root = Complex.sqrt(root) * 0.5
+        root = Complex.sqrt(root) * 2.0
         
         let center1 = (sum + root) * Float(1 / k4.0)
         let center2 = (sum - root) * Float(1 / k4.0)

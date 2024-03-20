@@ -46,7 +46,7 @@ class ViewModel {
         
         let center1 = CGPoint(x: size.width / 2.0, y: size.height / 2.0)
         let radius1 = (min(size.width, size.height) - 10.0) / 2.0
-        result.insert(Circle(center: center1, radius: radius1), at: 0)
+        result.insert(Circle(center: center1, radius: -radius1), at: 0)
         
         var center2 = lastCenter
         if touches.count >= 1 {
@@ -71,8 +71,12 @@ class ViewModel {
         let descartes = ApollonianGasket.descartes(result[0], result[1], result[2])
         let gaskets = ApollonianGasket.complexDescartes(result[0], result[1], result[2], descartes)
         
-
+        
         result.append(contentsOf: gaskets)
+        
+        for circle in result {
+            print(circle)
+        }
                 
         return result
     }
