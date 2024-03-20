@@ -4,22 +4,6 @@ A playground for graphical simulations built using Metal compute shaders and oth
 - Updating and drawing simulation using a MetalKit compute kernel shader
 - Drawing shapes using Signed Distance Functions
 
-## Boids
-
-A classic flocking simulation
-![IMG_0043](https://github.com/robertwaltham/simulation-unlimited/assets/438673/9110b189-cd09-45bc-b432-20b56434729f)
-
-Inspiriations for building this:
-- https://www.youtube.com/watch?v=gpc7u3331oQ
-- https://www.youtube.com/watch?v=bqtqltqcQhw
-
-Original Boids papers and reference:
-- http://www.red3d.com/cwr/boids/
-- http://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/
-
-I based my implementation off this code:
-- https://github.com/womogenes/Boids
-
 ## Slime
 
 A particle simulation based on the behaviour of slime mold
@@ -47,6 +31,22 @@ Paper that this algorithm comes from
 I based my implementation (in part) off of this code:
 - https://github.com/fogleman/physarum
 - https://www.shadertoy.com/view/WtySRc (hexagon SDF)
+
+## Boids
+
+A classic flocking simulation
+![IMG_0043](https://github.com/robertwaltham/simulation-unlimited/assets/438673/9110b189-cd09-45bc-b432-20b56434729f)
+
+Inspiriations for building this:
+- https://www.youtube.com/watch?v=gpc7u3331oQ
+- https://www.youtube.com/watch?v=bqtqltqcQhw
+
+Original Boids papers and reference:
+- http://www.red3d.com/cwr/boids/
+- http://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/
+
+I based my implementation off this code:
+- https://github.com/womogenes/Boids
 
 ## Particle Life
 
