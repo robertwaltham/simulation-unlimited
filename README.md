@@ -7,6 +7,7 @@ A playground for graphical simulations built using Metal compute shaders and oth
 ## Boids
 
 A classic flocking simulation
+![IMG_0043](https://github.com/robertwaltham/simulation-unlimited/assets/438673/9110b189-cd09-45bc-b432-20b56434729f)
 
 Inspiriations for building this:
 - https://www.youtube.com/watch?v=gpc7u3331oQ
@@ -26,6 +27,7 @@ A particle simulation based on the behaviour of slime mold
 - Each particle decides to turn left or right based on sampling the trail in front of them
 - As it moves it lays down trail underneath it, and deletes the other flavour's trails
 - Flavours can also follow trails from different texture, including a hexagon grid tiling 
+![IMG_0044](https://github.com/robertwaltham/simulation-unlimited/assets/438673/39251722-ef12-407f-a599-df94acfd75e1)
 
 I took inspiration from modular synthesizers and using a low frequency oscillator as "magic hands" to change the simulation parameters over time
 - speed
@@ -33,6 +35,8 @@ I took inspiration from modular synthesizers and using a low frequency oscillato
 - turn bias
 - trail falloff
 - path vs hexagon 
+![IMG_0046](https://github.com/robertwaltham/simulation-unlimited/assets/438673/67c5c6ef-1a49-4d09-8c10-5af197b142df)
+
 
 Inspiration for building this:
 - https://www.youtube.com/watch?v=X-iSQQgOd1A
@@ -47,6 +51,8 @@ I based my implementation (in part) off of this code:
 ## Particle Life
 
 A more generalized version of a flocking simulation, where each particle flavour has different attraction/repulsion to other flavours.
+
+![IMG_0045](https://github.com/robertwaltham/simulation-unlimited/assets/438673/558c13d5-a2bc-4206-a172-c4ed40e24a7f)
 
 Inspiration for building this:
 - https://www.youtube.com/watch?v=p4YirERTVF0
@@ -65,6 +71,5 @@ Extremely Helpful Articles and Examples:
 - https://iquilezles.org/articles/distgradfunctions2d/
 
 
-![IMG_0036](https://github.com/robertwaltham/simulation-unlimited/assets/438673/abf0a992-c329-46f5-aff3-3d4c23d514e1)
-![IMG_0037](https://github.com/robertwaltham/simulation-unlimited/assets/438673/2dd6d38b-1608-48e5-8be9-d6e4442698e0)
+
 
