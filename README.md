@@ -1,8 +1,10 @@
 # simulation-unlimited
-A playground for graphical simulations built using Metal compute shaders and other techniques:
+A playground app for graphical simulations built using Metal compute shaders and other techniques:
 - Hosting a MTKView within SwiftUI using an UIViewRepresentable
 - Updating and drawing simulation using a MetalKit compute kernel shader
 - Drawing shapes using Signed Distance Functions
+
+Most of these simulations will only run on A11 GPUs or later due to the requirement for read-write textures. Note: this means they will not function on the simulator.
 
 ## Slime
 
