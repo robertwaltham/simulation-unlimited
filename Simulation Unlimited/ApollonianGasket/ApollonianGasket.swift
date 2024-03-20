@@ -17,11 +17,11 @@ struct Circle {
     let radius: CGFloat
     let bend: CGFloat
     let complexCenter: Complex<Float>
-    static let epsilon = 0.1
+    static let epsilon = 0.01
     
     init(center: CGPoint, radius: CGFloat) {
         self.center = center
-        self.radius = radius
+        self.radius = abs(radius)
         
         self.bend = 1.0 / radius;
         self.complexCenter = Complex(Float(center.x), Float(center.y))
@@ -57,7 +57,7 @@ extension Circle: Identifiable {
 
 // Adapted from https://editor.p5js.org/codingtrain/sketches/zrq8KHXnO
 struct ApollonianGasket {
-    static let epsilon = 0.1
+    static let epsilon = 0.01
     
     static func descartes(_ c1: Circle, _ c2: Circle, _ c3: Circle) -> (CGFloat, CGFloat) {
         let k1 = c1.bend
@@ -99,12 +99,18 @@ struct ApollonianGasket {
             Circle(complexCenter: center2, bend: k4.0),
             Circle(complexCenter: center3, bend: k4.1),
             Circle(complexCenter: center4, bend: k4.1)
-        ];
+        ]
     }
     
     static func validate(_ c1: Circle, _ c2: Circle, _ c3: Circle, _ newCircle: Circle, _ allCircles: [Circle]) -> Bool {
         
-        guard newCircle.radius > 2 else {
+        guard newCircle.radius > 3.5 else {
+            return false
+        }
+        
+        guard c1.isTangent(other: newCircle) &&
+              c2.isTangent(other: newCircle) &&
+              c3.isTangent(other: newCircle) else {
             return false
         }
         
@@ -112,17 +118,10 @@ struct ApollonianGasket {
             let d = newCircle.distance(other: circle)
             let r = abs(circle.radius - newCircle.radius)
             
-            guard d > epsilon && r > epsilon else {
+            guard d > epsilon || r > epsilon else {
                 return false
             }
         }
-        
-        guard c1.isTangent(other: newCircle),
-              c2.isTangent(other: newCircle),
-              c3.isTangent(other: newCircle) else {
-            return false
-        }
-        
         return true
     }
 }

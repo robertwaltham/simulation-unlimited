@@ -21,7 +21,7 @@ struct ApollonianGasketWorkshop: View {
             ForEach(viewModel.touchCircles(size: geometry.size)) { circle in
                 Path { path in
                     path.addArc(center: circle.center, radius: circle.radius, startAngle: Angle.zero, endAngle: Angle.radians(Double.pi * 2.0), clockwise: true)
-                }.stroke(Color.black, lineWidth: 3)
+                }.stroke(Color.black, lineWidth: 1)
             }
         }
         .border(Color.black)
@@ -33,16 +33,25 @@ struct ApollonianGasketWorkshop: View {
 class ViewModel {
     var touches: [UITouch: CGPoint] = [:]
     var lastCenter: CGPoint = CGPoint()
+    var circles = [Circle]() // TODO: is this neccessary?
+    
     func updateTouch(_ touch: UITouch, location: CGPoint?) {
         if let location = location {
             touches[touch] = location
+            circles.removeAll()
         } else {
             touches.removeValue(forKey: touch)
         }
     }
     
     func touchCircles(size: CGSize) -> [Circle] {
+        
+        guard circles.isEmpty else {
+            return circles
+        }
+        
         var result = [Circle]()
+        var queue = [(a: Circle, b: Circle, c: Circle)]()
         
         let center1 = CGPoint(x: size.width / 2.0, y: size.height / 2.0)
         let radius1 = (min(size.width, size.height) - 10.0) / 2.0
@@ -68,16 +77,25 @@ class ViewModel {
         result.append(Circle(center: center2, radius: radius2))
         result.append(Circle(center: center3, radius: radius3))
         
-        let descartes = ApollonianGasket.descartes(result[0], result[1], result[2])
-        let gaskets = ApollonianGasket.complexDescartes(result[0], result[1], result[2], descartes)
+        queue.append((a: result[0], b: result[1], c: result[2]))
         
-        
-        result.append(contentsOf: gaskets)
-        
-        for circle in result {
-            print(circle)
+        while !queue.isEmpty {
+            let next = queue.popLast()!
+            
+            let descartes = ApollonianGasket.descartes(next.a, next.b, next.c)
+            
+            for circle in ApollonianGasket.complexDescartes(next.a, next.b, next.c, descartes) {
+                if ApollonianGasket.validate(next.a, next.b, next.c, circle, result) {
+                    result.append(circle)
+                    
+                    queue.append((a: next.a, b: next.b, c: circle))
+                    queue.append((a: next.a, b: next.c, c: circle))
+                    queue.append((a: next.b, b: next.c, c: circle))
+                }
+            }
         }
-                
+
+        circles = result
         return result
     }
 }
