@@ -58,7 +58,7 @@ Inspiration for building this:
 - https://www.youtube.com/watch?v=p4YirERTVF0
 
 I based my implementation (in part) off this code:
-https://github.com/tom-mohr/particle-life-app
+- https://github.com/tom-mohr/particle-life-app
 
 ## Other References
 
