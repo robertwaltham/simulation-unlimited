@@ -33,6 +33,10 @@
 		D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */; };
 		D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */; };
 		D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */; };
+		D1D80F172BABB58F009B5EFB /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F162BABB58F009B5EFB /* CircleView.swift */; };
+		D1D80F192BABB64B009B5EFB /* CircleShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F182BABB64B009B5EFB /* CircleShaders.metal */; };
+		D1D80F1B2BABB9A5009B5EFB /* CircleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F1A2BABB9A5009B5EFB /* CircleViewModel.swift */; };
+		D1D80F1D2BABBA73009B5EFB /* CircleWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F1C2BABBA73009B5EFB /* CircleWorkshop.swift */; };
 		D1EB89C62BA9E5140010E1BC /* TapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1EB89C52BA9E5140010E1BC /* TapView.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +66,10 @@
 		D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeView.swift; sourceTree = "<group>"; };
 		D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeViewModel.swift; sourceTree = "<group>"; };
 		D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeWorkshop.swift; sourceTree = "<group>"; };
+		D1D80F162BABB58F009B5EFB /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
+		D1D80F182BABB64B009B5EFB /* CircleShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CircleShaders.metal; sourceTree = "<group>"; };
+		D1D80F1A2BABB9A5009B5EFB /* CircleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewModel.swift; sourceTree = "<group>"; };
+		D1D80F1C2BABBA73009B5EFB /* CircleWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleWorkshop.swift; sourceTree = "<group>"; };
 		D1EB89C52BA9E5140010E1BC /* TapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,6 +93,10 @@
 				D108C08E2BA9DEE500E7EF7F /* ApollonianGasket.swift */,
 				D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */,
 				D1EB89C52BA9E5140010E1BC /* TapView.swift */,
+				D1D80F162BABB58F009B5EFB /* CircleView.swift */,
+				D1D80F182BABB64B009B5EFB /* CircleShaders.metal */,
+				D1D80F1A2BABB9A5009B5EFB /* CircleViewModel.swift */,
+				D1D80F1C2BABBA73009B5EFB /* CircleWorkshop.swift */,
 			);
 			path = ApollonianGasket;
 			sourceTree = "<group>";
@@ -261,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D1D80F1D2BABBA73009B5EFB /* CircleWorkshop.swift in Sources */,
 				D1D0C16E2B85639F00EADC5D /* SlimeLFOWorkshop.swift in Sources */,
 				D1CDE3302BA656B70053D3A5 /* HexagonView.swift in Sources */,
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
@@ -268,7 +281,9 @@
 				D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */,
 				D1D0C16A2B8555F800EADC5D /* LowFrequencyOscillator.swift in Sources */,
 				D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */,
+				D1D80F172BABB58F009B5EFB /* CircleView.swift in Sources */,
 				D197F0762AC7A30C00324D6D /* SlimeView.swift in Sources */,
+				D1D80F1B2BABB9A5009B5EFB /* CircleViewModel.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
 				D1CDE3342BA6612D0053D3A5 /* HexagonWorkshop.swift in Sources */,
 				D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */,
@@ -276,6 +291,7 @@
 				D1EB89C62BA9E5140010E1BC /* TapView.swift in Sources */,
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
 				D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */,
+				D1D80F192BABB64B009B5EFB /* CircleShaders.metal in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,

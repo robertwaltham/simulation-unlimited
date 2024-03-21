@@ -47,6 +47,60 @@ struct Circle {
         let b = abs(d - abs(r2 - r1)) < Circle.epsilon
         return a || b;
     }
+    
+    func toShader() -> ShaderCircle {
+        return ShaderCircle(x: Float(center.x), y: Float(center.y), r: Float(radius))
+    }
+    
+    static func circles(size: CGSize, center: CGPoint) -> [Circle] {
+        var result = [Circle]()
+        var queue = [(a: Circle, b: Circle, c: Circle)]()
+        
+        let center1 = CGPoint(x: size.width / 2.0, y: size.height / 2.0)
+        let radius1 = (min(size.width, size.height) - 10.0) / 2.0
+        result.insert(Circle(center: center1, radius: -radius1), at: 0)
+        
+        let center2 = center
+        
+        let radius2 = radius1 - center2.distance(from: center1)
+        let radius3 = radius1 - radius2
+
+        let center3 = center2
+        .applying(CGAffineTransform(translationX: -center1.x, y: -center1.y))
+        .applying(CGAffineTransform(rotationAngle: CGFloat.pi))
+        .normalize()
+        .applying(CGAffineTransform(scaleX: radius1 - radius3, y: radius1 - radius3))
+        .applying(CGAffineTransform(translationX: center1.x, y: center1.y))
+        
+        result.append(Circle(center: center2, radius: radius2))
+        result.append(Circle(center: center3, radius: radius3))
+        
+        queue.append((a: result[0], b: result[1], c: result[2]))
+        
+        while !queue.isEmpty {
+            let next = queue.popLast()!
+            
+            let descartes = ApollonianGasket.descartes(next.a, next.b, next.c)
+            
+            for circle in ApollonianGasket.complexDescartes(next.a, next.b, next.c, descartes) {
+                if ApollonianGasket.validate(next.a, next.b, next.c, circle, result) {
+                    result.append(circle)
+                    
+                    queue.append((a: next.a, b: next.b, c: circle))
+                    queue.append((a: next.a, b: next.c, c: circle))
+                    queue.append((a: next.b, b: next.c, c: circle))
+                }
+            }
+        }
+        
+        return result
+    }
+}
+
+struct ShaderCircle {
+    let x: Float
+    let y: Float
+    let r: Float
 }
 
 extension Circle: Identifiable {
@@ -104,7 +158,7 @@ struct ApollonianGasket {
     
     static func validate(_ c1: Circle, _ c2: Circle, _ c3: Circle, _ newCircle: Circle, _ allCircles: [Circle]) -> Bool {
         
-        guard newCircle.radius > 3.5 else {
+        guard newCircle.radius > 5 else {
             return false
         }
         

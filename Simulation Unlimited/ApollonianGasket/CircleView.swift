@@ -1,8 +1,8 @@
 //
-//  HexagonView.swift
+//  CircleView.swift
 //  Simulation Unlimited
 //
-//  Created by Robert Waltham on 2024-03-16.
+//  Created by Robert Waltham on 2024-03-20.
 //
 
 import Foundation
@@ -10,12 +10,12 @@ import MetalKit
 import SwiftUI
 import simd
 
-struct HexagonView: UIViewRepresentable {
+struct CircleView: UIViewRepresentable {
     typealias UIViewType = MTKView
     
-    @State var viewModel: HexagonViewModel
+    @State var viewModel: CircleViewModel
     
-    init(viewModel: HexagonViewModel) {
+    init(viewModel: CircleViewModel) {
         self.viewModel = viewModel
     }
     
@@ -52,8 +52,9 @@ struct HexagonView: UIViewRepresentable {
         fileprivate var view: MTKView?
         private var metalDevice: MTLDevice!
         private var metalCommandQueue: MTLCommandQueue!
-        var viewModel: HexagonViewModel!
-        
+        var viewModel: CircleViewModel!
+        private var circleBuffer: MTLBuffer!
+
         private var pathTextures: [MTLTexture] = []
         private var states: [MTLComputePipelineState] = []
 
@@ -70,7 +71,7 @@ struct HexagonView: UIViewRepresentable {
             draw()
         }
         
-        init(_ parent: HexagonView) {
+        init(_ parent: CircleView) {
             
             if let metalDevice = MTLCreateSystemDefaultDevice() {
                 self.metalDevice = metalDevice
@@ -86,9 +87,18 @@ struct HexagonView: UIViewRepresentable {
 
 }
 
-extension HexagonView.Coordinator {
+extension CircleView.Coordinator {
     
     func draw() {
+        
+        initCircleBufferIfNeeded()
+        viewModel.generateCirclesIfNeeded(size: CGSize(width: CGFloat(viewPortSize.x), height: CGFloat(viewPortSize.y)))
+        
+        let size = Int(viewModel.config.circleCount) * MemoryLayout<ShaderCircle>.size
+        if size > 0 {
+            let circles = viewModel.circles
+            circleBuffer.contents().copyMemory(from: circles, byteCount: size)
+        }
         
         let w = states[0].threadExecutionWidth
         let h = states[0].maxTotalThreadsPerThreadgroup / w
@@ -104,16 +114,15 @@ extension HexagonView.Coordinator {
             // Draw Background Colour
             commandEncoder.setComputePipelineState(states[0])
             commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexPathHexagon.rawValue))
-            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<HexagonConfig>.stride, index: 7)
+            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<CircleViewModel>.stride, index: 8)
+            commandEncoder.setBuffer(circleBuffer, offset: 0, index: 9)
             commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
             
             commandEncoder.endEncoding()
             commandBuffer.present(drawable)
-            
         }
         
         commandBuffer.commit()
-        
     }
     
     func buildPipeline() {
@@ -140,18 +149,29 @@ extension HexagonView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["hexagonPass"].map {
+        states = try ["circlePass"].map {
             guard let function = library.makeFunction(name: $0) else {
                 fatalError("Can't make function \($0)")
             }
             return try device.makeComputePipelineState(function: function)
         }
     }
+    
+    func initCircleBufferIfNeeded() {
+        
+        guard circleBuffer == nil else {
+            return
+        }
+        
+        let count = viewModel.maxCircles
+        let size = count * MemoryLayout<ShaderCircle>.size
+        
+        circleBuffer = metalDevice.makeBuffer(length: size, options: [])
+    }
 }
 
-
 #Preview {
-    HexagonView(viewModel: HexagonViewModel())
+    CircleView(viewModel: CircleViewModel())
         .edgesIgnoringSafeArea(.all)
         .statusBar(hidden: true)
 }

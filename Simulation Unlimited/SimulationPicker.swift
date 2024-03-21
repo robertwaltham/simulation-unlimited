@@ -34,13 +34,21 @@ struct SimulationPicker: View {
                     ParticleLifeView(viewModel: ParticleLifeViewModel())
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
+//                simulationTile(content: {
+//                    HexagonWorkshop()
+//                        .edgesIgnoringSafeArea(.all)
+//                        .statusBar(hidden: true)
+//                }, sim: {
+//                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
+//                }, text: "Hexagons", icon: "hexagon")
+                
                 simulationTile(content: {
-                    HexagonWorkshop()
+                    CircleWorkshop()
                         .edgesIgnoringSafeArea(.all)
                         .statusBar(hidden: true)
                 }, sim: {
-                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
-                }, text: "Hexagons", icon: "hexagon")
+                    CircleView(viewModel: CircleViewModel())
+                }, text: "Circles", icon: "circle")
                 
                 
             }.navigationTitle("Simulations")
