@@ -1,0 +1,39 @@
+//
+//  BoidsViewModel.swift
+//  Simulation Unlimited
+//
+//  Created by Robert Waltham on 2024-11-15.
+//
+
+@Observable
+class BoidsViewModel {
+    
+    var drawSize: Float = 2
+    var count: Int = 4096
+    
+    var config = BoidsConfig.defaultConfig()
+    
+}
+
+
+struct BoidsConfig {
+    var max_speed: Float
+    var margin: Float
+    var align_coefficient: Float
+    var cohere_coefficient: Float
+    var separate_coefficient: Float
+    var radius: Float
+}
+
+extension BoidsConfig {
+    static func defaultConfig() -> BoidsConfig {
+        return BoidsConfig(
+            max_speed: 5,
+            margin: 50,
+            align_coefficient: 0.3,
+            cohere_coefficient: 0.4,
+            separate_coefficient: 0.5,
+            radius: 15
+        )
+    }
+}

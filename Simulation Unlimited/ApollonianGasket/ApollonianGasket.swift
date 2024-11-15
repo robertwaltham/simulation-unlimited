@@ -158,7 +158,7 @@ struct ApollonianGasket {
     
     static func validate(_ c1: Circle, _ c2: Circle, _ c3: Circle, _ newCircle: Circle, _ allCircles: [Circle]) -> Bool {
         
-        guard newCircle.radius > 5 else {
+        guard newCircle.radius > 5 else { // TODO: pass this value in
             return false
         }
         

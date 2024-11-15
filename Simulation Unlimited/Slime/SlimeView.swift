@@ -29,7 +29,12 @@ struct SlimeView: UIViewRepresentable {
             mtkView.device = metalDevice
         }
         mtkView.framebufferOnly = false
-        mtkView.clearColor = MTLClearColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1)
+        mtkView.clearColor = MTLClearColor(
+            red: 0.1,
+            green: 0.1,
+            blue: 0.1,
+            alpha: 1
+        )
         mtkView.drawableSize = mtkView.frame.size
         mtkView.enableSetNeedsDisplay = true
         mtkView.isPaused = false
@@ -72,7 +77,10 @@ struct SlimeView: UIViewRepresentable {
         
         
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-            viewPortSize = vector_uint2(x: UInt32(size.width), y: UInt32(size.height))
+            viewPortSize = vector_uint2(
+                x: UInt32(size.width),
+                y: UInt32(size.height)
+            )
         }
         
         func draw(in view: MTKView) {
@@ -94,7 +102,9 @@ struct SlimeView: UIViewRepresentable {
             
             super.init()
             
-            guard self.metalDevice.supportsFamily(.common3) || self.metalDevice.supportsFamily(.apple4) else {
+            guard self.metalDevice
+                .supportsFamily(.common3) || self.metalDevice
+                .supportsFamily(.apple4) else {
                 print("doesn't support read_write textures")
                 skipDraw = true
                 return
@@ -131,7 +141,9 @@ extension SlimeView.Coordinator {
 extension SlimeView.Coordinator {
     
     func wave(time: Double, phase: Double, phaseOffset: Double, magitude: Double, magnitudeOffset: Double) -> Float {
-        return Float((sin(time * phase + phaseOffset) + magnitudeOffset) * magitude)
+        return Float(
+            (sin(time * phase + phaseOffset) + magnitudeOffset) * magitude
+        )
     }
     
     func draw() {
@@ -139,7 +151,16 @@ extension SlimeView.Coordinator {
         initializeParticlesIfNeeded()
         initializeConfigBufferIfNeeded()
         
-        configBuffer.contents().copyMemory(from: [viewModel.redConfig.config, viewModel.greenConfig.config, viewModel.blueConfig.config], byteCount: 3 * MemoryLayout<SlimeConfig>.size)
+        configBuffer
+            .contents()
+            .copyMemory(
+                from: [
+                    viewModel.redConfig.config,
+                    viewModel.greenConfig.config,
+                    viewModel.blueConfig.config
+                ],
+                byteCount: 3 * MemoryLayout<SlimeConfig>.size
+            )
 
         
         if viewModel.resetOnNext {
@@ -148,72 +169,178 @@ extension SlimeView.Coordinator {
         }
         
         if pathTextures.count == 0 {
-            pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
-            pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
+            pathTextures
+                .append(
+                    makeTexture(device: metalDevice, drawableSize: viewPortSize)
+                )
+            pathTextures
+                .append(
+                    makeTexture(device: metalDevice, drawableSize: viewPortSize)
+                )
         }
         
         if hexagonTexture == nil {
-            hexagonTexture = makeTexture(device: metalDevice, drawableSize: viewPortSize)
+            hexagonTexture = makeTexture(
+                device: metalDevice,
+                drawableSize: viewPortSize
+            )
         }
         
         let randomCount = 1024
-        var random: [Float] = (0..<randomCount).map { _ in Float.random(in: 0...1) }
+        var random: [Float] = (0..<randomCount).map {
+            _ in Float.random(in: 0...1)
+        }
         
         let threadgroupSizeMultiplier = 1
         let maxThreads = 512
-        let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
-        let particleThreadGroupsPerGrid = MTLSize(width: (max(viewModel.particleCount / (maxThreads * threadgroupSizeMultiplier), 1)), height: 1, depth:1)
+        let particleThreadsPerGroup = MTLSize(
+            width: maxThreads,
+            height: 1,
+            depth: 1
+        )
+        let particleThreadGroupsPerGrid = MTLSize(
+            width: (
+                max(
+                    viewModel
+                        .particleCount / (
+                            maxThreads * threadgroupSizeMultiplier
+                        ),
+                    1
+                )
+            ),
+            height: 1,
+            depth:1
+        )
         
         let w = states[0].threadExecutionWidth
         let h = states[0].maxTotalThreadsPerThreadgroup / w
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
-        let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
+        let textureThreadgroupsPerGrid = MTLSize(
+            width: (Int(viewPortSize.x) + w - 1) / w,
+            height: (Int(viewPortSize.y) + h - 1) / h,
+            depth: 1
+        )
         
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
             
-            commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
-            commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
-            commandEncoder.setTexture(hexagonTexture, index: Int(InputTextureIndexPathHexagon.rawValue))
-            commandEncoder.setBuffer(configBuffer, offset: 0, index: Int(InputIndexConfig.rawValue))
-            commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(InputIndexRandom.rawValue))
+            commandEncoder
+                .setTexture(
+                    pathTextures[0],
+                    index: Int(InputTextureIndexPathInput.rawValue)
+                )
+            commandEncoder
+                .setTexture(
+                    pathTextures[1],
+                    index: Int(InputTextureIndexPathOutput.rawValue)
+                )
+            commandEncoder
+                .setTexture(
+                    hexagonTexture,
+                    index: Int(InputTextureIndexPathHexagon.rawValue)
+                )
+            commandEncoder
+                .setBuffer(
+                    configBuffer,
+                    offset: 0,
+                    index: Int(InputIndexConfig.rawValue)
+                )
+            commandEncoder
+                .setBytes(
+                    &random,
+                    length: MemoryLayout<Float>.stride * randomCount,
+                    index: Int(InputIndexRandom.rawValue)
+                )
             
             if let particleBuffer = particleBuffer {
                 
                 // update particles and draw on path
                 commandEncoder.setComputePipelineState(states[1])
-                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticles.rawValue))
-                commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(InputIndexParticleCount.rawValue))
-                commandEncoder.setBytes(&colours, length: MemoryLayout<RenderColours>.stride, index: Int(InputIndexColours.rawValue))
-                commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                commandEncoder
+                    .setBuffer(
+                        particleBuffer,
+                        offset: 0,
+                        index: Int(InputIndexParticles.rawValue)
+                    )
+                commandEncoder
+                    .setBytes(
+                        &viewModel.particleCount,
+                        length: MemoryLayout<Int>.stride,
+                        index: Int(InputIndexParticleCount.rawValue)
+                    )
+                commandEncoder
+                    .setBytes(
+                        &colours,
+                        length: MemoryLayout<RenderColours>.stride,
+                        index: Int(InputIndexColours.rawValue)
+                    )
+                commandEncoder
+                    .dispatchThreadgroups(
+                        particleThreadGroupsPerGrid,
+                        threadsPerThreadgroup: particleThreadsPerGroup
+                    )
                 
                 // blur path and copy to second path buffer
                 commandEncoder.setComputePipelineState(states[4])
-                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                commandEncoder
+                    .dispatchThreadgroups(
+                        textureThreadgroupsPerGrid,
+                        threadsPerThreadgroup: textureThreadsPerGroup
+                    )
             }
             
             if let drawable = view?.currentDrawable {
                 
                 // Draw Background Colour
                 commandEncoder.setComputePipelineState(states[0])
-                commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
-                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                commandEncoder
+                    .setTexture(
+                        drawable.texture,
+                        index: Int(InputTextureIndexDrawable.rawValue)
+                    )
+                commandEncoder
+                    .dispatchThreadgroups(
+                        textureThreadgroupsPerGrid,
+                        threadsPerThreadgroup: textureThreadsPerGroup
+                    )
                 
                 // Draw Hexagons
                 commandEncoder.setComputePipelineState(states[5])
-                commandEncoder.setBytes(&viewModel.hexagonConfig, length: MemoryLayout<HexagonConfig>.stride, index: 7)
-                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                commandEncoder
+                    .setBytes(
+                        &viewModel.hexagonConfig,
+                        length: MemoryLayout<HexagonConfig>.stride,
+                        index: 7
+                    )
+                commandEncoder
+                    .dispatchThreadgroups(
+                        textureThreadgroupsPerGrid,
+                        threadsPerThreadgroup: textureThreadsPerGroup
+                    )
                 
                 if viewModel.drawPath {
                     commandEncoder.setComputePipelineState(states[3])
-                    commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                    commandEncoder
+                        .dispatchThreadgroups(
+                            textureThreadgroupsPerGrid,
+                            threadsPerThreadgroup: textureThreadsPerGroup
+                        )
                 }
                 
                 if viewModel.drawParticles, let particleBuffer = particleBuffer {
                     commandEncoder.setComputePipelineState(states[2])
-                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(InputIndexParticleCount.rawValue))
-                    commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                    commandEncoder
+                        .setBuffer(
+                            particleBuffer,
+                            offset: 0,
+                            index: Int(InputIndexParticleCount.rawValue)
+                        )
+                    commandEncoder
+                        .dispatchThreadgroups(
+                            particleThreadGroupsPerGrid,
+                            threadsPerThreadgroup: particleThreadsPerGroup
+                        )
                 }
                 
                 commandEncoder.endEncoding()
@@ -241,7 +368,9 @@ extension SlimeView.Coordinator {
         do {
             try buildRenderPipelineWithDevice(device: metalDevice)
         } catch {
-            fatalError("Unable to compile render pipeline state.  Error info: \(error)")
+            fatalError(
+                "Unable to compile render pipeline state.  Error info: \(error)"
+            )
         }
     }
     
@@ -253,12 +382,20 @@ extension SlimeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPassSlime", "secondPassSlime", "thirdPassSlime", "fourthPassSlime", "boxBlur", "hexagonPass"].map {
-            guard let function = library.makeFunction(name: $0) else {
-                fatalError("Can't make function \($0)")
+        states = try [
+            "firstPassSlime",
+            "secondPassSlime",
+            "thirdPassSlime",
+            "fourthPassSlime",
+            "boxBlur",
+            "hexagonPass"
+        ]
+            .map {
+                guard let function = library.makeFunction(name: $0) else {
+                    fatalError("Can't make function \($0)")
+                }
+                return try device.makeComputePipelineState(function: function)
             }
-            return try device.makeComputePipelineState(function: function)
-        }
     }
     
     private func initializeConfigBufferIfNeeded() {
@@ -266,7 +403,8 @@ extension SlimeView.Coordinator {
             return
         }
             
-        configBuffer = metalDevice.makeBuffer(length: 3 * MemoryLayout<SlimeConfig>.size)
+        configBuffer = metalDevice
+            .makeBuffer(length: 3 * MemoryLayout<SlimeConfig>.size)
     }
     
     
@@ -279,7 +417,8 @@ extension SlimeView.Coordinator {
         particles = makeParticles()
         let size = particles.count * MemoryLayout<Particle>.size
         
-        particleBuffer = metalDevice.makeBuffer(bytes: &particles, length: size, options: [])
+        particleBuffer = metalDevice
+            .makeBuffer(bytes: &particles, length: size, options: [])
         particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
     }
     
@@ -302,7 +441,12 @@ extension SlimeView.Coordinator {
         
         particles = []
         for i in 0..<viewModel.particleCount {
-            particles.append((particleBuffer.contents() + (i * MemoryLayout<SlimeParticle>.size)).load(as: SlimeParticle.self))
+            particles
+                .append(
+                    (particleBuffer.contents() + (i * MemoryLayout<SlimeParticle>.size)).load(
+                        as: SlimeParticle.self
+                    )
+                )
         }
     }
     
@@ -310,9 +454,15 @@ extension SlimeView.Coordinator {
         
         var result = [SlimeParticle]()
         
-        let speedRange = SlimeViewModel.baseSpeed...(SlimeViewModel.baseSpeed + viewModel.speedVariance)
-        let xRange = viewModel.margin...(Float(viewPortSize.x) - viewModel.margin)
-        let yRange = viewModel.margin...(Float(viewPortSize.y) - viewModel.margin)
+        let speedRange = SlimeViewModel.baseSpeed...(
+            SlimeViewModel.baseSpeed + viewModel.speedVariance
+        )
+        let xRange = viewModel.margin...(
+            Float(viewPortSize.x) - viewModel.margin
+        )
+        let yRange = viewModel.margin...(
+            Float(viewPortSize.y) - viewModel.margin
+        )
         let lineSpace: Float = 100
         
         for i in 0 ..< viewModel.particleCount {
@@ -323,30 +473,46 @@ extension SlimeView.Coordinator {
             switch viewModel.startType {
                 
             case .random:
-                position = SIMD2<Float>(Float.random(in: xRange), Float.random(in: yRange))
+                position = SIMD2<Float>(
+                    Float.random(in: xRange),
+                    Float.random(in: yRange)
+                )
                 let angle = Float.random(in: 0...Float.pi * 2)
-                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+                let rotation = simd_float2x2(
+                    SIMD2<Float>(cos(angle), -sin(angle)),
+                    SIMD2<Float>(sin(angle), cos(angle))
+                )
                 speed = rotation * speed
                 
             case .circle:
-                position = SIMD2<Float>(Float(viewPortSize.x / 2), Float(viewPortSize.y / 2))
+                position = SIMD2<Float>(
+                    Float(viewPortSize.x / 2),
+                    Float(viewPortSize.y / 2)
+                )
                 let angle = Float.random(in: 0...Float.pi * 2)
                 
-                let rotation = simd_float2x2(SIMD2<Float>(cos(angle), -sin(angle)), SIMD2<Float>(sin(angle), cos(angle)))
+                let rotation = simd_float2x2(
+                    SIMD2<Float>(cos(angle), -sin(angle)),
+                    SIMD2<Float>(sin(angle), cos(angle))
+                )
                 speed = rotation * speed
                 
             case .grid:
                 
                 if i < viewModel.particleCount / 2 {
                     
-                    let xLinePosition = round(Float.random(in: xRange) / lineSpace)
+                    let xLinePosition = round(
+                        Float.random(in: xRange) / lineSpace
+                    )
                     let xPosition = xLinePosition * lineSpace
                     position = SIMD2<Float>(xPosition, Float.random(in: yRange))
                     speed = SIMD2<Float>(0, Float.random(in: speedRange))
                     species = 0
                 } else {
                     
-                    let yLinePosition = round(Float.random(in: yRange) / lineSpace)
+                    let yLinePosition = round(
+                        Float.random(in: yRange) / lineSpace
+                    )
                     let yPosition = yLinePosition * lineSpace
                     position = SIMD2<Float>(Float.random(in: xRange), yPosition)
                     speed = SIMD2<Float>(Float.random(in: speedRange), 0)
@@ -365,7 +531,11 @@ extension SlimeView.Coordinator {
                 species = xLinePosition.truncatingRemainder(dividingBy: 3)
             }
             
-            let particle = SlimeParticle(position: position, velocity: speed, species: species)
+            let particle = SlimeParticle(
+                position: position,
+                velocity: speed,
+                species: species
+            )
             result.append(particle)
         }
         
@@ -376,7 +546,9 @@ extension SlimeView.Coordinator {
         let descriptor = MTLTextureDescriptor()
         
         descriptor.storageMode = .private
-        descriptor.usage = MTLTextureUsage(rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue)
+        descriptor.usage = MTLTextureUsage(
+            rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue
+        )
         descriptor.width = Int(drawableSize.x)
         descriptor.height = Int(drawableSize.y)
         
