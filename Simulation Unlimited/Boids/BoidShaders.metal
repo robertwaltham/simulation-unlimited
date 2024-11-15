@@ -168,7 +168,7 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     }
     
     if (position.y > height) {
-        position.x = 0;
+        position.y = 0;
     }
     
     // velocity

@@ -8,11 +8,15 @@
 @Observable
 class BoidsViewModel {
     
-    var drawSize: Float = 2
+    var drawSize: Int = 2
     var count: Int = 4096
     
     var config = BoidsConfig.defaultConfig()
     
+    convenience init(count: Int) {
+        self.init()
+        self.count = count
+    }
 }
 
 

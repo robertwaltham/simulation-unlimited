@@ -17,7 +17,7 @@ struct SimulationPicker: View {
                         .edgesIgnoringSafeArea(.all)
                         .statusBar(hidden: true)
                 }, sim: {
-                    BoidsView()        
+                    BoidsView(viewModel: BoidsViewModel(count: 1024))
                 }, text: "Boids", icon: "bird.circle")
                 
                 simulationTile(content: {

@@ -13,6 +13,7 @@
 		D108C0962BA9DF1500E7EF7F /* RealModule in Frameworks */ = {isa = PBXBuildFile; productRef = D108C0952BA9DF1500E7EF7F /* RealModule */; };
 		D108C0982BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */; };
 		D1212DA92CE7FF09009352FE /* BoidsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1212DA82CE7FF03009352FE /* BoidsViewModel.swift */; };
+		D123671B2CE809E3005FCB11 /* BoidsWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D123671A2CE809DF005FCB11 /* BoidsWorkshop.swift */; };
 		D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */; };
 		D197F0662AC78E0800324D6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0652AC78E0800324D6D /* Assets.xcassets */; };
 		D197F0692AC78E0800324D6D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0682AC78E0800324D6D /* Preview Assets.xcassets */; };
@@ -45,6 +46,7 @@
 		D108C08E2BA9DEE500E7EF7F /* ApollonianGasket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApollonianGasket.swift; sourceTree = "<group>"; };
 		D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApollonianGasketWorkshop.swift; sourceTree = "<group>"; };
 		D1212DA82CE7FF03009352FE /* BoidsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsViewModel.swift; sourceTree = "<group>"; };
+		D123671A2CE809DF005FCB11 /* BoidsWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsWorkshop.swift; sourceTree = "<group>"; };
 		D197F05C2AC78E0800324D6D /* Simulation Unlimited.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Simulation Unlimited.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation_UnlimitedApp.swift; sourceTree = "<group>"; };
 		D197F0652AC78E0800324D6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 		D197F0822ACE067000324D6D /* Boids */ = {
 			isa = PBXGroup;
 			children = (
+				D123671A2CE809DF005FCB11 /* BoidsWorkshop.swift */,
 				D1212DA82CE7FF03009352FE /* BoidsViewModel.swift */,
 				D197F0792AC7ABBB00324D6D /* BoidShaders.metal */,
 				D197F0772AC7AB1700324D6D /* BoidsView.swift */,
@@ -296,6 +299,7 @@
 				D197F0782AC7AB1700324D6D /* BoidsView.swift in Sources */,
 				D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */,
 				D1D80F192BABB64B009B5EFB /* CircleShaders.metal in Sources */,
+				D123671B2CE809E3005FCB11 /* BoidsWorkshop.swift in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,
