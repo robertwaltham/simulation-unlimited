@@ -55,9 +55,9 @@ struct BoidsView: UIViewRepresentable {
         var metalDevice: MTLDevice!
         var metalCommandQueue: MTLCommandQueue!
         
-        var firstState: MTLComputePipelineState!
-        var secondState: MTLComputePipelineState!
-        var thirdState: MTLComputePipelineState!
+        var clearTexture: MTLComputePipelineState!
+        var simulateBoids: MTLComputePipelineState!
+        var drawBoids: MTLComputePipelineState!
         
         var particleBuffer: MTLBuffer!
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
@@ -183,21 +183,31 @@ extension BoidsView.Coordinator {
             fatalError("can't create libray")
         }
         
-        guard let firstPass = library.makeFunction(name: "firstPass") else {
+        guard let clearTextureFunction = library.makeFunction(name: "clearTexture") else {
             fatalError("can't create first pass")
         }
-        firstState = try device.makeComputePipelineState(function: firstPass)
+        clearTexture = try device.makeComputePipelineState(function: clearTextureFunction)
         
-        guard let secondPass = library.makeFunction(name: "secondPass") else {
+        guard let simulateBoidsFunction = library.makeFunction(name: "simulateBoids") else {
             fatalError("can't create first pass")
         }
-        secondState = try device.makeComputePipelineState(function: secondPass)
+        simulateBoids = try device.makeComputePipelineState(function: simulateBoidsFunction)
         
-        guard let thirdPass = library.makeFunction(name: "thirdPass") else {
+        guard let drawBoidsFunction = library.makeFunction(name: "drawBoids") else {
             fatalError("can't create first pass")
         }
-        thirdState = try device.makeComputePipelineState(function: thirdPass)
+        drawBoids = try device.makeComputePipelineState(function: drawBoidsFunction)
         
+    }
+    
+    func buildRenderPassDescriptor(target: MTLTexture) -> MTLRenderPassDescriptor {
+        var descriptor = MTLRenderPassDescriptor()
+        descriptor.colorAttachments[0].texture = target
+        descriptor.colorAttachments[0].loadAction = .clear;
+        descriptor.colorAttachments[0].storeAction = .store;
+        descriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.2, 0.5, 0.95, 1.0);
+        
+        return descriptor
     }
     
     func extractParticles() {
@@ -247,8 +257,8 @@ extension BoidsView.Coordinator {
             depth:1
         )
         
-        let w = firstState.threadExecutionWidth
-        let h = firstState.maxTotalThreadsPerThreadgroup / w
+        let w = clearTexture.threadExecutionWidth
+        let h = clearTexture.maxTotalThreadsPerThreadgroup / w
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(
             width: (Int(viewPortSize.x) + w - 1) / w,
@@ -264,7 +274,7 @@ extension BoidsView.Coordinator {
             // first pass - Boid updates
             if let particleBuffer = particleBuffer {
                 
-                commandEncoder.setComputePipelineState(secondState)
+                commandEncoder.setComputePipelineState(simulateBoids)
                 commandEncoder
                     .setBuffer(
                         particleBuffer,
@@ -321,7 +331,7 @@ extension BoidsView.Coordinator {
                 
                 // second pass - set texture to solid colour
                 
-                commandEncoder.setComputePipelineState(firstState)
+                commandEncoder.setComputePipelineState(clearTexture)
                 commandEncoder.setTexture(drawable.texture, index: 0)
                 commandEncoder
                     .dispatchThreadgroups(
@@ -332,7 +342,7 @@ extension BoidsView.Coordinator {
                 // third pass - draw boids
                 
                 if let particleBuffer = particleBuffer {
-                    commandEncoder.setComputePipelineState(thirdState)
+                    commandEncoder.setComputePipelineState(drawBoids)
                     commandEncoder.setTexture(drawable.texture, index: 0)
                     commandEncoder
                         .setBuffer(

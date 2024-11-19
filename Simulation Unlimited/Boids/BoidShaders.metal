@@ -40,12 +40,12 @@ float2 limit_magnitude(float2 vec, float max_mag) {
     return vec;
 }
 
-kernel void firstPass(texture2d<half, access::write> output [[texture(0)]],
+kernel void clearTexture(texture2d<half, access::write> output [[texture(0)]],
                       uint2 id [[thread_position_in_grid]]) {
     output.write(half4(0.), id);
 }
 
-kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexParticle)]],
+kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexParticle)]],
                        const device int& particle_count [[ buffer(BoidsInputIndexParticleCount)]],
                        const device uint& width [[ buffer(BoidsInputIndexWidth)]],
                        const device uint& height [[ buffer(BoidsInputIndexHeight)]],
@@ -202,7 +202,7 @@ kernel void secondPass(device Particle *particles [[buffer(BoidsInputIndexPartic
     particles[index] = particle;
 }
 
-kernel void thirdPass(texture2d<half, access::write> output [[texture(0)]],
+kernel void drawBoids(texture2d<half, access::write> output [[texture(0)]],
                       device Particle *particles [[buffer(ThirdPassInputTextureIndexParticle)]],
                       const device int& span [[ buffer(ThirdPassInputTextureIndexRadius)]],
                       uint id [[ thread_position_in_grid ]],
