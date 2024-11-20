@@ -10,11 +10,12 @@ import SwiftUI
 struct SlimeLFOWorkshop: View {
     @State var viewModel = SlimeViewModel()
     @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
-    @State var showLFO = false
-    @State var showSpeed = false
-    @State var showAngle = false
-    @State var showTurn = false
-    @State var showSettings = false
+    
+    @State private var showLFO = false
+    @State private var showSpeed = false
+    @State private var showAngle = false
+    @State private var showTurn = false
+    @State private var showSettings = false
     
     @ViewBuilder
     private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
@@ -116,7 +117,7 @@ struct SlimeLFOWorkshop: View {
                         showSettings = true
                     } label: {
                         Label("Settings", systemImage: "hexagon")
-                    }.popover(isPresented: $showSettings) {
+                    }.popover(isPresented: $showSettings, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             HStack {
                                 Text("Blur Radius")
@@ -155,7 +156,7 @@ struct SlimeLFOWorkshop: View {
                         showLFO = true
                     } label: {
                         Label("Falloff/Bias", systemImage: "smallcircle.filled.circle.fill")
-                    }.popover(isPresented: $showLFO) {
+                    }.popover(isPresented: $showLFO, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             Divider()
                             LFOWidget(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
@@ -173,7 +174,7 @@ struct SlimeLFOWorkshop: View {
                         showSpeed = true
                     } label: {
                         Label("Speed", systemImage: "figure.walk.circle.fill")
-                    }.popover(isPresented: $showSpeed) {
+                    }.popover(isPresented: $showSpeed, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             HStack {
                                 Text("Starting Variance: \(viewModel.speedVariance, specifier: "%.1f")")
@@ -190,10 +191,10 @@ struct SlimeLFOWorkshop: View {
                     }.padding()
                     
                     Button {
-                        showTurn = true
+                        self.showTurn = true
                     } label: {
                         Label("Turn Angle", systemImage: "angle")
-                    }.popover(isPresented: $showTurn) {
+                    }.popover(isPresented: $showTurn, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...2)
                                 .tint(Color.red)
@@ -201,7 +202,7 @@ struct SlimeLFOWorkshop: View {
                                 .tint(Color.green)
                             LFOWidget(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...2)
                                 .tint(Color.blue)
-                        }
+                        }.padding()
                     }.padding()
                     
                     //                    Button {
