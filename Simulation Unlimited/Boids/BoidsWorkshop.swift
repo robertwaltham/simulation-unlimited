@@ -15,7 +15,9 @@ public struct BoidsWorkshop: View {
         
         ZStack {
             BoidsView(viewModel: viewModel)
-
+            TapView { touch, optLocation in
+                viewModel.updateTouch(touch, location: optLocation)
+            }
             VStack {
                 HStack {
                     VStack {

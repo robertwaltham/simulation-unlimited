@@ -201,7 +201,7 @@ extension BoidsView.Coordinator {
     }
     
     func buildRenderPassDescriptor(target: MTLTexture) -> MTLRenderPassDescriptor {
-        var descriptor = MTLRenderPassDescriptor()
+        let descriptor = MTLRenderPassDescriptor()
         descriptor.colorAttachments[0].texture = target
         descriptor.colorAttachments[0].loadAction = .clear;
         descriptor.colorAttachments[0].storeAction = .store;
@@ -266,6 +266,15 @@ extension BoidsView.Coordinator {
             depth: 1
         )
         
+        obstacles = viewModel.touches.values.map {
+            return Obstacle(
+                position: SIMD2<Float>(
+                    Float($0.x * UIScreen.main.scale),
+                    Float($0.y * UIScreen.main.scale)
+                )
+            )
+        }
+                
         initializeBoidsIfNeeded()
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
@@ -383,43 +392,49 @@ extension BoidsView.Coordinator {
     
     //MARK: - Touches
     
-    func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        
-        obstacles = touches.map {
-            let loc = $0.location(in: $0.view)
-            let scale = Float($0.view?.contentScaleFactor ?? 1)
-            return Obstacle(
-                position: SIMD2<Float>(
-                    Float(loc.x) * scale,
-                    Float(loc.y) * scale
-                )
-            )
-        }
-    }
+//    func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        
+//        obstacles = touches.map {
+//            let loc = $0.location(in: $0.view)
+//            let scale = Float($0.view?.contentScaleFactor ?? 1)
+//            return Obstacle(
+//                position: SIMD2<Float>(
+//                    Float(loc.x) * scale,
+//                    Float(loc.y) * scale
+//                )
+//            )
+//        }
+//    }
+//    
+//    func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        obstacles = touches.map {
+//            let loc = $0.location(in: $0.view)
+//            let scale = Float($0.view?.contentScaleFactor ?? 1)
+//            return Obstacle(
+//                position: SIMD2<Float>(
+//                    Float(loc.x) * scale,
+//                    Float(loc.y) * scale
+//                )
+//            )
+//        }
+//    }
     
-    func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        obstacles = touches.map {
-            let loc = $0.location(in: $0.view)
-            let scale = Float($0.view?.contentScaleFactor ?? 1)
-            return Obstacle(
-                position: SIMD2<Float>(
-                    Float(loc.x) * scale,
-                    Float(loc.y) * scale
-                )
-            )
-        }
-    }
-    
-    func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        obstacles.removeAll()
-    }
-    
-    func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-        obstacles.removeAll()
-    }
+//    func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        obstacles.removeAll()
+//    }
+//    
+//    func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+//        obstacles.removeAll()
+//    }
 }
 
 
 #Preview {
-    BoidsView()
+    let viewModel = BoidsViewModel()
+    ZStack {
+        BoidsView(viewModel: viewModel)
+        TapView { touch, optLocation in
+            viewModel.updateTouch(touch, location: optLocation)
+        }
+    }
 }

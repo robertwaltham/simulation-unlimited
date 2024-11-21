@@ -145,7 +145,7 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
     for (uint j = 0; j < uint(obstacle_count); j++) {
         Obstacle obst = obstacles[j];
         float obstacle_radius = 200;
-        float obstacle_max_force = 2;
+        float obstacle_max_force = 20;
         float obstacle_distance = distance(position, obst.position);
         if (obstacle_distance < obstacle_radius) {
             float2 diff = position - obst.position;

@@ -5,6 +5,8 @@
 //  Created by Robert Waltham on 2024-11-15.
 //
 
+import UIKit
+
 @Observable
 class BoidsViewModel {
     
@@ -16,6 +18,17 @@ class BoidsViewModel {
     convenience init(count: Int) {
         self.init()
         self.count = count
+    }
+    
+    var touches: [UITouch: CGPoint] = [:]
+    var updateCircles = true
+
+    func updateTouch(_ touch: UITouch, location: CGPoint?) {
+        if let location = location {
+            touches[touch] = location
+        } else {
+            touches.removeValue(forKey: touch)
+        }
     }
 }
 
