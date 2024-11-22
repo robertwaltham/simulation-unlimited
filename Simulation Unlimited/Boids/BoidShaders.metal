@@ -237,3 +237,50 @@ kernel void drawBoids(texture2d<half, access::write> output [[texture(0)]],
         }
     }
 }
+
+struct VertexPayload {
+    float4 position [[position]];
+    half3 color;
+};
+
+VertexPayload vertex vertexMain(
+    const device Vertex *vertices [[buffer(0)]],
+    const device Particle *particles [[buffer(1)]],
+    const device uint2& size [[buffer(2)]],
+    uint vertexID [[vertex_id]],
+    ushort iid [[instance_id]]) {
+        
+        Particle particle = particles[iid];
+        float3 particlePosition = float3( ((particle.position.x / size.x) * 2) - 1, (- (particle.position.y / size.y) * 2) + 1, 0);
+        
+        float4x4 scale = float4x4(1);
+        float ratio = 0.02;
+        scale[0][0] = ratio;
+        scale[1][1] = ratio;
+        scale[2][2] = ratio;
+        
+        float4x4 rotate = float4x4(1);
+        float3 axis = float3(0, -1, 0);
+        float3 velocity = float3(particle.velocity, 0);
+        float cosAxis = dot(axis, velocity) / length(velocity);
+        float sinAxis = length(cross(axis, velocity)) / length(velocity);
+        
+        rotate[0][0] = cosAxis;
+        rotate[1][1] = cosAxis;
+        rotate[0][1] = sinAxis;
+        rotate[1][0] = -sinAxis;
+        
+        float4x4 translate = float4x4(1);
+        translate[3][0] = particlePosition.x;
+        translate[3][1] = particlePosition.y;
+        Vertex v = vertices[vertexID];
+        VertexPayload payload;
+
+        payload.position = translate * rotate * scale * v.position;
+        payload.color = half3(v.color);
+        return payload;
+}
+
+half4 fragment fragmentMain(VertexPayload frag [[stage_in]]) {
+    return half4(frag.color, 1.0);
+}

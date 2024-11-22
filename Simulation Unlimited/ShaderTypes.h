@@ -62,4 +62,10 @@ typedef enum ParticleLifeInputIndex {
     ParticleLifeInputIndexWeights = 6
 } ParticleLifeInputIndex;
 
+
+struct Vertex {
+    vector_float4 position;
+    vector_float3 color;
+};
+
 #endif /* ShaderTypes_h */

@@ -9,6 +9,7 @@ import SwiftUI
 
 import Foundation
 import MetalKit
+import Metal
 import SwiftUI
 
 struct BoidsView: UIViewRepresentable {
@@ -58,6 +59,7 @@ struct BoidsView: UIViewRepresentable {
         var clearTexture: MTLComputePipelineState!
         var simulateBoids: MTLComputePipelineState!
         var drawBoids: MTLComputePipelineState!
+        var drawTriangles: MTLRenderPipelineState!
         
         var particleBuffer: MTLBuffer!
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
@@ -66,6 +68,8 @@ struct BoidsView: UIViewRepresentable {
         var obstacles = [Obstacle]()
         
         var viewModel: BoidsViewModel
+        
+        var triangleMesh: MTLBuffer!
         
         init(_ parent: BoidsView) {
             if let metalDevice = MTLCreateSystemDefaultDevice() {
@@ -142,6 +146,8 @@ extension BoidsView.Coordinator {
         particleBuffer = metalDevice
             .makeBuffer(bytes: &particles, length: size, options: [])
         
+        triangleMesh = makeTriangle(device: metalDevice)
+        
     }
     
     private func randomPosition(length: UInt) -> Float {
@@ -198,16 +204,36 @@ extension BoidsView.Coordinator {
         }
         drawBoids = try device.makeComputePipelineState(function: drawBoidsFunction)
         
+        
+        let renderDescriptor = MTLRenderPipelineDescriptor()
+        renderDescriptor.vertexFunction = library.makeFunction(name: "vertexMain")
+        renderDescriptor.fragmentFunction = library.makeFunction(name: "fragmentMain")
+        renderDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        
+        drawTriangles = try device.makeRenderPipelineState(descriptor: renderDescriptor)
     }
     
     func buildRenderPassDescriptor(target: MTLTexture) -> MTLRenderPassDescriptor {
         let descriptor = MTLRenderPassDescriptor()
         descriptor.colorAttachments[0].texture = target
-        descriptor.colorAttachments[0].loadAction = .clear;
+        descriptor.colorAttachments[0].loadAction = .load;
         descriptor.colorAttachments[0].storeAction = .store;
-        descriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.2, 0.5, 0.95, 1.0);
+//        descriptor.colorAttachments[0].clearColor = MTLClearColorMake(0.2, 0.5, 0.95, 1.0);
         
         return descriptor
+    }
+    
+    func makeTriangle(device: MTLDevice) -> MTLBuffer {
+        
+        let vertices : [Vertex] = [
+            Vertex(position: [-0.75, -0.75, 0.0, 1.0], color: [0.1, 0, 0]),
+            Vertex(position: [ 0.75, -0.75, 0.0, 1.0], color: [0.1, 0, 0]),
+            Vertex(position: [  0.0,  0.75, 0.0, 1.0], color: [1, 0, 0])
+        ]
+        
+        return device.makeBuffer(bytes: vertices,
+                                 length: vertices.count * MemoryLayout<Vertex>.stride,
+                                 options: [])!
     }
     
     func extractParticles() {
@@ -379,6 +405,26 @@ extension BoidsView.Coordinator {
                 // finish
                 
                 commandEncoder.endEncoding()
+                
+                
+                let renderPassDescriptor = view.currentRenderPassDescriptor
+                renderPassDescriptor?.colorAttachments[0].clearColor = MTLClearColorMake(0, 0.5, 0.5, 1.0)
+                renderPassDescriptor?.colorAttachments[0].loadAction = .load
+                renderPassDescriptor?.colorAttachments[0].storeAction = .store
+                
+                let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)!
+                
+                renderEncoder.setRenderPipelineState(drawTriangles)
+                
+                renderEncoder.setVertexBuffer(triangleMesh, offset: 0, index: 0)
+                renderEncoder.setVertexBuffer(particleBuffer, offset: 0, index: 1)
+                renderEncoder.setVertexBytes(&viewPortSize, length: MemoryLayout<vector_float2>.size, index: 2)
+//                renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
+//                renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: 3, indexType: .uint16, indexBuffer: triangleMesh, indexBufferOffset: 0, instanceCount: particles.count)
+                renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: particles.count)
+                
+                renderEncoder.endEncoding()
+                
                 commandBuffer.present(drawable)
                 
             } else {
