@@ -376,31 +376,31 @@ extension BoidsView.Coordinator {
                 
                 // third pass - draw boids
                 
-                if let particleBuffer = particleBuffer {
-                    commandEncoder.setComputePipelineState(drawBoids)
-                    commandEncoder.setTexture(drawable.texture, index: 0)
-                    commandEncoder
-                        .setBuffer(
-                            particleBuffer,
-                            offset: 0,
-                            index: Int(
-                                ThirdPassInputTextureIndexParticle.rawValue
-                            )
-                        )
-                    commandEncoder
-                        .setBytes(
-                            &viewModel.drawSize,
-                            length: MemoryLayout<Int>.stride,
-                            index: Int(
-                                ThirdPassInputTextureIndexRadius.rawValue
-                            )
-                        )
-                    commandEncoder
-                        .dispatchThreadgroups(
-                            particleThreadGroupsPerGrid,
-                            threadsPerThreadgroup: particleThreadsPerGroup
-                        )
-                }
+//                if let particleBuffer = particleBuffer {
+//                    commandEncoder.setComputePipelineState(drawBoids)
+//                    commandEncoder.setTexture(drawable.texture, index: 0)
+//                    commandEncoder
+//                        .setBuffer(
+//                            particleBuffer,
+//                            offset: 0,
+//                            index: Int(
+//                                ThirdPassInputTextureIndexParticle.rawValue
+//                            )
+//                        )
+//                    commandEncoder
+//                        .setBytes(
+//                            &viewModel.drawSize,
+//                            length: MemoryLayout<Int>.stride,
+//                            index: Int(
+//                                ThirdPassInputTextureIndexRadius.rawValue
+//                            )
+//                        )
+//                    commandEncoder
+//                        .dispatchThreadgroups(
+//                            particleThreadGroupsPerGrid,
+//                            threadsPerThreadgroup: particleThreadsPerGroup
+//                        )
+//                }
                 
                 // finish
                 

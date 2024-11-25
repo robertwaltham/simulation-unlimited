@@ -263,12 +263,16 @@ VertexPayload vertex vertexMain(
         float3 axis = float3(0, -1, 0);
         float3 velocity = float3(particle.velocity, 0);
         float cosAxis = dot(axis, velocity) / length(velocity);
-        float sinAxis = length(cross(axis, velocity)) / length(velocity);
+        float sinAxis = length(cross(velocity, axis)) / length(velocity);
+        
+        if (velocity.x < 0) {
+            sinAxis = -sinAxis;
+        }
         
         rotate[0][0] = cosAxis;
         rotate[1][1] = cosAxis;
-        rotate[0][1] = sinAxis;
-        rotate[1][0] = -sinAxis;
+        rotate[0][1] = -sinAxis;
+        rotate[1][0] = sinAxis;
         
         float4x4 translate = float4x4(1);
         translate[3][0] = particlePosition.x;
