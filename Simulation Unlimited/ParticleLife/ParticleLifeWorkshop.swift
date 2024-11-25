@@ -26,7 +26,7 @@ struct ParticleLifeWorkshop: View {
                         showWeights = true
                     } label: {
                         Label("Weights", systemImage: "figure.walk.circle.fill")
-                    }.popover(isPresented: $showWeights) {
+                    }.popover(isPresented: $showWeights, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         weightWidget()
                     }.padding()
                     
@@ -40,38 +40,13 @@ struct ParticleLifeWorkshop: View {
                         showParams = true
                     } label: {
                         Label("Parameters", systemImage: "figure.walk.circle.fill")
-                    }.popover(isPresented: $showParams) {
+                    }.popover(isPresented: $showParams, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         paramWidget()
                     }.padding()
                 }
                 
             }.foregroundStyle(Color.blue)
-            
-            
-            //            HStack {
-            //            ForEach(viewModel.getSwiftUIColors(), id: \.self) { c in
-            //                rectangle(color: c)
-            //            }
-            //            HStack(alignment: .center, spacing: 15) {
-            //                HStack {
-            //                    Text("Draw Radius: \(viewModel.config.drawRadius, specifier: "%.f")")
-            //                        .font(.title3)
-            //                    Slider(value: $viewModel.config.drawRadius, in: 1...10)
-            //                }
-            //
-            //                HStack {
-            //                    Text("Trail Radius: \(viewModel.config.trailRadius, specifier: "%.f")")
-            //                        .font(.title3)
-            //                    Slider(value: $viewModel.config.trailRadius, in: 1...10)
-            //                }
-            //            }
-            
-            
-            
-            //            }
         }
-        
-        
     }
     
     @ViewBuilder
