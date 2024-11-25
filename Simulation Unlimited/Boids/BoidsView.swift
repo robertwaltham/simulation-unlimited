@@ -226,8 +226,8 @@ extension BoidsView.Coordinator {
     func makeTriangle(device: MTLDevice) -> MTLBuffer {
         
         let vertices : [Vertex] = [
-            Vertex(position: [-0.75, -0.75, 0.0, 1.0], color: [0.1, 0, 0]),
-            Vertex(position: [ 0.75, -0.75, 0.0, 1.0], color: [0.1, 0, 0]),
+            Vertex(position: [-0.75, -0.75, 0.0, 1.0], color: [1, 1, 0]),
+            Vertex(position: [ 0.75, -0.75, 0.0, 1.0], color: [1, 1, 0]),
             Vertex(position: [  0.0,  0.75, 0.0, 1.0], color: [1, 0, 0])
         ]
         
@@ -419,8 +419,12 @@ extension BoidsView.Coordinator {
                 renderEncoder.setVertexBuffer(triangleMesh, offset: 0, index: 0)
                 renderEncoder.setVertexBuffer(particleBuffer, offset: 0, index: 1)
                 renderEncoder.setVertexBytes(&viewPortSize, length: MemoryLayout<vector_float2>.size, index: 2)
-//                renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
-//                renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: 3, indexType: .uint16, indexBuffer: triangleMesh, indexBufferOffset: 0, instanceCount: particles.count)
+                renderEncoder.setVertexBytes(
+                    &viewModel.config,
+                    length: MemoryLayout<BoidsConfig>.stride,
+                    index: 3
+                )
+
                 renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: particles.count)
                 
                 renderEncoder.endEncoding()
@@ -478,7 +482,7 @@ extension BoidsView.Coordinator {
 #Preview {
     let viewModel = BoidsViewModel()
     ZStack {
-        BoidsView(viewModel: viewModel)
+        BoidsView(viewModel: viewModel) //.frame(width: 500, height: 250)
         TapView { touch, optLocation in
             viewModel.updateTouch(touch, location: optLocation)
         }

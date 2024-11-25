@@ -30,6 +30,7 @@ struct BoidsConfig {
     float cohere_coefficient;
     float separate_coefficient;
     float radius;
+    float draw_size;
 };
 
 float2 limit_magnitude(float2 vec, float max_mag) {
@@ -247,16 +248,19 @@ VertexPayload vertex vertexMain(
     const device Vertex *vertices [[buffer(0)]],
     const device Particle *particles [[buffer(1)]],
     const device uint2& size [[buffer(2)]],
+    const device BoidsConfig& config [[ buffer(3)]],
     uint vertexID [[vertex_id]],
     ushort iid [[instance_id]]) {
         
         Particle particle = particles[iid];
         float3 particlePosition = float3( ((particle.position.x / size.x) * 2) - 1, (- (particle.position.y / size.y) * 2) + 1, 0);
         
+        float screenScale = float(size.x) / float(size.y);
+        
         float4x4 scale = float4x4(1);
-        float ratio = 0.02;
+        float ratio = config.draw_size / 100.0;
         scale[0][0] = ratio;
-        scale[1][1] = ratio;
+        scale[1][1] = ratio * screenScale;
         scale[2][2] = ratio;
         
         float4x4 rotate = float4x4(1);
@@ -280,7 +284,7 @@ VertexPayload vertex vertexMain(
         Vertex v = vertices[vertexID];
         VertexPayload payload;
 
-        payload.position = translate * rotate * scale * v.position;
+        payload.position =  translate * scale * rotate * v.position;
         payload.color = half3(v.color);
         return payload;
 }

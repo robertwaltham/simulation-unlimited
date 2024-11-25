@@ -40,6 +40,7 @@ struct BoidsConfig {
     var cohere_coefficient: Float
     var separate_coefficient: Float
     var radius: Float
+    var draw_scale: Float
 }
 
 extension BoidsConfig {
@@ -50,7 +51,8 @@ extension BoidsConfig {
             align_coefficient: 0.3,
             cohere_coefficient: 0.4,
             separate_coefficient: 0.5,
-            radius: 15
+            radius: 15,
+            draw_scale: 0.5
         )
     }
 }
