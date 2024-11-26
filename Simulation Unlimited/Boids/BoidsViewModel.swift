@@ -10,11 +10,14 @@ import UIKit
 @Observable
 class BoidsViewModel {
     
-    var drawSize: Int = 2
-    var count: Int = 4096
+    var drawSize: Int = 3
+    var count: Int = 8192
+    var drawTriangles: Bool = false
     
-    var config = BoidsConfig.defaultConfig()
-    
+    var redConfig = BoidsConfig.defaultConfig()
+    var blueConfig = BoidsConfig.defaultConfig()
+    var greenConfig = BoidsConfig.defaultConfig()
+
     convenience init(count: Int) {
         self.init()
         self.count = count
@@ -41,6 +44,12 @@ struct BoidsConfig {
     var separate_coefficient: Float
     var radius: Float
     var draw_scale: Float
+    var ignoreOthers: Bool
+    
+    // padding
+    var unused1: Bool = false
+    var unused2: Bool = false
+    var unused3: Bool = false
 }
 
 extension BoidsConfig {
@@ -51,8 +60,21 @@ extension BoidsConfig {
             align_coefficient: 0.3,
             cohere_coefficient: 0.4,
             separate_coefficient: 0.5,
+            radius: 30,
+            draw_scale: 0.5,
+            ignoreOthers: false
+        )
+    }
+    static func altConfig() -> BoidsConfig {
+        return BoidsConfig(
+            max_speed: 5,
+            margin: 50,
+            align_coefficient: 0.1,
+            cohere_coefficient: 0.1,
+            separate_coefficient: 0.1,
             radius: 15,
-            draw_scale: 0.5
+            draw_scale: 0.5,
+            ignoreOthers: true
         )
     }
 }

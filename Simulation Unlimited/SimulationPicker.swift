@@ -14,6 +14,8 @@ struct SimulationPicker: View {
             VStack {
                 simulationTile(content: {
                     BoidsWorkshop()
+                        .edgesIgnoringSafeArea(.all)
+                        .statusBar(hidden: true)
                 }, sim: {
                     BoidsView(viewModel: BoidsViewModel(count: 1024))
                 }, text: "Boids", icon: "bird.circle")

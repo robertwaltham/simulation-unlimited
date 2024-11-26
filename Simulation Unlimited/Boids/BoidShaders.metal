@@ -17,6 +17,7 @@ struct Particle {
     float2 velocity;
     float2 acceleration;
     float2 force;
+    int species;
 };
 
 struct Obstacle {
@@ -31,6 +32,7 @@ struct BoidsConfig {
     float separate_coefficient;
     float radius;
     float draw_size;
+    bool ignore_others;
 };
 
 float2 limit_magnitude(float2 vec, float max_mag) {
@@ -52,7 +54,7 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
                        const device uint& height [[ buffer(BoidsInputIndexHeight)]],
                        device Obstacle *obstacles [[buffer(BoidsInputIndexObstacle)]],
                        const device int& obstacle_count [[ buffer(BoidsInputIndexObstacleCount)]],
-                       const device BoidsConfig& config [[ buffer(BoidsInputIndexConfig)]],
+                       const device BoidsConfig *configs [[ buffer(BoidsInputIndexConfig)]],
                        uint id [[ thread_position_in_grid ]],
                        uint tid [[ thread_index_in_threadgroup ]],
                        uint bid [[ threadgroup_position_in_grid ]],
@@ -60,6 +62,7 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
     
     uint index = bid * blockDim + tid;
     Particle particle = particles[index];
+    BoidsConfig config = configs[particle.species];
     
     float margin_force = 0.1;
     float max_force = 1;
@@ -81,6 +84,11 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
         }
         
         Particle other = particles[i];
+        
+        if (other.species != particle.species && config.ignore_others) {
+            continue;
+        }
+        
         float dist = distance(position, other.position);
         if (dist > config.radius) {
             continue;
@@ -219,21 +227,17 @@ kernel void drawBoids(texture2d<half, access::write> output [[texture(0)]],
     Particle particle = particles[index];
     uint2 pos = uint2(particle.position);
     
-    // display
-    half4 color = half4(1.);
-    
-    if (span == 0) {
-        output.write(color, pos);
-    } else {
-        for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
-            for (uint v = pos.y - span; v <= uint(pos.y) + span; v++) {
-                if (u < 0 || v < 0 || u >= width || v >= height) {
-                    continue;
-                }
-                
-                if (length(float2(u, v) - particle.position) < span) {
-                    output.write(color, uint2(u, v));
-                }
+    half4 trail_colour = half4(0,0,0,1);
+    trail_colour[particle.species] = 1.;
+        
+    for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
+        for (uint v = pos.y - span; v <= uint(pos.y) + span; v++) {
+            if (u < 0 || v < 0 || u >= width || v >= height) {
+                continue;
+            }
+            
+            if (length(float2(u, v) - particle.position) < span) {
+                output.write(trail_colour, uint2(u, v));
             }
         }
     }
@@ -248,11 +252,13 @@ VertexPayload vertex vertexMain(
     const device Vertex *vertices [[buffer(0)]],
     const device Particle *particles [[buffer(1)]],
     const device uint2& size [[buffer(2)]],
-    const device BoidsConfig& config [[ buffer(3)]],
+    const device BoidsConfig *configs [[ buffer(3)]],
     uint vertexID [[vertex_id]],
     ushort iid [[instance_id]]) {
         
         Particle particle = particles[iid];
+        BoidsConfig config = configs[particle.species];
+
         float3 particlePosition = float3( ((particle.position.x / size.x) * 2) - 1, (- (particle.position.y / size.y) * 2) + 1, 0);
         
         float screenScale = float(size.x) / float(size.y);

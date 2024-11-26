@@ -62,6 +62,7 @@ struct BoidsView: UIViewRepresentable {
         var drawTriangles: MTLRenderPipelineState!
         
         var particleBuffer: MTLBuffer!
+        var configBuffer: MTLBuffer!
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
         
         var particles = [Particle]()
@@ -96,6 +97,7 @@ struct Particle {
     var velocity: SIMD2<Float>
     var acceleration: SIMD2<Float> = SIMD2<Float>(0,0)
     var force: SIMD2<Float> = SIMD2<Float>(0,0)
+    var species: Int
     
     var description: String {
         return "p<\(position.x),\(position.y)> v<\(velocity.x),\(velocity.y)> a<\(acceleration.x),\(acceleration.y) f<\(force.x),\(force.y)>"
@@ -127,7 +129,7 @@ extension BoidsView.Coordinator {
         guard particleBuffer == nil else {
             return
         }
-        let maxSpeed = viewModel.config.max_speed
+        let maxSpeed = viewModel.redConfig.max_speed
         
         for _ in 0 ..< viewModel.count {
             let speed = SIMD2<Float>(
@@ -139,7 +141,8 @@ extension BoidsView.Coordinator {
                 randomPosition(length: UInt(viewPortSize.y))
             )
             let particle = Particle(position: position,
-                                    velocity: speed)
+                                    velocity: speed,
+                                    species: Int.random(in: 0...2))
             particles.append(particle)
         }
         let size = particles.count * MemoryLayout<Particle>.size
@@ -150,11 +153,19 @@ extension BoidsView.Coordinator {
         
     }
     
+    func initializeConfigBufferIfNeeded() {
+        guard configBuffer == nil else {
+            return
+        }
+        
+        configBuffer = metalDevice.makeBuffer(length: 3 * MemoryLayout<BoidsConfig>.size)
+    }
+    
     private func randomPosition(length: UInt) -> Float {
-        let maxSize = length - (UInt(viewModel.config.margin) * 2)
+        let maxSize = length - (UInt(viewModel.greenConfig.margin) * 2)
         return Float(
             arc4random_uniform(UInt32(maxSize)) + UInt32(
-                viewModel.config.margin
+                viewModel.redConfig.margin
             )
         )
     }
@@ -282,6 +293,7 @@ extension BoidsView.Coordinator {
             height: 1,
             depth:1
         )
+    
         
         let w = clearTexture.threadExecutionWidth
         let h = clearTexture.maxTotalThreadsPerThreadgroup / w
@@ -301,7 +313,19 @@ extension BoidsView.Coordinator {
             )
         }
                 
+        initializeConfigBufferIfNeeded()
         initializeBoidsIfNeeded()
+        
+        configBuffer
+            .contents()
+            .copyMemory(
+                from: [
+                    viewModel.redConfig,
+                    viewModel.greenConfig,
+                    viewModel.blueConfig
+                ],
+                byteCount: 3 * MemoryLayout<BoidsConfig>.size
+            )
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
@@ -340,12 +364,13 @@ extension BoidsView.Coordinator {
                         offset: 0,
                         index: Int(BoidsInputIndexObstacle.rawValue)
                     )
-                commandEncoder
-                    .setBytes(
-                        &viewModel.config,
-                        length: MemoryLayout<BoidsConfig>.stride,
-                        index: Int(BoidsInputIndexConfig.rawValue)
-                    )
+//                commandEncoder
+//                    .setBytes(
+//                        &viewModel.config,
+//                        length: MemoryLayout<BoidsConfig>.stride,
+//                        index: Int(BoidsInputIndexConfig.rawValue)
+//                    )
+                commandEncoder.setBuffer(configBuffer, offset: 0, index: Int(BoidsInputIndexConfig.rawValue))
                 var count = obstacles.count
                 commandEncoder
                     .setBytes(
@@ -376,58 +401,62 @@ extension BoidsView.Coordinator {
                 
                 // third pass - draw boids
                 
-//                if let particleBuffer = particleBuffer {
-//                    commandEncoder.setComputePipelineState(drawBoids)
-//                    commandEncoder.setTexture(drawable.texture, index: 0)
-//                    commandEncoder
-//                        .setBuffer(
-//                            particleBuffer,
-//                            offset: 0,
-//                            index: Int(
-//                                ThirdPassInputTextureIndexParticle.rawValue
-//                            )
-//                        )
-//                    commandEncoder
-//                        .setBytes(
-//                            &viewModel.drawSize,
-//                            length: MemoryLayout<Int>.stride,
-//                            index: Int(
-//                                ThirdPassInputTextureIndexRadius.rawValue
-//                            )
-//                        )
-//                    commandEncoder
-//                        .dispatchThreadgroups(
-//                            particleThreadGroupsPerGrid,
-//                            threadsPerThreadgroup: particleThreadsPerGroup
-//                        )
-//                }
+                if particleBuffer != nil && !viewModel.drawTriangles {
+                    commandEncoder.setComputePipelineState(drawBoids)
+                    commandEncoder.setTexture(drawable.texture, index: 0)
+                    commandEncoder
+                        .setBuffer(
+                            particleBuffer,
+                            offset: 0,
+                            index: Int(
+                                ThirdPassInputTextureIndexParticle.rawValue
+                            )
+                        )
+                    commandEncoder
+                        .setBytes(
+                            &viewModel.drawSize,
+                            length: MemoryLayout<Int>.stride,
+                            index: Int(
+                                ThirdPassInputTextureIndexRadius.rawValue
+                            )
+                        )
+                    commandEncoder
+                        .dispatchThreadgroups(
+                            particleThreadGroupsPerGrid,
+                            threadsPerThreadgroup: particleThreadsPerGroup
+                        )
+                }
                 
-                // finish
+                // finish compute
                 
                 commandEncoder.endEncoding()
                 
-                
-                let renderPassDescriptor = view.currentRenderPassDescriptor
-                renderPassDescriptor?.colorAttachments[0].clearColor = MTLClearColorMake(0, 0.5, 0.5, 1.0)
-                renderPassDescriptor?.colorAttachments[0].loadAction = .load
-                renderPassDescriptor?.colorAttachments[0].storeAction = .store
-                
-                let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)!
-                
-                renderEncoder.setRenderPipelineState(drawTriangles)
-                
-                renderEncoder.setVertexBuffer(triangleMesh, offset: 0, index: 0)
-                renderEncoder.setVertexBuffer(particleBuffer, offset: 0, index: 1)
-                renderEncoder.setVertexBytes(&viewPortSize, length: MemoryLayout<vector_float2>.size, index: 2)
-                renderEncoder.setVertexBytes(
-                    &viewModel.config,
-                    length: MemoryLayout<BoidsConfig>.stride,
-                    index: 3
-                )
+                if viewModel.drawTriangles {
+                    let renderPassDescriptor = view.currentRenderPassDescriptor
+                    renderPassDescriptor?.colorAttachments[0].clearColor = MTLClearColorMake(0, 0.5, 0.5, 1.0)
+                    renderPassDescriptor?.colorAttachments[0].loadAction = .load
+                    renderPassDescriptor?.colorAttachments[0].storeAction = .store
+                    
+                    let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)!
+                    
+                    renderEncoder.setRenderPipelineState(drawTriangles)
+                    
+                    renderEncoder.setVertexBuffer(triangleMesh, offset: 0, index: 0)
+                    renderEncoder.setVertexBuffer(particleBuffer, offset: 0, index: 1)
+                    renderEncoder.setVertexBytes(&viewPortSize, length: MemoryLayout<vector_float2>.size, index: 2)
+//                    renderEncoder.setVertexBytes(
+//                        &viewModel.config,
+//                        length: MemoryLayout<BoidsConfig>.stride,
+//                        index: 3
+//                    )
+                    renderEncoder.setVertexBuffer(configBuffer, offset: 0, index: 3)
 
-                renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: particles.count)
+                    renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: particles.count)
+                    
+                    renderEncoder.endEncoding()
+                }
                 
-                renderEncoder.endEncoding()
+
                 
                 commandBuffer.present(drawable)
                 
