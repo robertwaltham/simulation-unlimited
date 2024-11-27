@@ -11,7 +11,7 @@ import UIKit
 class BoidsViewModel {
     
     var drawSize: Int = 3
-    var count: Int = 8192
+    var count: Int = 4096
     var drawTriangles: Bool = false
     
     var redConfig = BoidsConfig.defaultConfig()
@@ -38,16 +38,18 @@ class BoidsViewModel {
 
 struct BoidsConfig {
     var max_speed: Float
+    var min_speed: Float
     var margin: Float
     var align_coefficient: Float
     var cohere_coefficient: Float
     var separate_coefficient: Float
     var radius: Float
     var draw_scale: Float
+    var variance: Float
     var ignoreOthers: Bool
-    
+    var ignoreSelf: Bool
+
     // padding
-    var unused1: Bool = false
     var unused2: Bool = false
     var unused3: Bool = false
 }
@@ -56,25 +58,31 @@ extension BoidsConfig {
     static func defaultConfig() -> BoidsConfig {
         return BoidsConfig(
             max_speed: 5,
+            min_speed: 1.5,
             margin: 50,
             align_coefficient: 0.3,
             cohere_coefficient: 0.4,
             separate_coefficient: 0.5,
             radius: 30,
             draw_scale: 0.5,
-            ignoreOthers: false
+            variance: 0,
+            ignoreOthers: false,
+            ignoreSelf: false
         )
     }
     static func altConfig() -> BoidsConfig {
         return BoidsConfig(
             max_speed: 5,
+            min_speed: 1.5,
             margin: 50,
             align_coefficient: 0.1,
             cohere_coefficient: 0.1,
             separate_coefficient: 0.1,
             radius: 15,
             draw_scale: 0.5,
-            ignoreOthers: true
+            variance: 0,
+            ignoreOthers: true,
+            ignoreSelf: false
         )
     }
 }

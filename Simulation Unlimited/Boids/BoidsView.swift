@@ -98,6 +98,8 @@ struct Particle {
     var acceleration: SIMD2<Float> = SIMD2<Float>(0,0)
     var force: SIMD2<Float> = SIMD2<Float>(0,0)
     var species: Int
+    var variance: Float
+    var padding: Float = 0
     
     var description: String {
         return "p<\(position.x),\(position.y)> v<\(velocity.x),\(velocity.y)> a<\(acceleration.x),\(acceleration.y) f<\(force.x),\(force.y)>"
@@ -142,7 +144,8 @@ extension BoidsView.Coordinator {
             )
             let particle = Particle(position: position,
                                     velocity: speed,
-                                    species: Int.random(in: 0...2))
+                                    species: Int.random(in: 0...2),
+                                    variance: Float.random(in: -1...1))
             particles.append(particle)
         }
         let size = particles.count * MemoryLayout<Particle>.size

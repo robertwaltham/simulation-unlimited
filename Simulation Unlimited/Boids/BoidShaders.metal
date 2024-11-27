@@ -18,6 +18,8 @@ struct Particle {
     float2 acceleration;
     float2 force;
     int species;
+    float padding;
+    float variance;
 };
 
 struct Obstacle {
@@ -26,13 +28,16 @@ struct Obstacle {
 
 struct BoidsConfig {
     float max_speed;
+    float min_speed;
     float margin;
     float align_coefficient;
     float cohere_coefficient;
     float separate_coefficient;
     float radius;
     float draw_size;
+    float variance;
     bool ignore_others;
+    bool ignore_self;
 };
 
 float2 limit_magnitude(float2 vec, float max_mag) {
@@ -86,6 +91,10 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
         Particle other = particles[i];
         
         if (other.species != particle.species && config.ignore_others) {
+            continue;
+        }
+        
+        if (other.species == particle.species && config.ignore_self) {
             continue;
         }
         
@@ -182,10 +191,11 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
     
     // velocity
     velocity += acceleration;
-    velocity = limit_magnitude(velocity, config.max_speed);
+    float variance = config.variance * particle.variance;
+    velocity = limit_magnitude(velocity, config.max_speed + variance);
     float magnitude = length(velocity);
-    if (magnitude < config.max_speed / 3) {
-        velocity = normalize(velocity) * config.max_speed;
+    if (magnitude < config.min_speed) {
+        velocity = normalize(velocity) * (config.min_speed + variance);
     }
     
     // margin
