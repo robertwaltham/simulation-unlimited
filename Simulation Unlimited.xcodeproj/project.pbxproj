@@ -14,6 +14,10 @@
 		D108C0982BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */; };
 		D1212DA92CE7FF09009352FE /* BoidsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1212DA82CE7FF03009352FE /* BoidsViewModel.swift */; };
 		D123671B2CE809E3005FCB11 /* BoidsWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D123671A2CE809DF005FCB11 /* BoidsWorkshop.swift */; };
+		D150FEB92CFA6C96008C64E9 /* SandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D150FEB82CFA6C92008C64E9 /* SandView.swift */; };
+		D150FEBB2CFA6C9F008C64E9 /* SandViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D150FEBA2CFA6C9C008C64E9 /* SandViewModel.swift */; };
+		D150FEBD2CFA6CAA008C64E9 /* SandWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D150FEBC2CFA6CA3008C64E9 /* SandWorkshop.swift */; };
+		D150FEBF2CFA6CB3008C64E9 /* SandShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D150FEBE2CFA6CAE008C64E9 /* SandShaders.metal */; };
 		D197F0602AC78E0800324D6D /* Simulation_UnlimitedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */; };
 		D197F0662AC78E0800324D6D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0652AC78E0800324D6D /* Assets.xcassets */; };
 		D197F0692AC78E0800324D6D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D197F0682AC78E0800324D6D /* Preview Assets.xcassets */; };
@@ -47,6 +51,10 @@
 		D108C0972BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApollonianGasketWorkshop.swift; sourceTree = "<group>"; };
 		D1212DA82CE7FF03009352FE /* BoidsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsViewModel.swift; sourceTree = "<group>"; };
 		D123671A2CE809DF005FCB11 /* BoidsWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoidsWorkshop.swift; sourceTree = "<group>"; };
+		D150FEB82CFA6C92008C64E9 /* SandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandView.swift; sourceTree = "<group>"; };
+		D150FEBA2CFA6C9C008C64E9 /* SandViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandViewModel.swift; sourceTree = "<group>"; };
+		D150FEBC2CFA6CA3008C64E9 /* SandWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SandWorkshop.swift; sourceTree = "<group>"; };
+		D150FEBE2CFA6CAE008C64E9 /* SandShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SandShaders.metal; sourceTree = "<group>"; };
 		D197F05C2AC78E0800324D6D /* Simulation Unlimited.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Simulation Unlimited.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D197F05F2AC78E0800324D6D /* Simulation_UnlimitedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation_UnlimitedApp.swift; sourceTree = "<group>"; };
 		D197F0652AC78E0800324D6D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -105,6 +113,17 @@
 			path = ApollonianGasket;
 			sourceTree = "<group>";
 		};
+		D150FEB72CFA6C72008C64E9 /* Sand */ = {
+			isa = PBXGroup;
+			children = (
+				D150FEBE2CFA6CAE008C64E9 /* SandShaders.metal */,
+				D150FEBC2CFA6CA3008C64E9 /* SandWorkshop.swift */,
+				D150FEBA2CFA6C9C008C64E9 /* SandViewModel.swift */,
+				D150FEB82CFA6C92008C64E9 /* SandView.swift */,
+			);
+			path = Sand;
+			sourceTree = "<group>";
+		};
 		D197F0532AC78E0800324D6D = {
 			isa = PBXGroup;
 			children = (
@@ -133,6 +152,7 @@
 				D1CDE32E2BA6569D0053D3A5 /* Bestagons */,
 				D108C08D2BA9DEBC00E7EF7F /* ApollonianGasket */,
 				D1D0C1682B8555DD00EADC5D /* LFO */,
+				D150FEB72CFA6C72008C64E9 /* Sand */,
 				D197F0652AC78E0800324D6D /* Assets.xcassets */,
 				D197F0672AC78E0800324D6D /* Preview Content */,
 			);
@@ -281,11 +301,13 @@
 			files = (
 				D1D80F1D2BABBA73009B5EFB /* CircleWorkshop.swift in Sources */,
 				D1D0C16E2B85639F00EADC5D /* SlimeLFOWorkshop.swift in Sources */,
+				D150FEBF2CFA6CB3008C64E9 /* SandShaders.metal in Sources */,
 				D1CDE3302BA656B70053D3A5 /* HexagonView.swift in Sources */,
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
 				D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */,
 				D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */,
 				D1D0C16A2B8555F800EADC5D /* LowFrequencyOscillator.swift in Sources */,
+				D150FEB92CFA6C96008C64E9 /* SandView.swift in Sources */,
 				D197F0812ACDF71500324D6D /* SlimeViewModel.swift in Sources */,
 				D1212DA92CE7FF09009352FE /* BoidsViewModel.swift in Sources */,
 				D1D80F172BABB58F009B5EFB /* CircleView.swift in Sources */,
@@ -293,6 +315,7 @@
 				D1D80F1B2BABB9A5009B5EFB /* CircleViewModel.swift in Sources */,
 				D197F07A2AC7ABBB00324D6D /* BoidShaders.metal in Sources */,
 				D1CDE3342BA6612D0053D3A5 /* HexagonWorkshop.swift in Sources */,
+				D150FEBD2CFA6CAA008C64E9 /* SandWorkshop.swift in Sources */,
 				D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */,
 				D108C0982BA9DF3800E7EF7F /* ApollonianGasketWorkshop.swift in Sources */,
 				D1EB89C62BA9E5140010E1BC /* TapView.swift in Sources */,
@@ -300,6 +323,7 @@
 				D1CDE3322BA658390053D3A5 /* HexagonShaders.metal in Sources */,
 				D1D80F192BABB64B009B5EFB /* CircleShaders.metal in Sources */,
 				D123671B2CE809E3005FCB11 /* BoidsWorkshop.swift in Sources */,
+				D150FEBB2CFA6C9F008C64E9 /* SandViewModel.swift in Sources */,
 				D197F07E2AC8ABF400324D6D /* SlimeWorkshop.swift in Sources */,
 				D197F0722AC7A28900324D6D /* SlimeShaders.metal in Sources */,
 				D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */,

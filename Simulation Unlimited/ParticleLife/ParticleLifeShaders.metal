@@ -167,13 +167,12 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         }
     }
     
-    if (length(newVelocity) > 0.1) {
+    if (length(newVelocity) > 0.001) {
         particle.velocity = limit_magnitude2(newVelocity, config.max_speed);
     }
     
     
     // update particle
-//    particle.velocity = velocity;
     particle.acceleration = acceleration;
     particle.position = position;
     

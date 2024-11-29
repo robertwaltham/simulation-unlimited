@@ -51,6 +51,15 @@ struct SimulationPicker: View {
                 }, text: "Circles", icon: "circle")
                 
                 
+                simulationTile(content: {
+                    SandWorkshop()
+                        .edgesIgnoringSafeArea(.all)
+                        .statusBar(hidden: true)
+                }, sim: {
+                    SandView(viewModel: SandViewModel())
+                }, text: "Sand", icon: "beach.umbrella.fill")
+                
+                
             }.navigationTitle("Simulations")
         }
     }
