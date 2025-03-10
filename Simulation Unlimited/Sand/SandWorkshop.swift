@@ -10,7 +10,6 @@ import SwiftUI
 public struct SandWorkshop: View {
     @State var viewModel = SandViewModel()
 
-    
     public var body: some View {
         ZStack {
             SandView(viewModel: viewModel)
@@ -19,5 +18,9 @@ public struct SandWorkshop: View {
             }
         }
     }
-
 }
+
+#Preview {
+    SandWorkshop()
+}
+

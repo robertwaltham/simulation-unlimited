@@ -52,20 +52,14 @@ struct SandView: UIViewRepresentable {
     
     class Coordinator : NSObject, MTKViewDelegate {
         
-        var view: MTKView! // TODO: view with touches
+        var view: MTKView!
         var metalDevice: MTLDevice!
         var metalCommandQueue: MTLCommandQueue!
-        
-        var clearTexture: MTLComputePipelineState!
-        var simulateBoids: MTLComputePipelineState!
-        var drawBoids: MTLComputePipelineState!
-        var drawTriangles: MTLRenderPipelineState!
         
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
         var viewModel: SandViewModel
         
-        private var states: [MTLComputePipelineState] = []
-
+        fileprivate var states: SandPipelineStates!
                 
         init(_ parent: SandView) {
             if let metalDevice = MTLCreateSystemDefaultDevice() {
@@ -92,7 +86,6 @@ struct SandView: UIViewRepresentable {
 
 extension SandView.Coordinator {
     
-    
     func buildPipeline() {
         
         // make Command queue
@@ -118,35 +111,21 @@ extension SandView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try [
-            "firstPassSand",
-        ]
-            .map {
-                guard let function = library.makeFunction(name: $0) else {
-                    fatalError("Can't make function \($0)")
-                }
-                return try device.makeComputePipelineState(function: function)
-            }
+        states = SandPipelineStates(library: library, device: device)
     }
     
     func draw() {
         
-        let w = states[0].threadExecutionWidth
-        let h = states[0].maxTotalThreadsPerThreadgroup / w
-        let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
-        let textureThreadgroupsPerGrid = MTLSize(
-            width: (Int(viewPortSize.x) + w - 1) / w,
-            height: (Int(viewPortSize.y) + h - 1) / h,
-            depth: 1
-        )
         
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
             
-            
             if let drawable = view?.currentDrawable {
+                
+                let threadCount = states.firstPass.threadCount(textureSize: MTLSize(width: Int(viewPortSize.x), height: Int(viewPortSize.y), depth: 0))
+
                 // Draw Background Colour
-                commandEncoder.setComputePipelineState(states[0])
+                commandEncoder.setComputePipelineState(states.firstPass)
                 commandEncoder
                     .setTexture(
                         drawable.texture,
@@ -154,10 +133,9 @@ extension SandView.Coordinator {
                     )
                 commandEncoder
                     .dispatchThreadgroups(
-                        textureThreadgroupsPerGrid,
-                        threadsPerThreadgroup: textureThreadsPerGroup
+                        threadCount.threadsPerGrid,
+                        threadsPerThreadgroup: threadCount.threadsPerGroup
                     )
-                
                 
                 commandEncoder.endEncoding()
                 commandBuffer.present(drawable)
@@ -169,6 +147,37 @@ extension SandView.Coordinator {
     }
 }
 
+private struct SandPipelineStates {
+    let firstPass: MTLComputePipelineState
+    
+    init(library: MTLLibrary, device: MTLDevice) {
+        guard let firstPass = library.makeFunction(name: "firstPassSand") else {
+            fatalError("Failed to create function")
+        }
+        
+        do {
+            self.firstPass = try device.makeComputePipelineState(function: firstPass)
+
+        } catch {
+            fatalError("failed to make compute pipeline state")
+        }
+    }
+}
+
+extension MTLComputePipelineState {
+    func threadCount(textureSize: MTLSize) -> (threadsPerGroup: MTLSize, threadsPerGrid: MTLSize) {
+        let w = self.threadExecutionWidth
+        let h = self.maxTotalThreadsPerThreadgroup / w
+        let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
+        let textureThreadgroupsPerGrid = MTLSize(
+            width: (textureSize.width + w - 1) / w,
+            height: (textureSize.height + h - 1) / h,
+            depth: 1
+        )
+        
+        return (textureThreadsPerGroup, textureThreadgroupsPerGrid)
+    }
+}
 
 #Preview {
     let viewModel = SandViewModel()
@@ -179,5 +188,3 @@ extension SandView.Coordinator {
         }
     }
 }
-
-
