@@ -40,6 +40,12 @@ struct BoidsConfig {
     bool ignore_self;
 };
 
+struct BlurConfig {
+    float falloff;
+    float cutoff;
+    float range;
+};
+
 float2 limit_magnitude(float2 vec, float max_mag) {
     float magnitude = length(vec);
     if (magnitude > max_mag) {
@@ -221,7 +227,7 @@ kernel void simulateBoids(device Particle *particles [[buffer(BoidsInputIndexPar
     particles[index] = particle;
 }
 
-kernel void drawBoids(texture2d<half, access::write> output [[texture(0)]],
+kernel void drawBoids(texture2d<half, access::write> output [[texture(1)]],
                       device Particle *particles [[buffer(ThirdPassInputTextureIndexParticle)]],
                       const device int& span [[ buffer(ThirdPassInputTextureIndexRadius)]],
                       uint id [[ thread_position_in_grid ]],
@@ -274,7 +280,7 @@ VertexPayload vertex vertexMain(
         float screenScale = float(size.x) / float(size.y);
         
         float4x4 scale = float4x4(1);
-        float ratio = config.draw_size / 100.0;
+        float ratio = (config.draw_size + 0.1) / 100.0;
         scale[0][0] = ratio;
         scale[1][1] = ratio * screenScale;
         scale[2][2] = ratio;
@@ -307,4 +313,48 @@ VertexPayload vertex vertexMain(
 
 half4 fragment fragmentMain(VertexPayload frag [[stage_in]]) {
     return half4(frag.color, 1.0);
+}
+
+kernel void copyToOutput(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+                         texture2d<half, access::read_write> input [[texture(InputTextureIndexPathOutput)]],
+                         uint2 gid [[ thread_position_in_grid ]]) {
+    half4 color = input.read(gid);
+    output.write(color, gid);
+}
+
+kernel void boxBlurBoids(texture2d<half, access::write> output [[texture(InputTextureIndexPathOutput)]],
+                         texture2d<half, access::read_write> input [[texture(InputTextureIndexPathInput)]],
+                         const device BlurConfig& config [[ buffer(BoidsInputIndexBlurConfig)]],
+                    uint2 gid [[ thread_position_in_grid ]]) {
+    
+    int blurSize = floor(config.range);
+    int range = floor(blurSize/2.0);
+    
+    half4 colors = half4(0);
+    for (int x = -range; x <= range; x++) {
+        for (int y = -range; y <= range; y++) {
+            half4 color = input.read(uint2(gid.x+x, gid.y+y));
+            colors += color;
+        }
+    }
+    
+    half4 finalColor = colors/float(blurSize*blurSize);
+    
+    float cutoff = config.cutoff;
+    if (finalColor[0] < cutoff) {
+        finalColor[0] = 0;
+    }
+    if (finalColor[1] < cutoff) {
+        finalColor[1] = 0;
+    }
+    if (finalColor[2] < cutoff) {
+        finalColor[2] = 0;
+    }
+    
+    float decay = 1 - config.falloff;
+    finalColor[0] *= decay;
+    finalColor[1] *= decay;
+    finalColor[2] *= decay;
+    
+    output.write(finalColor, gid);
 }

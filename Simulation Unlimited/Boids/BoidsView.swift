@@ -55,14 +55,12 @@ struct BoidsView: UIViewRepresentable {
         var view: MTKView! // TODO: view with touches
         var metalDevice: MTLDevice!
         var metalCommandQueue: MTLCommandQueue!
+        fileprivate var states: BoidsPipelineStates!
         
-        var clearTexture: MTLComputePipelineState!
-        var simulateBoids: MTLComputePipelineState!
-        var drawBoids: MTLComputePipelineState!
-        var drawTriangles: MTLRenderPipelineState!
-        
+        private var pathTextures: [MTLTexture] = []
         var particleBuffer: MTLBuffer!
         var configBuffer: MTLBuffer!
+        var blurBuffer: MTLBuffer!
         var viewPortSize: vector_uint2 = vector_uint2(x: 0, y: 0)
         
         var particles = [Particle]()
@@ -162,6 +160,12 @@ extension BoidsView.Coordinator {
         }
         
         configBuffer = metalDevice.makeBuffer(length: 3 * MemoryLayout<BoidsConfig>.size)
+        
+        guard blurBuffer == nil else {
+            return
+        }
+        
+        blurBuffer = metalDevice.makeBuffer(length: MemoryLayout<BlurConfig>.size)
     }
     
     private func randomPosition(length: UInt) -> Float {
@@ -197,34 +201,11 @@ extension BoidsView.Coordinator {
     }
     
     func buildRenderPipelineWithDevice(device: MTLDevice, metalKitView: MTKView) throws {
-        /// Build a render state pipeline object
-        
         guard let library = device.makeDefaultLibrary() else {
             fatalError("can't create libray")
         }
         
-        guard let clearTextureFunction = library.makeFunction(name: "clearTexture") else {
-            fatalError("can't create first pass")
-        }
-        clearTexture = try device.makeComputePipelineState(function: clearTextureFunction)
-        
-        guard let simulateBoidsFunction = library.makeFunction(name: "simulateBoids") else {
-            fatalError("can't create first pass")
-        }
-        simulateBoids = try device.makeComputePipelineState(function: simulateBoidsFunction)
-        
-        guard let drawBoidsFunction = library.makeFunction(name: "drawBoids") else {
-            fatalError("can't create first pass")
-        }
-        drawBoids = try device.makeComputePipelineState(function: drawBoidsFunction)
-        
-        
-        let renderDescriptor = MTLRenderPipelineDescriptor()
-        renderDescriptor.vertexFunction = library.makeFunction(name: "vertexMain")
-        renderDescriptor.fragmentFunction = library.makeFunction(name: "fragmentMain")
-        renderDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
-        
-        drawTriangles = try device.makeRenderPipelineState(descriptor: renderDescriptor)
+        states = BoidsPipelineStates(library: library, device: device)
     }
     
     func buildRenderPassDescriptor(target: MTLTexture) -> MTLRenderPassDescriptor {
@@ -240,9 +221,9 @@ extension BoidsView.Coordinator {
     func makeTriangle(device: MTLDevice) -> MTLBuffer {
         
         let vertices : [Vertex] = [
-            Vertex(position: [-0.75, -0.75, 0.0, 1.0], color: [1, 1, 0]),
-            Vertex(position: [ 0.75, -0.75, 0.0, 1.0], color: [1, 1, 0]),
-            Vertex(position: [  0.0,  0.75, 0.0, 1.0], color: [1, 0, 0])
+            Vertex(position: [-0.75, -0.75, 0.0, 1.0], color: [1, 1, 1]),
+            Vertex(position: [ 0.75, -0.75, 0.0, 1.0], color: [1, 1, 1]),
+            Vertex(position: [  0.0,  0.75, 0.0, 1.0], color: [1, 1, 1])
         ]
         
         return device.makeBuffer(bytes: vertices,
@@ -277,35 +258,27 @@ extension BoidsView.Coordinator {
         )
     }
     
+    private func makeTexture(device: MTLDevice, drawableSize: vector_uint2) -> MTLTexture {
+        let descriptor = MTLTextureDescriptor()
+        
+        descriptor.storageMode = .private
+        descriptor.usage = MTLTextureUsage(
+            rawValue: MTLTextureUsage.shaderWrite.rawValue | MTLTextureUsage.shaderRead.rawValue
+        )
+        descriptor.width = Int(drawableSize.x)
+        descriptor.height = Int(drawableSize.y)
+        
+        guard let texture = device.makeTexture(descriptor: descriptor) else {
+            fatalError("can't make texture")
+        }
+        
+        return texture
+    }
+    
     func draw() {
         
-        let threadgroupSizeMultiplier = 1
-        let maxThreads = 512
-        let particleThreadsPerGroup = MTLSize(
-            width: maxThreads,
-            height: 1,
-            depth: 1
-        )
-        let particleThreadGroupsPerGrid = MTLSize(
-            width: (
-                max(
-                    viewModel.count / (maxThreads * threadgroupSizeMultiplier),
-                    1
-                )
-            ),
-            height: 1,
-            depth:1
-        )
-    
-        
-        let w = clearTexture.threadExecutionWidth
-        let h = clearTexture.maxTotalThreadsPerThreadgroup / w
-        let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
-        let textureThreadgroupsPerGrid = MTLSize(
-            width: (Int(viewPortSize.x) + w - 1) / w,
-            height: (Int(viewPortSize.y) + h - 1) / h,
-            depth: 1
-        )
+        let textureThreadCount = states.simulateBoids.threadCount(textureSize: MTLSize(width: Int(viewPortSize.x), height: Int(viewPortSize.y), depth: 0))
+        let particleThreadCount = states.simulateBoids.threadCount(arrayCount: viewModel.count)
         
         obstacles = viewModel.touches.values.map {
             return Obstacle(
@@ -314,6 +287,17 @@ extension BoidsView.Coordinator {
                     Float($0.y * UIScreen.main.scale)
                 )
             )
+        }
+        
+        if pathTextures.count == 0 {
+            pathTextures
+                .append(
+                    makeTexture(device: metalDevice, drawableSize: viewPortSize)
+                )
+            pathTextures
+                .append(
+                    makeTexture(device: metalDevice, drawableSize: viewPortSize)
+                )
         }
                 
         initializeConfigBufferIfNeeded()
@@ -330,13 +314,15 @@ extension BoidsView.Coordinator {
                 byteCount: 3 * MemoryLayout<BoidsConfig>.size
             )
         
+        blurBuffer.contents().copyMemory(from: &viewModel.blurConfig, byteCount: MemoryLayout<BlurConfig>.size)
+        
         if let commandBuffer = metalCommandQueue.makeCommandBuffer(),
            let commandEncoder = commandBuffer.makeComputeCommandEncoder() {
             
             // first pass - Boid updates
             if let particleBuffer = particleBuffer {
                 
-                commandEncoder.setComputePipelineState(simulateBoids)
+                commandEncoder.setComputePipelineState(states.simulateBoids)
                 commandEncoder
                     .setBuffer(
                         particleBuffer,
@@ -367,12 +353,12 @@ extension BoidsView.Coordinator {
                         offset: 0,
                         index: Int(BoidsInputIndexObstacle.rawValue)
                     )
-//                commandEncoder
-//                    .setBytes(
-//                        &viewModel.config,
-//                        length: MemoryLayout<BoidsConfig>.stride,
-//                        index: Int(BoidsInputIndexConfig.rawValue)
-//                    )
+                commandEncoder
+                    .setBuffer(
+                        blurBuffer,
+                        offset: 0,
+                        index: Int(BoidsInputIndexBlurConfig.rawValue)
+                    )
                 commandEncoder.setBuffer(configBuffer, offset: 0, index: Int(BoidsInputIndexConfig.rawValue))
                 var count = obstacles.count
                 commandEncoder
@@ -384,8 +370,18 @@ extension BoidsView.Coordinator {
                 
                 commandEncoder
                     .dispatchThreadgroups(
-                        particleThreadGroupsPerGrid,
-                        threadsPerThreadgroup: particleThreadsPerGroup
+                        particleThreadCount.threadsPerGrid,
+                        threadsPerThreadgroup: particleThreadCount.threadsPerGroup
+                    )
+                commandEncoder
+                    .setTexture(
+                        pathTextures[0],
+                        index: Int(InputTextureIndexPathInput.rawValue)
+                    )
+                commandEncoder
+                    .setTexture(
+                        pathTextures[1],
+                        index: Int(InputTextureIndexPathOutput.rawValue)
                     )
                 
             }
@@ -394,19 +390,18 @@ extension BoidsView.Coordinator {
                 
                 // second pass - set texture to solid colour
                 
-                commandEncoder.setComputePipelineState(clearTexture)
-                commandEncoder.setTexture(drawable.texture, index: 0)
+                commandEncoder.setComputePipelineState(states.clearTexture)
+                commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
                 commandEncoder
                     .dispatchThreadgroups(
-                        textureThreadgroupsPerGrid,
-                        threadsPerThreadgroup: textureThreadsPerGroup
+                        textureThreadCount.threadsPerGrid,
+                        threadsPerThreadgroup: textureThreadCount.threadsPerGroup
                     )
                 
                 // third pass - draw boids
                 
-                if particleBuffer != nil && !viewModel.drawTriangles {
-                    commandEncoder.setComputePipelineState(drawBoids)
-                    commandEncoder.setTexture(drawable.texture, index: 0)
+                if particleBuffer != nil /*&& !viewModel.drawTriangles*/ {
+                    commandEncoder.setComputePipelineState(states.drawBoids)
                     commandEncoder
                         .setBuffer(
                             particleBuffer,
@@ -425,8 +420,22 @@ extension BoidsView.Coordinator {
                         )
                     commandEncoder
                         .dispatchThreadgroups(
-                            particleThreadGroupsPerGrid,
-                            threadsPerThreadgroup: particleThreadsPerGroup
+                            particleThreadCount.threadsPerGrid,
+                            threadsPerThreadgroup: particleThreadCount.threadsPerGroup
+                        )
+                    
+                    commandEncoder.setComputePipelineState(states.boxBlur)
+                    commandEncoder
+                        .dispatchThreadgroups(
+                            textureThreadCount.threadsPerGrid,
+                            threadsPerThreadgroup: textureThreadCount.threadsPerGroup
+                        )
+                    
+                    commandEncoder.setComputePipelineState(states.copyToOutput)
+                    commandEncoder
+                        .dispatchThreadgroups(
+                            textureThreadCount.threadsPerGrid,
+                            threadsPerThreadgroup: textureThreadCount.threadsPerGroup
                         )
                 }
                 
@@ -434,15 +443,15 @@ extension BoidsView.Coordinator {
                 
                 commandEncoder.endEncoding()
                 
-                if viewModel.drawTriangles {
+//                if viewModel.drawTriangles {
                     let renderPassDescriptor = view.currentRenderPassDescriptor
-                    renderPassDescriptor?.colorAttachments[0].clearColor = MTLClearColorMake(0, 0.5, 0.5, 1.0)
+//                    renderPassDescriptor?.colorAttachments[0].clearColor = MTLClearColorMake(0, 0.5, 0.5, 1.0)
                     renderPassDescriptor?.colorAttachments[0].loadAction = .load
                     renderPassDescriptor?.colorAttachments[0].storeAction = .store
                     
                     let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)!
                     
-                    renderEncoder.setRenderPipelineState(drawTriangles)
+                    renderEncoder.setRenderPipelineState(states.drawTriangles)
                     
                     renderEncoder.setVertexBuffer(triangleMesh, offset: 0, index: 0)
                     renderEncoder.setVertexBuffer(particleBuffer, offset: 0, index: 1)
@@ -457,57 +466,94 @@ extension BoidsView.Coordinator {
                     renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3, instanceCount: particles.count)
                     
                     renderEncoder.endEncoding()
-                }
-                
-
+//                }
                 
                 commandBuffer.present(drawable)
                 
             } else {
                 fatalError("No drawable")
             }
-            
+            commandBuffer.addCompletedHandler { buffer in
+                self.pathTextures.reverse()
+            }
             commandBuffer.commit()
         }
         extractParticles()
     }
+}
+
+private struct BoidsPipelineStates {
+    var clearTexture: MTLComputePipelineState
+    var simulateBoids: MTLComputePipelineState
+    var drawBoids: MTLComputePipelineState
+    var boxBlur: MTLComputePipelineState
+    var copyToOutput: MTLComputePipelineState
+    var drawTriangles: MTLRenderPipelineState
     
-    //MARK: - Touches
+    init(library: MTLLibrary, device: MTLDevice) {
+        guard let clearTextureFunction = library.makeFunction(name: "clearTexture"),
+              let simulateBoidsFunction = library.makeFunction(name: "simulateBoids"),
+              let drawBoidsFunction = library.makeFunction(name: "drawBoids"),
+              let boxBlurFunction = library.makeFunction(name: "boxBlurBoids"),
+              let copyToOutputFunction = library.makeFunction(name: "copyToOutput") else {
+            fatalError("Can't create library functions")
+        }
+        
+        let renderDescriptor = MTLRenderPipelineDescriptor()
+        renderDescriptor.vertexFunction = library.makeFunction(name: "vertexMain")
+        renderDescriptor.fragmentFunction = library.makeFunction(name: "fragmentMain")
+        renderDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        
+        do {
+            clearTexture = try device.makeComputePipelineState(function: clearTextureFunction)
+            simulateBoids = try device.makeComputePipelineState(function: simulateBoidsFunction)
+            drawBoids = try device.makeComputePipelineState(function: drawBoidsFunction)
+            boxBlur = try device.makeComputePipelineState(function: boxBlurFunction)
+            copyToOutput = try device.makeComputePipelineState(function: copyToOutputFunction)
+            
+            drawTriangles = try device.makeRenderPipelineState(descriptor: renderDescriptor)
+
+        } catch {
+            fatalError("failed to make compute pipeline state")
+        }
+    }
+}
+
+private extension MTLComputePipelineState {
+    func threadCount(textureSize: MTLSize) -> (threadsPerGroup: MTLSize, threadsPerGrid: MTLSize) {
+        let w = self.threadExecutionWidth
+        let h = self.maxTotalThreadsPerThreadgroup / w
+        let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
+        let textureThreadgroupsPerGrid = MTLSize(
+            width: (textureSize.width + w - 1) / w,
+            height: (textureSize.height + h - 1) / h,
+            depth: 1
+        )
+        
+        return (textureThreadsPerGroup, textureThreadgroupsPerGrid)
+    }
     
-//    func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        
-//        obstacles = touches.map {
-//            let loc = $0.location(in: $0.view)
-//            let scale = Float($0.view?.contentScaleFactor ?? 1)
-//            return Obstacle(
-//                position: SIMD2<Float>(
-//                    Float(loc.x) * scale,
-//                    Float(loc.y) * scale
-//                )
-//            )
-//        }
-//    }
-//    
-//    func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        obstacles = touches.map {
-//            let loc = $0.location(in: $0.view)
-//            let scale = Float($0.view?.contentScaleFactor ?? 1)
-//            return Obstacle(
-//                position: SIMD2<Float>(
-//                    Float(loc.x) * scale,
-//                    Float(loc.y) * scale
-//                )
-//            )
-//        }
-//    }
-    
-//    func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        obstacles.removeAll()
-//    }
-//    
-//    func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
-//        obstacles.removeAll()
-//    }
+    func threadCount(arrayCount: Int) -> (threadsPerGroup: MTLSize, threadsPerGrid: MTLSize) {
+        let threadgroupSizeMultiplier = 1
+        let maxThreads = 512
+        let particleThreadsPerGroup = MTLSize(
+            width: maxThreads,
+            height: 1,
+            depth: 1
+        )
+        let particleThreadGroupsPerGrid = MTLSize(
+            width: (
+                max(
+                    arrayCount / (maxThreads * threadgroupSizeMultiplier),
+                    1
+                )
+            ),
+            height: 1,
+            depth:1
+        )
+        return (particleThreadsPerGroup, particleThreadGroupsPerGrid)
+
+    }
 }
 
 

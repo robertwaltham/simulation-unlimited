@@ -164,7 +164,7 @@ private struct SandPipelineStates {
     }
 }
 
-extension MTLComputePipelineState {
+private extension MTLComputePipelineState {
     func threadCount(textureSize: MTLSize) -> (threadsPerGroup: MTLSize, threadsPerGrid: MTLSize) {
         let w = self.threadExecutionWidth
         let h = self.maxTotalThreadsPerThreadgroup / w

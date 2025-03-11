@@ -97,6 +97,15 @@ public struct BoidsWorkshop: View {
                         Toggle("", isOn: $viewModel.blueConfig.ignoreSelf).tint(.blue)
 
                     }
+                    
+                    VStack {
+                        Text("Blur")
+                        Slider(value: $viewModel.blurConfig.cutoff, in: 0.01...0.8)
+                        Slider(value: $viewModel.blurConfig.falloff, in: 0.01...0.8)
+                        Slider(value: $viewModel.blurConfig.range, in: 1...5)
+
+
+                    }
 //                    VStack {
 //                        Toggle("Draw Mode", isOn: $viewModel.drawTriangles)
 //

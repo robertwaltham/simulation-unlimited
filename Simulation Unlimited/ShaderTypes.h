@@ -43,7 +43,9 @@ typedef enum BoidsInputIndex {
     BoidsInputIndexHeight = 3,
     BoidsInputIndexObstacle = 4,
     BoidsInputIndexObstacleCount = 5,
-    BoidsInputIndexConfig = 6
+    BoidsInputIndexConfig = 6,
+    BoidsInputIndexBlurConfig = 7
+
 } BoidsInputIndex;
 
 typedef enum ThirdPassInputIndex {

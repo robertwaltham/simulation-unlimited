@@ -17,6 +17,8 @@ class BoidsViewModel {
     var redConfig = BoidsConfig.defaultConfig()
     var blueConfig = BoidsConfig.defaultConfig()
     var greenConfig = BoidsConfig.defaultConfig()
+    
+    var blurConfig = BlurConfig(falloff: 0.05, cutoff: 0.02, range: 3)
 
     convenience init(count: Int) {
         self.init()
@@ -33,6 +35,12 @@ class BoidsViewModel {
             touches.removeValue(forKey: touch)
         }
     }
+}
+
+struct BlurConfig {
+    var falloff: Float
+    var cutoff: Float
+    var range: Float
 }
 
 
