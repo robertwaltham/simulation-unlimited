@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 
 @Observable class ParticleLifeViewModel {
+    static let weightOptions: [Float] = (-10...10).map { Float($0) / 10 }
+    
     var config = ParticleLifeConfig.defaultConfig()
     
     var minSpeed: Float = 0.75
@@ -80,7 +82,7 @@ import SwiftUI
             fatalError("out of bounds")
         }
         
-        weights[index] = value
+        weights[index] = Self.quantizedWeight(value)
     }
     
     func resetWeights() {
@@ -88,12 +90,18 @@ import SwiftUI
     }
     
     func randomizeWeights() {
-        let values: [Float] = stride(from: -1.0, to: 1.5, by: 0.1).compactMap {$0}
-        weights = stride(from: 0, to: config.flavourCount * config.flavourCount, by: 1).compactMap { _ in values.randomElement()! }
+        weights = stride(from: 0, to: config.flavourCount * config.flavourCount, by: 1).compactMap { _ in
+            Self.weightOptions.randomElement()!
+        }
     }
     
     func invertWeights() {
-        weights = weights.map { -$0 }
+        weights = weights.map { Self.quantizedWeight(-$0) }
+    }
+    
+    private static func quantizedWeight(_ value: Float) -> Float {
+        let tenths = Int((value * 10).rounded())
+        return Float(tenths) / 10
     }
     
 }
@@ -103,13 +111,13 @@ extension ParticleLifeConfig {
     static func defaultConfig() -> ParticleLifeConfig {
         var config = ParticleLifeConfig()
         config.rMinDistance = 1
-        config.rMaxDistance = 15
+        config.rMaxDistance = 35
         config.maxSpeed = 1
         config.drawRadius = 4
         config.trailRadius = 5
         config.cutoff = 0.01
         config.falloff = 0.15
-        config.speedMultiplier = 2
+        config.speedMultiplier = 2.5
         config.flavourCount = 3
         config.blurRadius = 3
         config.padding = 0
