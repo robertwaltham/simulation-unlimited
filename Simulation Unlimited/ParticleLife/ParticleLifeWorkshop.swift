@@ -259,13 +259,12 @@ struct ParticleLifeWorkshop: View {
                                         viewModel.setWeight(x: j-1, y: i-1, value: newValue)
                                     }
                                     
-                                    Picker("Weight", selection: binding) {
-                                        ForEach(ParticleLifeViewModel.weightOptions, id: \.self) { i in
-                                            Text("\(i, specifier: "%.1f")")
-                                            
-                                        }
+                                    Stepper(value: binding, in: viewModel.weightRange, step: viewModel.weightStep) {
+                                        Text("\(binding.wrappedValue, specifier: "%.1f")")
+                                            .monospacedDigit()
+                                            .frame(width: 44, alignment: .trailing)
                                     }
-                                    .frame(width: 75)
+                                    .frame(width: 130)
                                     
                                 }
                             }

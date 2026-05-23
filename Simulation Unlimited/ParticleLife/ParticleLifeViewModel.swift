@@ -38,7 +38,10 @@ import UIKit
 }
 
 @Observable class ParticleLifeViewModel {
-    static let weightOptions: [Float] = (-10...10).map { Float($0) / 10 }
+    static let minimumWeight: Float = -1
+    static let maximumWeight: Float = 1
+    static let weightStep: Float = 0.1
+    static let weightOptions: [Float] = (-10...10).map { Float($0) * weightStep }
     private static let defaultMaxCutoff: Float = 1
     private static let defaultMaxFalloff: Float = 0.15
     private static let defaultMaxRadius: Float = 5
@@ -138,6 +141,8 @@ import UIKit
     let maxGradientLacunarity = ParticleLifeViewModel.defaultMaxGradientLacunarity
     let maxGradientOctaves = ParticleLifeViewModel.defaultMaxGradientOctaves
     let maxGradientTextureSize = ParticleLifeViewModel.defaultMaxGradientTextureSize
+    let weightRange = ParticleLifeViewModel.minimumWeight...ParticleLifeViewModel.maximumWeight
+    let weightStep = ParticleLifeViewModel.weightStep
     
     var speedMultiplierModulation: FloatModulation
     var falloffModulation: FloatModulation
@@ -239,8 +244,9 @@ import UIKit
     }
     
     private static func quantizedWeight(_ value: Float) -> Float {
-        let tenths = Int((value * 10).rounded())
-        return Float(tenths) / 10
+        let clampedValue = min(max(value, minimumWeight), maximumWeight)
+        let steps = Int((clampedValue / weightStep).rounded())
+        return Float(steps) * weightStep
     }
     
     private static func clampedColorComponent(_ value: Float) -> Float {
@@ -267,7 +273,7 @@ extension ParticleLifeConfig {
         config.damping = 0.9
         config.forceMultiplier = 0.05
         config.touchRadius = 200
-        config.touchForce = 20
+        config.touchForce = 40
         return config
     }
 }
