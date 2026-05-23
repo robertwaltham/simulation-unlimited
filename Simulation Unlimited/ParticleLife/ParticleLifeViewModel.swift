@@ -113,6 +113,8 @@ extension ParticleLifeConfig {
         config.flavourCount = 3
         config.blurRadius = 3
         config.padding = 0
+        config.damping = 0.95
+        config.forceMultiplier = 0.05
         return config
     }
 }

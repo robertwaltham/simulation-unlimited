@@ -85,6 +85,8 @@ typedef struct ParticleLifeConfig {
     float flavourCount;
     float blurRadius;
     float padding;
+    float damping;
+    float forceMultiplier;
 } ParticleLifeConfig;
 
 

@@ -93,7 +93,43 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     uint width = output.get_width();
     uint height = output.get_height();
     
-    // position
+    // Accumulate neighbor influence into force, then integrate velocity.
+    float2 force = float2(0,0);
+    for (uint i = 0; i < uint(particle_count); i++) {
+        
+        if (i == index) {
+            continue;
+        }
+        
+        LifeParticle other = particles[i];
+        float dist = distance(position, other.position);
+        if (dist <= 0.0001 || dist > config.rMaxDistance) {
+            continue;
+        }
+        
+        int otherSpecies = (int)other.species;
+        int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
+        float weight = -1.0 * weights[forceIndex];
+
+        
+        float2 direction = normalize(other.position - position);
+        if (dist < config.rMinDistance) {
+            force -= (1.0 - (dist / config.rMinDistance)) * direction * 0.5; // repel harder as particles get closer
+        } else {
+            float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
+            if (d < 0.5) {
+                force += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
+            } else {
+                force += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
+            }
+        }
+    }
+    
+    if (length(force) > 0.001) {
+        velocity += force * config.forceMultiplier;
+    }
+    velocity *= config.damping;
+    velocity = limit_magnitude2(velocity, config.maxSpeed);
     position += (velocity * config.speedMultiplier);
     
     // bounds
@@ -113,45 +149,10 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         position.y = 0;
     }
     
-    // velocity
-    float2 newVelocity = float2(0,0);
-    for (uint i = 0; i < uint(particle_count); i++) {
-        
-        if (i == index) {
-            continue;
-        }
-        
-        LifeParticle other = particles[i];
-        float dist = distance(position, other.position);
-        if (dist > config.rMaxDistance) {
-            continue;
-        }
-        
-        int otherSpecies = (int)other.species;
-        int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
-        float weight = -1.0 * weights[forceIndex];
-
-        
-        float2 direction = normalize(other.position - position);
-        if (dist < config.rMinDistance) {
-            newVelocity += (dist / config.rMinDistance) * direction * 0.5; // force = 0 -> 1 as distance goes from 0 -> r_min
-        } else {
-            float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
-            if (d < 0.5) {
-                newVelocity += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
-            } else {
-                newVelocity += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
-            }
-        }
-    }
-    
-    if (length(newVelocity) > 0.001) {
-        particle.velocity = limit_magnitude2(newVelocity, config.maxSpeed);
-    }
-    
     
     // update particle
     particle.acceleration = acceleration;
+    particle.velocity = velocity;
     particle.position = position;
     
     // output
