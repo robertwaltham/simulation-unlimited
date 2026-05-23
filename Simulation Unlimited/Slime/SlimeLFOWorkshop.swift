@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SlimeLFOWorkshop: View {
     @State var viewModel = SlimeViewModel()
+    @State var modulationClock = ModulationClock()
     @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     
     @State private var showLFO = false
@@ -16,84 +17,17 @@ struct SlimeLFOWorkshop: View {
     @State private var showAngle = false
     @State private var showTurn = false
     @State private var showSettings = false
-    
-    @ViewBuilder
-    private func LFOWidget(oscillator: Binding<LowFrequencyOscillator>, name: String, offset: ClosedRange<Double>) -> some View {
-        HStack {
-            LFOPicker(oscillator, name: name)
-            LFOSlider(oscillator, offset: offset).frame(minWidth: 420)
-            LFOGraph(oscillator.wrappedValue).frame(minWidth: 250, maxWidth: .infinity, maxHeight: 100)
-        }
-        .padding(5)
-        .frame(maxWidth: .infinity)
-    }
-    
-    @ViewBuilder
-    private func LFOPicker(_ oscillator: Binding<LowFrequencyOscillator>, name: String) -> some View {
-        VStack {
-            Text(name).frame(minWidth: 100)
-            Picker("Waveform", selection: oscillator.type) {
-                Text("None").tag(OscillatorType.none)
-                Text("Sine").tag(OscillatorType.sine)
-                Text("Square").tag(OscillatorType.square)
-                Text("Sawtooth").tag(OscillatorType.sawtooth)
-                Text("Triangle").tag(OscillatorType.triangle)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func LFOSlider(_ oscillator: Binding<LowFrequencyOscillator>, offset: ClosedRange<Double>) -> some View {
-        
-        HStack {
-            VStack {
-                Text("FRQ: \(oscillator.wrappedValue.frequency, specifier: "%.1f")")
-                Slider(value: oscillator.frequency, in: 0...2)
-            }
-            
-            VStack {
-                Text("AMP: \(oscillator.wrappedValue.amplitude, specifier: "%.1f")")
-                Slider(value: oscillator.amplitude, in: 0...1)
-            }
-            
-            VStack {
-                Text("Pha: \(oscillator.wrappedValue.phase, specifier: "%.1f")")
-                Slider(value: oscillator.phase, in: 0...5)
-            }
-            
-            VStack {
-                Text("Offset: \(oscillator.wrappedValue.offset, specifier: "%.2f")")
-                Slider(value: oscillator.offset, in: offset)
-            }
-            
-        }
-    }
-    
-    @ViewBuilder
-    private func LFOGraph(_ osc: LowFrequencyOscillator) -> some View {
-        GeometryReader { reader in
-            let w = reader.size.width
-            let h = reader.size.height
-            
-            Path { path in
-                path.move(to: CGPoint(x: 0, y: h/2 - CGFloat(osc.value(at: viewModel.time) / 2.0) * h/2))
-                for i in 1..<Int(w) {
-                    let x = CGFloat(i)
-                    let y = h/2 - CGFloat(osc.value(at: (Double(i) / 40) + viewModel.time) / 2.0) * h/2
-                    path.addLine(to: CGPoint(x: x, y: y))
-                }
-            }
-            .stroke()
-        }.clipped()
-    }
-    
-    
+
     var body: some View {
         ZStack {
             SlimeView(viewModel: viewModel)
                 .onReceive(timer, perform: { _ in
-                    viewModel.time += 0.01
+                    modulationClock.tick(delta: 0.01)
+                    viewModel.time = modulationClock.time
                     viewModel.update()
+                    if viewModel.time == 0 {
+                        modulationClock.reset()
+                    }
                 })
             
             VStack {
@@ -108,7 +42,8 @@ struct SlimeLFOWorkshop: View {
                     
                     Button("Reset") {
                         viewModel.resetOnNext = true
-                        viewModel.time = 0
+                        modulationClock.reset()
+                        viewModel.time = modulationClock.time
                     }
                     
                     Spacer()
@@ -137,11 +72,11 @@ struct SlimeLFOWorkshop: View {
                             Text("Hexagons")
 
                             VStack {
-                                LFOWidget(oscillator: $viewModel.redConfig.hexagonLFO, name: "Weight \(viewModel.redConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.hexagonLFO, name: "Weight \(viewModel.redConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.red)
-                                LFOWidget(oscillator: $viewModel.greenConfig.hexagonLFO, name: "Weight \(viewModel.greenConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.hexagonLFO, name: "Weight \(viewModel.greenConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.green)
-                                LFOWidget(oscillator: $viewModel.blueConfig.hexagonLFO, name: "Weight \(viewModel.blueConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.hexagonLFO, name: "Weight \(viewModel.blueConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.blue)
                             }.padding()
                             
@@ -159,14 +94,14 @@ struct SlimeLFOWorkshop: View {
                     }.popover(isPresented: $showLFO, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             Divider()
-                            LFOWidget(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.red)
-                            LFOWidget(oscillator: $viewModel.greenConfig.biasLFO, name: "Bias \(viewModel.greenConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.biasLFO, name: "Bias \(viewModel.greenConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.green)
-                            LFOWidget(oscillator: $viewModel.blueConfig.biasLFO, name: "Bias \(viewModel.blueConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.biasLFO, name: "Bias \(viewModel.blueConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.blue)
                             Divider()
-                            LFOWidget(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1, time: viewModel.time)
                         }
                     }.padding()
                     
@@ -181,11 +116,11 @@ struct SlimeLFOWorkshop: View {
                                 Slider(value: $viewModel.speedVariance, in: 0...3)
                             }.padding()
                             Divider()
-                            LFOWidget(oscillator: $viewModel.redConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.speedLFO, name: "Speed", offset: -1.5...1.5, time: viewModel.time)
                                 .tint(Color.red)
-                            LFOWidget(oscillator: $viewModel.greenConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.speedLFO, name: "Speed", offset: -1.5...1.5, time: viewModel.time)
                                 .tint(Color.green)
-                            LFOWidget(oscillator: $viewModel.blueConfig.speedLFO, name: "Speed", offset: -1.5...1.5)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.speedLFO, name: "Speed", offset: -1.5...1.5, time: viewModel.time)
                                 .tint(Color.blue)
                         }
                     }.padding()
@@ -196,11 +131,11 @@ struct SlimeLFOWorkshop: View {
                         Label("Turn Angle", systemImage: "angle")
                     }.popover(isPresented: $showTurn, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
-                            LFOWidget(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...2)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.turnLFO, name: "Turn", offset: 0...2, time: viewModel.time)
                                 .tint(Color.red)
-                            LFOWidget(oscillator: $viewModel.greenConfig.turnLFO, name: "Turn", offset: 0...2)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.turnLFO, name: "Turn", offset: 0...2, time: viewModel.time)
                                 .tint(Color.green)
-                            LFOWidget(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...2)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.turnLFO, name: "Turn", offset: 0...2, time: viewModel.time)
                                 .tint(Color.blue)
                         }.padding()
                     }.padding()

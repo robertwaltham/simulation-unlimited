@@ -9,6 +9,8 @@ import SwiftUI
 
 struct ParticleLifeWorkshop: View {
     @State var viewModel = ParticleLifeViewModel(count: 8192)
+    @State var modulationClock = ModulationClock()
+    @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     @State var showWeights = false
     @State var showParams = false
     @State var stepper: Float = 0.5
@@ -17,7 +19,12 @@ struct ParticleLifeWorkshop: View {
         
         ZStack {
             
-            ParticleLifeView(viewModel: viewModel).frame(maxHeight: .infinity)
+            ParticleLifeView(viewModel: viewModel)
+                .frame(maxHeight: .infinity)
+                .onReceive(timer) { _ in
+                    modulationClock.tick(delta: 0.01)
+                    viewModel.updateModulation(time: modulationClock.time)
+                }
             TapView { touch, optLocation in
                 viewModel.updateTouch(touch, location: optLocation)
             }
@@ -49,6 +56,8 @@ struct ParticleLifeWorkshop: View {
                     
                     Button {
                         viewModel.resetOnNext = true
+                        modulationClock.reset()
+                        viewModel.updateModulation(time: modulationClock.time)
                     } label: {
                         Label("Reset Particles", systemImage: "arrow.counterclockwise.circle.fill")
                             .frame(minWidth: 190, minHeight: 52)
@@ -107,46 +116,14 @@ struct ParticleLifeWorkshop: View {
     @ViewBuilder
     private func paramWidget() -> some View {
         VStack {
-            HStack(alignment: .center, spacing: 15) {
-                HStack {
-                    Text("Speed: \(viewModel.config.speedMultiplier, specifier: "%.2f")")
-                        .font(.title3)
-                    Slider(value: $viewModel.config.speedMultiplier, in: 0...viewModel.maxMultiplier)
-                }
-                
-                HStack {
-                    Text("Falloff: \(viewModel.config.falloff, specifier: "%.3f")")
-                        .font(.title3)
-                    Slider(value: $viewModel.config.falloff, in: 0...viewModel.maxFalloff)
-                }
-                
-                HStack() {
-                    Text("Trail Size: \(Int(viewModel.config.trailRadius))").font(.title3)
-                    Slider(value: $viewModel.config.trailRadius, in: 1...viewModel.maxRadius)
-                }
-                
-            }
-            
-            HStack(alignment: .center, spacing: 15) {
-                HStack {
-                    Text("R Min: \(viewModel.config.rMinDistance, specifier: "%.2f")")
-                        .font(.title3)
-                    Slider(value: $viewModel.config.rMinDistance, in: 0...viewModel.maxMinDistance)
-                }
-                
-                HStack {
-                    Text("R MAx: \(viewModel.config.rMaxDistance, specifier: "%.1f")")
-                        .font(.title3)
-                    Slider(value: $viewModel.config.rMaxDistance, in: 1...viewModel.maxMaxDistance)
-                }
-                
-                HStack() {
-                    Text("S Max: \(viewModel.config.maxSpeed, specifier: "%.1f")").font(.title3)
-                    Slider(value: $viewModel.config.maxSpeed, in: 0...viewModel.maxParticleSpeed)
-                }
-            }
+            FloatModulationControl(modulation: $viewModel.speedMultiplierModulation, time: modulationClock.time)
+            FloatModulationControl(modulation: $viewModel.falloffModulation, time: modulationClock.time)
+//            FloatModulationControl(modulation: $viewModel.trailRadiusModulation, time: modulationClock.time)
+            FloatModulationControl(modulation: $viewModel.rMinDistanceModulation, time: modulationClock.time)
+            FloatModulationControl(modulation: $viewModel.rMaxDistanceModulation, time: modulationClock.time)
+            FloatModulationControl(modulation: $viewModel.maxSpeedModulation, time: modulationClock.time)
         }
-        .padding()
+        .padding(.all, 20)
         .frame(minWidth: 800)
     }
     

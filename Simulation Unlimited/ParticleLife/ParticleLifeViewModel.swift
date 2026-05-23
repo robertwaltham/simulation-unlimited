@@ -39,9 +39,56 @@ import UIKit
 
 @Observable class ParticleLifeViewModel {
     static let weightOptions: [Float] = (-10...10).map { Float($0) / 10 }
+    private static let defaultMaxCutoff: Float = 1
+    private static let defaultMaxFalloff: Float = 0.15
+    private static let defaultMaxRadius: Float = 5
+    private static let defaultMaxMultiplier: Float = 6
+    private static let defaultMaxMinDistance: Float = 50
+    private static let defaultMaxMaxDistance: Float = 200
+    private static let defaultMaxParticleSpeed: Float = 10
     
     init(count: Int = 4096) {
+        let initialConfig = ParticleLifeConfig.defaultConfig()
+        
+        self.config = initialConfig
         self.particleCount = count
+        self.speedMultiplierModulation = FloatModulation(
+            id: "speedMultiplier",
+            name: "Speed",
+            range: 0...Self.defaultMaxMultiplier,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.speedMultiplier))
+        )
+        self.falloffModulation = FloatModulation(
+            id: "falloff",
+            name: "Falloff",
+            range: 0...Self.defaultMaxFalloff,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.falloff))
+        )
+        self.trailRadiusModulation = FloatModulation(
+            id: "trailRadius",
+            name: "Trail Size",
+            range: 1...Self.defaultMaxRadius,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.trailRadius))
+        )
+        self.rMinDistanceModulation = FloatModulation(
+            id: "rMinDistance",
+            name: "R Min",
+            range: 0...Self.defaultMaxMinDistance,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.rMinDistance))
+        )
+        self.rMaxDistanceModulation = FloatModulation(
+            id: "rMaxDistance",
+            name: "R Max",
+            range: 1...Self.defaultMaxMaxDistance,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.rMaxDistance))
+        )
+        self.maxSpeedModulation = FloatModulation(
+            id: "maxSpeed",
+            name: "S Max",
+            range: 0...Self.defaultMaxParticleSpeed,
+            oscillator: LowFrequencyOscillator(type: .none, frequency: 0.5, amplitude: 1, phase: 0, offset: Double(initialConfig.maxSpeed))
+        )
+        updateModulation(time: 0)
     }
     
     var config = ParticleLifeConfig.defaultConfig()
@@ -66,13 +113,20 @@ import UIKit
     let maxDistance: Float = 15
     let maxTurnAngle = Float.pi / 4
     
-    let maxCutoff: Float = 1
-    let maxFalloff: Float = 0.15
-    let maxRadius: Float = 5
-    let maxMultiplier: Float = 6
-    let maxMinDistance: Float = 50
-    let maxMaxDistance: Float = 200
-    let maxParticleSpeed: Float = 10
+    let maxCutoff = ParticleLifeViewModel.defaultMaxCutoff
+    let maxFalloff = ParticleLifeViewModel.defaultMaxFalloff
+    let maxRadius = ParticleLifeViewModel.defaultMaxRadius
+    let maxMultiplier = ParticleLifeViewModel.defaultMaxMultiplier
+    let maxMinDistance = ParticleLifeViewModel.defaultMaxMinDistance
+    let maxMaxDistance = ParticleLifeViewModel.defaultMaxMaxDistance
+    let maxParticleSpeed = ParticleLifeViewModel.defaultMaxParticleSpeed
+    
+    var speedMultiplierModulation: FloatModulation
+    var falloffModulation: FloatModulation
+    var trailRadiusModulation: FloatModulation
+    var rMinDistanceModulation: FloatModulation
+    var rMaxDistanceModulation: FloatModulation
+    var maxSpeedModulation: FloatModulation
     
     var colours = [
         SIMD4<Float>(1, 0, 0, 1),
@@ -91,7 +145,12 @@ import UIKit
     
     func getSwiftUIColors() -> [Color] {
         colours.map { c in
-            Color(uiColor: UIColor(red: CGFloat(c.x), green: CGFloat(c.y), blue: CGFloat(c.z), alpha: CGFloat(c.w)))
+            Color(uiColor: UIColor(
+                red: CGFloat(Self.clampedColorComponent(c.x)),
+                green: CGFloat(Self.clampedColorComponent(c.y)),
+                blue: CGFloat(Self.clampedColorComponent(c.z)),
+                alpha: CGFloat(Self.clampedColorComponent(c.w))
+            ))
         }
     }
     
@@ -138,6 +197,15 @@ import UIKit
         weights = weights.map { Self.quantizedWeight(-$0) }
     }
     
+    func updateModulation(time: Double) {
+        config.speedMultiplier = speedMultiplierModulation.value(at: time)
+        config.falloff = falloffModulation.value(at: time)
+        config.trailRadius = trailRadiusModulation.value(at: time)
+        config.rMinDistance = rMinDistanceModulation.value(at: time)
+        config.rMaxDistance = rMaxDistanceModulation.value(at: time)
+        config.maxSpeed = maxSpeedModulation.value(at: time)
+    }
+    
     func updateTouch(_ touch: UITouch, location: CGPoint?) {
         if let location = location {
             touches[touch] = location
@@ -149,6 +217,10 @@ import UIKit
     private static func quantizedWeight(_ value: Float) -> Float {
         let tenths = Int((value * 10).rounded())
         return Float(tenths) / 10
+    }
+    
+    private static func clampedColorComponent(_ value: Float) -> Float {
+        min(max(value, 0), 1)
     }
     
 }
