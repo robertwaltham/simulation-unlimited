@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ParticleLifeWorkshop: View {
-    @State var viewModel = ParticleLifeViewModel()
+    @State var viewModel = ParticleLifeViewModel(count: 8192)
     @State var showWeights = false
     @State var showParams = false
     @State var stepper: Float = 0.5
@@ -21,6 +21,15 @@ struct ParticleLifeWorkshop: View {
             TapView { touch, optLocation in
                 viewModel.updateTouch(touch, location: optLocation)
             }
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    fpsCounter()
+                }
+                Spacer()
+            }
+            .padding()
             
             VStack {
                 Spacer()
@@ -64,6 +73,21 @@ struct ParticleLifeWorkshop: View {
                 
             }.foregroundStyle(Color.blue)
         }
+    }
+    
+    @ViewBuilder
+    private func fpsCounter() -> some View {
+        Text("\(viewModel.fpsCounter.fps, specifier: "%.0f") FPS")
+            .font(.caption.monospacedDigit().weight(.semibold))
+            .foregroundStyle(Color.blue)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.black.opacity(0.65), in: Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(Color.blue.opacity(0.8), lineWidth: 1)
+            )
+            .allowsHitTesting(false)
     }
     
     @ViewBuilder

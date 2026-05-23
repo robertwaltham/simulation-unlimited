@@ -31,7 +31,7 @@ struct SimulationPicker: View {
                         .edgesIgnoringSafeArea(.all)
                         .statusBar(hidden: true)
                 }, sim: {
-                    ParticleLifeView(viewModel: ParticleLifeViewModel())
+                    ParticleLifeView(viewModel: ParticleLifeViewModel(count: 1024))
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
 //                simulationTile(content: {

@@ -227,6 +227,9 @@ extension ParticleLifeView.Coordinator {
             }
             commandBuffer.addCompletedHandler { buffer in
                 self.pathTextures.reverse()
+                Task { @MainActor in
+                    self.viewModel.fpsCounter.frameDidRender()
+                }
             }
             commandBuffer.commit()
         }

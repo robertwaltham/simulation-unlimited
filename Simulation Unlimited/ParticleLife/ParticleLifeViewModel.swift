@@ -6,18 +6,51 @@
 //
 
 import Foundation
+import QuartzCore
 import SwiftUI
 import UIKit
+
+@Observable final class FPSCounter {
+    private let updateInterval: CFTimeInterval
+    private var frameCount = 0
+    private var lastUpdate = CACurrentMediaTime()
+    
+    var fps: Double = 0
+    
+    init(updateInterval: CFTimeInterval = 0.5) {
+        self.updateInterval = updateInterval
+    }
+    
+    func frameDidRender() {
+        frameCount += 1
+        
+        let now = CACurrentMediaTime()
+        let elapsed = now - lastUpdate
+        
+        guard elapsed >= updateInterval else {
+            return
+        }
+        
+        fps = Double(frameCount) / elapsed
+        frameCount = 0
+        lastUpdate = now
+    }
+}
 
 @Observable class ParticleLifeViewModel {
     static let weightOptions: [Float] = (-10...10).map { Float($0) / 10 }
     
+    init(count: Int = 4096) {
+        self.particleCount = count
+    }
+    
     var config = ParticleLifeConfig.defaultConfig()
+    let fpsCounter = FPSCounter()
     
     var minSpeed: Float = 0.75
     var maxSpeed: Float = 1.0
     
-    var particleCount = 4096
+    var particleCount: Int
     
     var margin: Float = 50
     var radius: Float = 50
