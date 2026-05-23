@@ -57,6 +57,8 @@ struct ParticleLifeView: UIViewRepresentable {
         private var metalCommandQueue: MTLCommandQueue!
         
         private var pathTextures: [MTLTexture] = []
+        private var gradientTexture: MTLTexture?
+        private var gradientNoiseSignature: ParticleLifeGradientNoiseSignature?
         private var pipelines: ParticleLifePipelineStates!
         private var particleBuffer: MTLBuffer!
         private var colorBuffer: MTLBuffer!
@@ -135,6 +137,7 @@ extension ParticleLifeView.Coordinator {
         
         initializeParticlesIfNeeded()
         initializeColorsIfNeeded()
+        updateGradientTextureIfNeeded()
         
         if viewModel.resetOnNext {
             resetParticles()
@@ -173,9 +176,12 @@ extension ParticleLifeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
+            commandEncoder.setTexture(gradientTexture, index: Int(InputTextureIndexGradient.rawValue))
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
             commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
+            var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig()
+            commandEncoder.setBytes(&gradientConfig, length: MemoryLayout<ParticleLifeGradientConfig>.stride, index: Int(ParticleLifeInputIndexGradientConfig.rawValue))
 
             if let particleBuffer = particleBuffer {
                 
@@ -206,6 +212,7 @@ extension ParticleLifeView.Coordinator {
                 // Draw Background Colour
                 commandEncoder.setComputePipelineState(pipelines.background)
                 commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
+                commandEncoder.setTexture(gradientTexture, index: Int(InputTextureIndexGradient.rawValue))
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 
                 if viewModel.drawPath {
@@ -311,6 +318,24 @@ extension ParticleLifeView.Coordinator {
         colorBuffer = metalDevice.makeBuffer(bytes: viewModel.colours, length: size, options: [])
     }
     
+    private func updateGradientTextureIfNeeded() {
+        let zValue = viewModel.gradientNoiseSettings.zValue(at: viewModel.gradientNoiseTime)
+        let signature = ParticleLifeGradientNoiseSignature(settings: viewModel.gradientNoiseSettings, zValue: zValue)
+        guard gradientTexture == nil || gradientNoiseSignature != signature else {
+            return
+        }
+        
+        let size = max(viewModel.gradientNoiseSettings.textureSize, 2)
+        if gradientTexture == nil || gradientTexture?.width != size || gradientTexture?.height != size {
+            gradientTexture = makeGradientTexture(device: metalDevice, size: size)
+        }
+        
+        let pixels = ParticleLifeGradientNoise.makePixels(settings: viewModel.gradientNoiseSettings, zValue: zValue)
+        let region = MTLRegionMake2D(0, 0, size, size)
+        gradientTexture?.replace(region: region, mipmapLevel: 0, withBytes: pixels, bytesPerRow: size)
+        gradientNoiseSignature = signature
+    }
+    
     private func makeParticles() -> [LifeParticle] {
         
         var result = [LifeParticle]()
@@ -396,6 +421,23 @@ extension ParticleLifeView.Coordinator {
         return texture
     }
     
+    private func makeGradientTexture(device: MTLDevice, size: Int) -> MTLTexture {
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .r8Unorm,
+            width: size,
+            height: size,
+            mipmapped: false
+        )
+        descriptor.storageMode = .shared
+        descriptor.usage = [.shaderRead]
+        
+        guard let texture = device.makeTexture(descriptor: descriptor) else {
+            fatalError("can't make gradient texture")
+        }
+        
+        return texture
+    }
+    
 }
 
 struct ParticleLifeColors {
@@ -412,10 +454,10 @@ private struct ParticleLifePipelineStates {
     let blur: MTLComputePipelineState
     
     init(device: MTLDevice, library: MTLLibrary) throws {
-        background = try Self.makePipeline(named: "firstPassSlime", device: device, library: library)
+        background = try Self.makePipeline(named: "drawParticleLifeBackground", device: device, library: library)
         updateParticles = try Self.makePipeline(named: "drawParticlePath", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
-        drawPath = try Self.makePipeline(named: "fourthPassSlime", device: device, library: library)
+        drawPath = try Self.makePipeline(named: "drawParticleLifePath", device: device, library: library)
         blur = try Self.makePipeline(named: "boxBlur", device: device, library: library)
     }
     

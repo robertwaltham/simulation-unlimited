@@ -42,6 +42,7 @@
 		D1D6E92D2AD788A6007F03F0 /* ParticleLifeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */; };
 		D1D6E92F2AD78957007F03F0 /* ParticleLifeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */; };
 		D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */; };
+		D1F000072CF2800000000001 /* ParticleLifeGradientNoise.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F000062CF2800000000001 /* ParticleLifeGradientNoise.swift */; };
 		D1D80F172BABB58F009B5EFB /* CircleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F162BABB58F009B5EFB /* CircleView.swift */; };
 		D1D80F192BABB64B009B5EFB /* CircleShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F182BABB64B009B5EFB /* CircleShaders.metal */; };
 		D1D80F1B2BABB9A5009B5EFB /* CircleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1D80F1A2BABB9A5009B5EFB /* CircleViewModel.swift */; };
@@ -84,6 +85,7 @@
 		D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeView.swift; sourceTree = "<group>"; };
 		D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeViewModel.swift; sourceTree = "<group>"; };
 		D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeWorkshop.swift; sourceTree = "<group>"; };
+		D1F000062CF2800000000001 /* ParticleLifeGradientNoise.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticleLifeGradientNoise.swift; sourceTree = "<group>"; };
 		D1D80F162BABB58F009B5EFB /* CircleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleView.swift; sourceTree = "<group>"; };
 		D1D80F182BABB64B009B5EFB /* CircleShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CircleShaders.metal; sourceTree = "<group>"; };
 		D1D80F1A2BABB9A5009B5EFB /* CircleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleViewModel.swift; sourceTree = "<group>"; };
@@ -226,6 +228,7 @@
 				D1D6E92C2AD788A6007F03F0 /* ParticleLifeView.swift */,
 				D1D6E9302AD79EBC007F03F0 /* ParticleLifeWorkshop.swift */,
 				D1D6E92E2AD78957007F03F0 /* ParticleLifeViewModel.swift */,
+				D1F000062CF2800000000001 /* ParticleLifeGradientNoise.swift */,
 			);
 			path = ParticleLife;
 			sourceTree = "<group>";
@@ -315,6 +318,7 @@
 				D197F0702AC792FB00324D6D /* SimulationPicker.swift in Sources */,
 				D1D6E92B2AD78892007F03F0 /* ParticleLifeShaders.metal in Sources */,
 				D1D6E9312AD79EBC007F03F0 /* ParticleLifeWorkshop.swift in Sources */,
+				D1F000072CF2800000000001 /* ParticleLifeGradientNoise.swift in Sources */,
 				D1D0C16A2B8555F800EADC5D /* LowFrequencyOscillator.swift in Sources */,
 				D1F000012CF2800000000001 /* ModulationClock.swift in Sources */,
 				D1F000032CF2800000000001 /* FloatModulation.swift in Sources */,

@@ -31,7 +31,8 @@ typedef enum InputTextureIndex {
     InputTextureIndexDrawable = 0,
     InputTextureIndexPathInput = 1,
     InputTextureIndexPathOutput = 2,
-    InputTextureIndexPathHexagon = 3
+    InputTextureIndexPathHexagon = 3,
+    InputTextureIndexGradient = 4
 } InputTextureIndex;
 
 // Boids
@@ -64,7 +65,8 @@ typedef enum ParticleLifeInputIndex {
     ParticleLifeInputIndexSpeciesColours = 5,
     ParticleLifeInputIndexWeights = 6,
     ParticleLifeInputIndexTouches = 7,
-    ParticleLifeInputIndexTouchCount = 8
+    ParticleLifeInputIndexTouchCount = 8,
+    ParticleLifeInputIndexGradientConfig = 9
 } ParticleLifeInputIndex;
 
 typedef struct LifeParticle {
@@ -96,6 +98,13 @@ typedef struct ParticleLifeConfig {
     float touchRadius;
     float touchForce;
 } ParticleLifeConfig;
+
+typedef struct ParticleLifeGradientConfig {
+    int32_t isEnabled;
+    int32_t isDisplayed;
+    float forceMultiplier;
+    float padding;
+} ParticleLifeGradientConfig;
 
 
 struct Vertex {

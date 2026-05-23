@@ -106,6 +106,8 @@ import UIKit
     var drawPath = true
     var resetOnNext = false
     var touches: [UITouch: CGPoint] = [:]
+    var gradientNoiseSettings = ParticleLifeGradientNoiseSettings()
+    var gradientNoiseTime = 0.0
     
     var startType: StartType = .random
     
@@ -204,6 +206,10 @@ import UIKit
         config.rMinDistance = rMinDistanceModulation.value(at: time)
         config.rMaxDistance = rMaxDistanceModulation.value(at: time)
         config.maxSpeed = maxSpeedModulation.value(at: time)
+    }
+    
+    func updateGradientNoiseTime(_ time: Double) {
+        gradientNoiseTime = time
     }
     
     func updateTouch(_ touch: UITouch, location: CGPoint?) {

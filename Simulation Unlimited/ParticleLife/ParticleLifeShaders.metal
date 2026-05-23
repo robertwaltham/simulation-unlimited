@@ -31,6 +31,44 @@ float2 limit_magnitude2(float2 vec, float max_mag) {
     return vec;
 }
 
+kernel void drawParticleLifeBackground(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
+                                       texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
+                                       const device RenderLifeColours& colours [[buffer(ParticleLifeInputIndexRenderColours)]],
+                                       const device ParticleLifeGradientConfig& gradient_config [[buffer(ParticleLifeInputIndexGradientConfig)]],
+                                       uint2 id [[thread_position_in_grid]]) {
+    if (id.x >= output.get_width() || id.y >= output.get_height()) {
+        return;
+    }
+    
+    half4 color = (half4)colours.background;
+    if (gradient_config.isDisplayed == 1) {
+        uint2 gradient_coord = uint2(
+            (float(id.x) / float(output.get_width())) * float(gradient.get_width() - 1),
+            (float(id.y) / float(output.get_height())) * float(gradient.get_height() - 1)
+        );
+        half value = gradient.read(gradient_coord).r / 2.0;
+        color = half4(value, value, value, 1);
+    }
+    
+    output.write(color, id);
+}
+
+kernel void drawParticleLifePath(texture2d<half, access::read_write> output [[texture(InputTextureIndexDrawable)]],
+                                 texture2d<half, access::read> input [[texture(InputTextureIndexPathOutput)]],
+                                 uint2 gid [[thread_position_in_grid]]) {
+    if (gid.x >= output.get_width() || gid.y >= output.get_height()) {
+        return;
+    }
+    
+    half4 path_color = input.read(gid);
+    if (path_color.r <= 0 && path_color.g <= 0 && path_color.b <= 0) {
+        return;
+    }
+    
+    half4 background_color = output.read(gid);
+    output.write(half4(max(background_color.rgb, path_color.rgb), 1), gid);
+}
+
 kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                            device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
@@ -70,6 +108,7 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
 }
 
 kernel void drawParticlePath(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
+                            texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
                             const device RenderLifeColours& colours [[buffer(ParticleLifeInputIndexRenderColours)]],
                             device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                             device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
@@ -78,6 +117,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
                             const device int& touch_count [[buffer(ParticleLifeInputIndexTouchCount)]],
                             const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
                             const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
+                            const device ParticleLifeGradientConfig& gradient_config [[buffer(ParticleLifeInputIndexGradientConfig)]],
                             uint id [[ thread_position_in_grid ]],
                             uint tid [[ thread_index_in_threadgroup ]],
                             uint bid [[ threadgroup_position_in_grid ]],
@@ -97,6 +137,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     
     // Accumulate neighbor influence into force, then integrate velocity.
     float2 force = float2(0,0);
+    float2 gradient_velocity_delta = float2(0,0);
     for (uint i = 0; i < uint(particle_count); i++) {
         
         if (i == index) {
@@ -139,9 +180,26 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         force += direction * strength;
     }
     
+    if (gradient_config.isEnabled == 1 && gradient.get_width() > 1 && gradient.get_height() > 1) {
+        float gx = clamp(position.x / float(width), 0.0, 1.0) * float(gradient.get_width() - 1);
+        float gy = clamp(position.y / float(height), 0.0, 1.0) * float(gradient.get_height() - 1);
+        uint x0 = uint(max(gx - 1.0, 0.0));
+        uint x1 = uint(min(gx + 1.0, float(gradient.get_width() - 1)));
+        uint y0 = uint(max(gy - 1.0, 0.0));
+        uint y1 = uint(min(gy + 1.0, float(gradient.get_height() - 1)));
+        
+        float left = float(gradient.read(uint2(x0, uint(gy))).r);
+        float right = float(gradient.read(uint2(x1, uint(gy))).r);
+        float up = float(gradient.read(uint2(uint(gx), y0)).r);
+        float down = float(gradient.read(uint2(uint(gx), y1)).r);
+        float2 gradient_force = -float2(right - left, down - up);
+        gradient_velocity_delta = gradient_force * gradient_config.forceMultiplier;
+    }
+    
     if (length(force) > 0.001) {
         velocity += force * config.forceMultiplier;
     }
+    velocity += gradient_velocity_delta;
     velocity *= config.damping;
     velocity = limit_magnitude2(velocity, config.maxSpeed);
     position += (velocity * config.speedMultiplier);

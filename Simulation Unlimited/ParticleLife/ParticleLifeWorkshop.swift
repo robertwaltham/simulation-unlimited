@@ -13,6 +13,7 @@ struct ParticleLifeWorkshop: View {
     @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     @State var showWeights = false
     @State var showParams = false
+    @State var showGradient = false
     @State var stepper: Float = 0.5
     
     var body: some View {
@@ -24,6 +25,7 @@ struct ParticleLifeWorkshop: View {
                 .onReceive(timer) { _ in
                     modulationClock.tick(delta: 0.01)
                     viewModel.updateModulation(time: modulationClock.time)
+                    viewModel.updateGradientNoiseTime(modulationClock.time)
                 }
             TapView { touch, optLocation in
                 viewModel.updateTouch(touch, location: optLocation)
@@ -78,6 +80,19 @@ struct ParticleLifeWorkshop: View {
                         paramWidget()
                     }
                     .padding()
+                    
+                    Button {
+                        showGradient = true
+                    } label: {
+                        Label("Gradient", systemImage: "circle.hexagongrid.fill")
+                            .frame(minWidth: 150, minHeight: 52)
+                            .contentShape(Rectangle())
+                    }
+                    .controlSize(.large)
+                    .popover(isPresented: $showGradient, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
+                        gradientWidget()
+                    }
+                    .padding()
                 }
                 
             }.foregroundStyle(Color.blue)
@@ -125,6 +140,72 @@ struct ParticleLifeWorkshop: View {
         }
         .padding(.all, 20)
         .frame(minWidth: 800)
+    }
+    
+    @ViewBuilder
+    private func gradientWidget() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Toggle("Enable Force", isOn: $viewModel.gradientNoiseSettings.isEnabled)
+            Toggle("Show Background", isOn: $viewModel.gradientNoiseSettings.isDisplayed)
+            Toggle("Animate Noise", isOn: $viewModel.gradientNoiseSettings.animateOverTime)
+            
+            gradientSlider(
+                title: "Max Force",
+                value: $viewModel.gradientNoiseSettings.forceMultiplier,
+                range: 0...1,
+                format: "%.3f"
+            )
+            
+            gradientSlider(
+                title: "Noise Scale",
+                value: $viewModel.gradientNoiseSettings.scale,
+                range: 0.25...12,
+                format: "%.2f"
+            )
+            
+            gradientSlider(
+                title: "Z Offset",
+                value: $viewModel.gradientNoiseSettings.zOffset,
+                range: 0...10,
+                format: "%.2f"
+            )
+            
+            gradientSlider(
+                title: "Animation Speed",
+                value: $viewModel.gradientNoiseSettings.animationSpeed,
+                range: 0...2,
+                format: "%.2f"
+            )
+            
+            gradientSlider(
+                title: "Persistence",
+                value: $viewModel.gradientNoiseSettings.persistence,
+                range: 0...1,
+                format: "%.2f"
+            )
+            
+            gradientSlider(
+                title: "Lacunarity",
+                value: $viewModel.gradientNoiseSettings.lacunarity,
+                range: 1...4,
+                format: "%.2f"
+            )
+            
+            Stepper("Octaves: \(viewModel.gradientNoiseSettings.octaves)", value: $viewModel.gradientNoiseSettings.octaves, in: 1...8)
+            Stepper("Texture: \(viewModel.gradientNoiseSettings.textureSize)", value: $viewModel.gradientNoiseSettings.textureSize, in: 64...512, step: 64)
+        }
+        .padding(.all, 20)
+        .frame(minWidth: 420)
+    }
+    
+    @ViewBuilder
+    private func gradientSlider(title: String, value: Binding<Float>, range: ClosedRange<Float>, format: String) -> some View {
+        HStack {
+            Text("\(title): \(String(format: format, value.wrappedValue))")
+                .font(.title3)
+                .frame(width: 190, alignment: .leading)
+            Slider(value: value, in: range)
+        }
     }
     
     @ViewBuilder
