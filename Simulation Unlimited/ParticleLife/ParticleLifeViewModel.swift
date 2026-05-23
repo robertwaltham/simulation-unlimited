@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import UIKit
 
 @Observable class ParticleLifeViewModel {
     static let weightOptions: [Float] = (-10...10).map { Float($0) / 10 }
@@ -24,6 +25,7 @@ import SwiftUI
     var drawParticles = false
     var drawPath = true
     var resetOnNext = false
+    var touches: [UITouch: CGPoint] = [:]
     
     var startType: StartType = .random
     
@@ -100,6 +102,14 @@ import SwiftUI
         weights = weights.map { Self.quantizedWeight(-$0) }
     }
     
+    func updateTouch(_ touch: UITouch, location: CGPoint?) {
+        if let location = location {
+            touches[touch] = location
+        } else {
+            touches.removeValue(forKey: touch)
+        }
+    }
+    
     private static func quantizedWeight(_ value: Float) -> Float {
         let tenths = Int((value * 10).rounded())
         return Float(tenths) / 10
@@ -124,6 +134,8 @@ extension ParticleLifeConfig {
         config.padding = 0
         config.damping = 0.95
         config.forceMultiplier = 0.05
+        config.touchRadius = 200
+        config.touchForce = 20
         return config
     }
 }

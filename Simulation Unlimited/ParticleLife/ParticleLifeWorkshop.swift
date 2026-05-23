@@ -18,6 +18,9 @@ struct ParticleLifeWorkshop: View {
         ZStack {
             
             ParticleLifeView(viewModel: viewModel).frame(maxHeight: .infinity)
+            TapView { touch, optLocation in
+                viewModel.updateTouch(touch, location: optLocation)
+            }
             
             VStack {
                 Spacer()
@@ -26,23 +29,37 @@ struct ParticleLifeWorkshop: View {
                         showWeights = true
                     } label: {
                         Label("Weights", systemImage: "figure.walk.circle.fill")
-                    }.popover(isPresented: $showWeights, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
+                            .frame(minWidth: 130, minHeight: 52)
+                            .contentShape(Rectangle())
+                    }
+                    .controlSize(.large)
+                    .popover(isPresented: $showWeights, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         weightWidget()
-                    }.padding()
+                    }
+                    .padding()
                     
                     Button {
                         viewModel.resetOnNext = true
                     } label: {
                         Label("Reset Particles", systemImage: "arrow.counterclockwise.circle.fill")
-                    }.padding()
+                            .frame(minWidth: 190, minHeight: 52)
+                            .contentShape(Rectangle())
+                    }
+                    .controlSize(.large)
+                    .padding()
                     
                     Button {
                         showParams = true
                     } label: {
                         Label("Parameters", systemImage: "figure.walk.circle.fill")
-                    }.popover(isPresented: $showParams, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
+                            .frame(minWidth: 150, minHeight: 52)
+                            .contentShape(Rectangle())
+                    }
+                    .controlSize(.large)
+                    .popover(isPresented: $showParams, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         paramWidget()
-                    }.padding()
+                    }
+                    .padding()
                 }
                 
             }.foregroundStyle(Color.blue)

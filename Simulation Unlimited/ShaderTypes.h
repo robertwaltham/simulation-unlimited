@@ -62,7 +62,9 @@ typedef enum ParticleLifeInputIndex {
     ParticleLifeInputIndexConfig = 3,
     ParticleLifeInputIndexRandom = 4,
     ParticleLifeInputIndexSpeciesColours = 5,
-    ParticleLifeInputIndexWeights = 6
+    ParticleLifeInputIndexWeights = 6,
+    ParticleLifeInputIndexTouches = 7,
+    ParticleLifeInputIndexTouchCount = 8
 } ParticleLifeInputIndex;
 
 typedef struct LifeParticle {
@@ -72,6 +74,10 @@ typedef struct LifeParticle {
     float species;
     float bytes;
 } LifeParticle;
+
+typedef struct ParticleLifeTouch {
+    vector_float2 position;
+} ParticleLifeTouch;
 
 typedef struct ParticleLifeConfig {
     float rMinDistance;
@@ -87,6 +93,8 @@ typedef struct ParticleLifeConfig {
     float padding;
     float damping;
     float forceMultiplier;
+    float touchRadius;
+    float touchForce;
 } ParticleLifeConfig;
 
 

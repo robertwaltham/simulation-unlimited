@@ -64,6 +64,7 @@ struct ParticleLifeView: UIViewRepresentable {
         private var viewPortSize = vector_uint2(x: 0, y: 0)
         
         private var particles = [LifeParticle]()
+        private var touches = [ParticleLifeTouch]()
         
         private var lastDraw = Date()
         
@@ -144,6 +145,14 @@ extension ParticleLifeView.Coordinator {
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
         }
+        touches = viewModel.touches.values.map {
+            var touch = ParticleLifeTouch()
+            touch.position = SIMD2<Float>(
+                Float($0.x * UIScreen.main.scale),
+                Float($0.y * UIScreen.main.scale)
+            )
+            return touch
+        }
         let randomCount = 1024
         var random: [Float] = (0..<randomCount).map { _ in Float.random(in: 0...1) }
         
@@ -176,6 +185,14 @@ extension ParticleLifeView.Coordinator {
                 commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                 commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexSpeciesColours.rawValue))
                 commandEncoder.setBytes(viewModel.weights, length: MemoryLayout<Float>.stride * viewModel.weights.count, index: Int(ParticleLifeInputIndexWeights.rawValue))
+                if touches.isEmpty {
+                    var touch = ParticleLifeTouch()
+                    commandEncoder.setBytes(&touch, length: MemoryLayout<ParticleLifeTouch>.stride, index: Int(ParticleLifeInputIndexTouches.rawValue))
+                } else {
+                    commandEncoder.setBytes(touches, length: MemoryLayout<ParticleLifeTouch>.stride * touches.count, index: Int(ParticleLifeInputIndexTouches.rawValue))
+                }
+                var touchCount = Int32(touches.count)
+                commandEncoder.setBytes(&touchCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexTouchCount.rawValue))
                 
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 

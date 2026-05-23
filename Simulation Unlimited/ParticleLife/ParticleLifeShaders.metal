@@ -74,6 +74,8 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
                             device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                             device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
+                            const device ParticleLifeTouch *touches [[buffer(ParticleLifeInputIndexTouches)]],
+                            const device int& touch_count [[buffer(ParticleLifeInputIndexTouchCount)]],
                             const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
                             const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                             uint id [[ thread_position_in_grid ]],
@@ -123,6 +125,18 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
                 force += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
             }
         }
+    }
+    
+    for (uint j = 0; j < uint(touch_count); j++) {
+        ParticleLifeTouch touch = touches[j];
+        float touchDistance = distance(position, touch.position);
+        if (touchDistance <= 0.0001 || touchDistance > config.touchRadius) {
+            continue;
+        }
+        
+        float2 direction = normalize(position - touch.position);
+        float strength = pow((config.touchRadius - touchDistance) / config.touchRadius, 1.5) * config.touchForce;
+        force += direction * strength;
     }
     
     if (length(force) > 0.001) {
