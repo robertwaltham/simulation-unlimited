@@ -152,47 +152,47 @@ struct ParticleLifeWorkshop: View {
             gradientSlider(
                 title: "Max Force",
                 value: $viewModel.gradientNoiseSettings.forceMultiplier,
-                range: 0...1,
+                range: 0...viewModel.maxGradientForce,
                 format: "%.3f"
             )
             
             gradientSlider(
                 title: "Noise Scale",
                 value: $viewModel.gradientNoiseSettings.scale,
-                range: 0.25...12,
+                range: 0.25...viewModel.maxGradientNoiseScale,
                 format: "%.2f"
             )
             
             gradientSlider(
                 title: "Z Offset",
                 value: $viewModel.gradientNoiseSettings.zOffset,
-                range: 0...10,
+                range: 0...viewModel.maxGradientZOffset,
                 format: "%.2f"
             )
             
             gradientSlider(
                 title: "Animation Speed",
                 value: $viewModel.gradientNoiseSettings.animationSpeed,
-                range: 0...2,
+                range: 0...viewModel.maxGradientAnimationSpeed,
                 format: "%.2f"
             )
             
             gradientSlider(
                 title: "Persistence",
                 value: $viewModel.gradientNoiseSettings.persistence,
-                range: 0...1,
+                range: 0...viewModel.maxGradientPersistence,
                 format: "%.2f"
             )
             
             gradientSlider(
                 title: "Lacunarity",
                 value: $viewModel.gradientNoiseSettings.lacunarity,
-                range: 1...4,
+                range: 1...viewModel.maxGradientLacunarity,
                 format: "%.2f"
             )
             
-            Stepper("Octaves: \(viewModel.gradientNoiseSettings.octaves)", value: $viewModel.gradientNoiseSettings.octaves, in: 1...8)
-            Stepper("Texture: \(viewModel.gradientNoiseSettings.textureSize)", value: $viewModel.gradientNoiseSettings.textureSize, in: 64...512, step: 64)
+            Stepper("Octaves: \(viewModel.gradientNoiseSettings.octaves)", value: $viewModel.gradientNoiseSettings.octaves, in: 1...viewModel.maxGradientOctaves)
+            Stepper("Texture: \(viewModel.gradientNoiseSettings.textureSize)", value: $viewModel.gradientNoiseSettings.textureSize, in: 64...viewModel.maxGradientTextureSize, step: 64)
         }
         .padding(.all, 20)
         .frame(minWidth: 420)

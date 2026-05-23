@@ -102,8 +102,15 @@ typedef struct ParticleLifeConfig {
 typedef struct ParticleLifeGradientConfig {
     int32_t isEnabled;
     int32_t isDisplayed;
+    int32_t animateOverTime;
+    int32_t octaves;
     float forceMultiplier;
-    float padding;
+    float scale;
+    float zOffset;
+    float animationSpeed;
+    float persistence;
+    float lacunarity;
+    uint32_t seed;
 } ParticleLifeGradientConfig;
 
 

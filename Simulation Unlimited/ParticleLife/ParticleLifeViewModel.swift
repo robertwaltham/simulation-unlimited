@@ -46,6 +46,14 @@ import UIKit
     private static let defaultMaxMinDistance: Float = 50
     private static let defaultMaxMaxDistance: Float = 200
     private static let defaultMaxParticleSpeed: Float = 10
+    private static let defaultMaxGradientForce: Float = 10
+    private static let defaultMaxGradientNoiseScale: Float = 12
+    private static let defaultMaxGradientZOffset: Float = 10
+    private static let defaultMaxGradientAnimationSpeed: Float = 1
+    private static let defaultMaxGradientPersistence: Float = 1
+    private static let defaultMaxGradientLacunarity: Float = 4
+    private static let defaultMaxGradientOctaves = 8
+    private static let defaultMaxGradientTextureSize = 512
     
     init(count: Int = 4096) {
         let initialConfig = ParticleLifeConfig.defaultConfig()
@@ -122,6 +130,14 @@ import UIKit
     let maxMinDistance = ParticleLifeViewModel.defaultMaxMinDistance
     let maxMaxDistance = ParticleLifeViewModel.defaultMaxMaxDistance
     let maxParticleSpeed = ParticleLifeViewModel.defaultMaxParticleSpeed
+    let maxGradientForce = ParticleLifeViewModel.defaultMaxGradientForce
+    let maxGradientNoiseScale = ParticleLifeViewModel.defaultMaxGradientNoiseScale
+    let maxGradientZOffset = ParticleLifeViewModel.defaultMaxGradientZOffset
+    let maxGradientAnimationSpeed = ParticleLifeViewModel.defaultMaxGradientAnimationSpeed
+    let maxGradientPersistence = ParticleLifeViewModel.defaultMaxGradientPersistence
+    let maxGradientLacunarity = ParticleLifeViewModel.defaultMaxGradientLacunarity
+    let maxGradientOctaves = ParticleLifeViewModel.defaultMaxGradientOctaves
+    let maxGradientTextureSize = ParticleLifeViewModel.defaultMaxGradientTextureSize
     
     var speedMultiplierModulation: FloatModulation
     var falloffModulation: FloatModulation
@@ -186,7 +202,9 @@ import UIKit
     }
     
     func resetWeights() {
-        weights = ParticleLifeViewModel.createDefaultWeights()
+        weights = stride(from: 0, to: config.flavourCount * config.flavourCount, by: 1).compactMap { _ in
+            0
+        }
     }
     
     func randomizeWeights() {

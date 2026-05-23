@@ -137,7 +137,7 @@ extension ParticleLifeView.Coordinator {
         
         initializeParticlesIfNeeded()
         initializeColorsIfNeeded()
-        updateGradientTextureIfNeeded()
+        let shouldGenerateGradientTexture = updateGradientTextureIfNeeded()
         
         if viewModel.resetOnNext {
             resetParticles()
@@ -180,8 +180,22 @@ extension ParticleLifeView.Coordinator {
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
             commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
-            var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig()
+            var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig(time: viewModel.gradientNoiseTime)
             commandEncoder.setBytes(&gradientConfig, length: MemoryLayout<ParticleLifeGradientConfig>.stride, index: Int(ParticleLifeInputIndexGradientConfig.rawValue))
+            
+            if shouldGenerateGradientTexture, let gradientTexture = gradientTexture {
+                commandEncoder.setComputePipelineState(pipelines.generateGradientNoise)
+                commandEncoder.setTexture(gradientTexture, index: Int(InputTextureIndexGradient.rawValue))
+                let w = pipelines.generateGradientNoise.threadExecutionWidth
+                let h = pipelines.generateGradientNoise.maxTotalThreadsPerThreadgroup / w
+                let gradientThreadsPerGroup = MTLSizeMake(w, h, 1)
+                let gradientThreadgroupsPerGrid = MTLSize(
+                    width: (gradientTexture.width + w - 1) / w,
+                    height: (gradientTexture.height + h - 1) / h,
+                    depth: 1
+                )
+                commandEncoder.dispatchThreadgroups(gradientThreadgroupsPerGrid, threadsPerThreadgroup: gradientThreadsPerGroup)
+            }
 
             if let particleBuffer = particleBuffer {
                 
@@ -318,11 +332,11 @@ extension ParticleLifeView.Coordinator {
         colorBuffer = metalDevice.makeBuffer(bytes: viewModel.colours, length: size, options: [])
     }
     
-    private func updateGradientTextureIfNeeded() {
+    private func updateGradientTextureIfNeeded() -> Bool {
         let zValue = viewModel.gradientNoiseSettings.zValue(at: viewModel.gradientNoiseTime)
         let signature = ParticleLifeGradientNoiseSignature(settings: viewModel.gradientNoiseSettings, zValue: zValue)
         guard gradientTexture == nil || gradientNoiseSignature != signature else {
-            return
+            return false
         }
         
         let size = max(viewModel.gradientNoiseSettings.textureSize, 2)
@@ -330,10 +344,8 @@ extension ParticleLifeView.Coordinator {
             gradientTexture = makeGradientTexture(device: metalDevice, size: size)
         }
         
-        let pixels = ParticleLifeGradientNoise.makePixels(settings: viewModel.gradientNoiseSettings, zValue: zValue)
-        let region = MTLRegionMake2D(0, 0, size, size)
-        gradientTexture?.replace(region: region, mipmapLevel: 0, withBytes: pixels, bytesPerRow: size)
         gradientNoiseSignature = signature
+        return true
     }
     
     private func makeParticles() -> [LifeParticle] {
@@ -428,8 +440,8 @@ extension ParticleLifeView.Coordinator {
             height: size,
             mipmapped: false
         )
-        descriptor.storageMode = .shared
-        descriptor.usage = [.shaderRead]
+        descriptor.storageMode = .private
+        descriptor.usage = [.shaderRead, .shaderWrite]
         
         guard let texture = device.makeTexture(descriptor: descriptor) else {
             fatalError("can't make gradient texture")
@@ -447,6 +459,7 @@ struct ParticleLifeColors {
 }
 
 private struct ParticleLifePipelineStates {
+    let generateGradientNoise: MTLComputePipelineState
     let background: MTLComputePipelineState
     let updateParticles: MTLComputePipelineState
     let drawParticles: MTLComputePipelineState
@@ -454,6 +467,7 @@ private struct ParticleLifePipelineStates {
     let blur: MTLComputePipelineState
     
     init(device: MTLDevice, library: MTLLibrary) throws {
+        generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
         background = try Self.makePipeline(named: "drawParticleLifeBackground", device: device, library: library)
         updateParticles = try Self.makePipeline(named: "drawParticlePath", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
