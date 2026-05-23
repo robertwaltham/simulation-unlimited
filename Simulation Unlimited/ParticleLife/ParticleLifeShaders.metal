@@ -10,28 +10,6 @@
 
 using namespace metal;
 
-struct LifeParticle {
-    float2 position;
-    float2 velocity;
-    float2 acceleration;
-    float species;
-    float bytes;
-};
-
-struct ParticleLifeConfig {
-    float r_min_distance;
-    float r_max_distance;
-    float max_speed;
-    float draw_radius;
-    float trail_radius;
-    float cutoff;
-    float falloff;
-    float speed_multiplier;
-    float flavour_count;
-    float blur_radius;
-    float padding; //TODO: Fix boxBlur function sharing
-};
-
 struct RenderLifeColours {
     float4 background;
     float4 trail;
@@ -55,7 +33,7 @@ float2 limit_magnitude2(float2 vec, float max_mag) {
 
 kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
-                           device float4 *colors [[buffer(ParticleLifeInputIndexColours)]],
+                           device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
                            const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                            uint id [[ thread_position_in_grid ]],
                            uint tid [[ thread_index_in_threadgroup ]],
@@ -69,7 +47,7 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
     
     LifeParticle particle = particles[index];
     uint2 pos = uint2(particle.position);
-    uint span = (uint)config.draw_radius;
+    uint span = (uint)config.drawRadius;
     
     // display
     half4 color = (half4)colors[(int)particle.species];
@@ -92,12 +70,12 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
 }
 
 kernel void drawParticlePath(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
-                            const device RenderLifeColours& colours [[buffer(InputIndexColours)]],
-                            device LifeParticle *particles [[buffer(InputIndexParticles)]],
-                            device float4 *colors [[buffer(ParticleLifeInputIndexColours)]],
+                            const device RenderLifeColours& colours [[buffer(ParticleLifeInputIndexRenderColours)]],
+                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
+                            device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
-                            const device int& particle_count [[ buffer(InputIndexParticleCount)]],
-                            const device ParticleLifeConfig& config [[ buffer(InputIndexConfig)]],
+                            const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
+                            const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                             uint id [[ thread_position_in_grid ]],
                             uint tid [[ thread_index_in_threadgroup ]],
                             uint bid [[ threadgroup_position_in_grid ]],
@@ -116,7 +94,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     uint height = output.get_height();
     
     // position
-    position += (velocity * config.speed_multiplier);
+    position += (velocity * config.speedMultiplier);
     
     // bounds
     if (position.x < 0) {
@@ -145,20 +123,20 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
         
         LifeParticle other = particles[i];
         float dist = distance(position, other.position);
-        if (dist > config.r_max_distance) {
+        if (dist > config.rMaxDistance) {
             continue;
         }
         
         int otherSpecies = (int)other.species;
-        int forceIndex = (species * (int)config.flavour_count) + otherSpecies;
+        int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
         float weight = -1.0 * weights[forceIndex];
 
         
         float2 direction = normalize(other.position - position);
-        if (dist < config.r_min_distance) {
-            newVelocity += (dist / config.r_min_distance) * direction * 0.5; // force = 0 -> 1 as distance goes from 0 -> r_min
+        if (dist < config.rMinDistance) {
+            newVelocity += (dist / config.rMinDistance) * direction * 0.5; // force = 0 -> 1 as distance goes from 0 -> r_min
         } else {
-            float d = (dist - config.r_min_distance) / (config.r_max_distance - config.r_min_distance);
+            float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
             if (d < 0.5) {
                 newVelocity += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
             } else {
@@ -168,7 +146,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     }
     
     if (length(newVelocity) > 0.001) {
-        particle.velocity = limit_magnitude2(newVelocity, config.max_speed);
+        particle.velocity = limit_magnitude2(newVelocity, config.maxSpeed);
     }
     
     
@@ -181,7 +159,7 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     
     // leave trail
     uint2 pos = uint2(particle.position);
-    uint span = (uint)config.trail_radius;
+    uint span = (uint)config.trailRadius;
     
     for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
         for (uint v = pos.y - span; v <= uint(pos.y) + span; v++) {

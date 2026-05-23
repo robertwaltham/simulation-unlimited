@@ -56,13 +56,36 @@ typedef enum ThirdPassInputIndex {
 // Particle Life
 
 typedef enum ParticleLifeInputIndex {
+    ParticleLifeInputIndexRenderColours = 0,
     ParticleLifeInputIndexParticles = 1,
     ParticleLifeInputIndexParticleCount = 2,
     ParticleLifeInputIndexConfig = 3,
     ParticleLifeInputIndexRandom = 4,
-    ParticleLifeInputIndexColours = 5,
+    ParticleLifeInputIndexSpeciesColours = 5,
     ParticleLifeInputIndexWeights = 6
 } ParticleLifeInputIndex;
+
+typedef struct LifeParticle {
+    vector_float2 position;
+    vector_float2 velocity;
+    vector_float2 acceleration;
+    float species;
+    float bytes;
+} LifeParticle;
+
+typedef struct ParticleLifeConfig {
+    float rMinDistance;
+    float rMaxDistance;
+    float maxSpeed;
+    float drawRadius;
+    float trailRadius;
+    float cutoff;
+    float falloff;
+    float speedMultiplier;
+    float flavourCount;
+    float blurRadius;
+    float padding;
+} ParticleLifeConfig;
 
 
 struct Vertex {

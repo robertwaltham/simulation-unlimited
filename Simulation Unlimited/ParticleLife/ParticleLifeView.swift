@@ -57,7 +57,7 @@ struct ParticleLifeView: UIViewRepresentable {
         private var metalCommandQueue: MTLCommandQueue!
         
         private var pathTextures: [MTLTexture] = []
-        private var states: [MTLComputePipelineState] = []
+        private var pipelines: ParticleLifePipelineStates!
         private var particleBuffer: MTLBuffer!
         private var colorBuffer: MTLBuffer!
 
@@ -152,8 +152,8 @@ extension ParticleLifeView.Coordinator {
         let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
         let particleThreadGroupsPerGrid = MTLSize(width: (max(viewModel.particleCount / (maxThreads * threadgroupSizeMultiplier), 1)), height: 1, depth:1)
         
-        let w = states[0].threadExecutionWidth
-        let h = states[0].maxTotalThreadsPerThreadgroup / w
+        let w = pipelines.background.threadExecutionWidth
+        let h = pipelines.background.maxTotalThreadsPerThreadgroup / w
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
         
@@ -166,39 +166,39 @@ extension ParticleLifeView.Coordinator {
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
-            commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(InputIndexColours.rawValue))
+            commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
 
             if let particleBuffer = particleBuffer {
                 
                 // update particles and draw on path
-                commandEncoder.setComputePipelineState(states[1])
+                commandEncoder.setComputePipelineState(pipelines.updateParticles)
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                 commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
-                commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexColours.rawValue))
+                commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexSpeciesColours.rawValue))
                 commandEncoder.setBytes(viewModel.weights, length: MemoryLayout<Float>.stride * viewModel.weights.count, index: Int(ParticleLifeInputIndexWeights.rawValue))
                 
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer
-                commandEncoder.setComputePipelineState(states[4])
+                commandEncoder.setComputePipelineState(pipelines.blur)
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
             }
             
             if let drawable = view?.currentDrawable {
                 
                 // Draw Background Colour
-                commandEncoder.setComputePipelineState(states[0])
+                commandEncoder.setComputePipelineState(pipelines.background)
                 commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexDrawable.rawValue))
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 
                 if viewModel.drawPath {
-                    commandEncoder.setComputePipelineState(states[3])
+                    commandEncoder.setComputePipelineState(pipelines.drawPath)
                     commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 }
                 
                 if viewModel.drawParticles, let particleBuffer = particleBuffer {
-                    commandEncoder.setComputePipelineState(states[2])
-                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
+                    commandEncoder.setComputePipelineState(pipelines.drawParticles)
+                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                     commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 }
                 
@@ -239,12 +239,7 @@ extension ParticleLifeView.Coordinator {
             fatalError("can't create libray")
         }
         
-        states = try ["firstPassSlime", "drawParticlePath", "drawLifeParticles", "fourthPassSlime", "boxBlur"].map {
-            guard let function = library.makeFunction(name: $0) else {
-                fatalError("Can't make function \($0)")
-            }
-            return try device.makeComputePipelineState(function: function)
-        }
+        pipelines = try ParticleLifePipelineStates(device: device, library: library)
     }
     
     
@@ -255,7 +250,7 @@ extension ParticleLifeView.Coordinator {
         }
         
         particles = makeParticles()
-        let size = particles.count * MemoryLayout<Particle>.size
+        let size = particles.count * MemoryLayout<LifeParticle>.stride
         
         particleBuffer = metalDevice.makeBuffer(bytes: &particles, length: size, options: [])
         particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
@@ -267,7 +262,7 @@ extension ParticleLifeView.Coordinator {
             return
         }
         
-        let size = particles.count * MemoryLayout<Particle>.size
+        let size = particles.count * MemoryLayout<LifeParticle>.stride
         particles = makeParticles()
         particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
     }
@@ -280,7 +275,7 @@ extension ParticleLifeView.Coordinator {
         
         particles = []
         for i in 0..<viewModel.particleCount {
-            particles.append((particleBuffer.contents() + (i * MemoryLayout<LifeParticle>.size)).load(as: LifeParticle.self))
+            particles.append((particleBuffer.contents() + (i * MemoryLayout<LifeParticle>.stride)).load(as: LifeParticle.self))
         }
     }
     
@@ -355,7 +350,12 @@ extension ParticleLifeView.Coordinator {
                 species = xLinePosition.truncatingRemainder(dividingBy: 3)
             }
             
-            let particle = LifeParticle(position: position, velocity: speed, species: species)
+            var particle = LifeParticle()
+            particle.position = position
+            particle.velocity = speed
+            particle.acceleration = SIMD2<Float>(0,0)
+            particle.species = species
+            particle.bytes = 0
             result.append(particle)
         }
         return result
@@ -384,20 +384,36 @@ struct ParticleLifeColors {
     var particle = SIMD4<Float>(0.5,0.5,0.5,1)
 }
 
+private struct ParticleLifePipelineStates {
+    let background: MTLComputePipelineState
+    let updateParticles: MTLComputePipelineState
+    let drawParticles: MTLComputePipelineState
+    let drawPath: MTLComputePipelineState
+    let blur: MTLComputePipelineState
+    
+    init(device: MTLDevice, library: MTLLibrary) throws {
+        background = try Self.makePipeline(named: "firstPassSlime", device: device, library: library)
+        updateParticles = try Self.makePipeline(named: "drawParticlePath", device: device, library: library)
+        drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
+        drawPath = try Self.makePipeline(named: "fourthPassSlime", device: device, library: library)
+        blur = try Self.makePipeline(named: "boxBlur", device: device, library: library)
+    }
+    
+    private static func makePipeline(named name: String, device: MTLDevice, library: MTLLibrary) throws -> MTLComputePipelineState {
+        guard let function = library.makeFunction(name: name) else {
+            fatalError("Can't make function \(name)")
+        }
+        return try device.makeComputePipelineState(function: function)
+    }
+}
+
 
 #Preview {
     ParticleLifeView(viewModel: ParticleLifeViewModel())
 }
 
-private struct LifeParticle {
-    var position: SIMD2<Float>
-    var velocity: SIMD2<Float>
-    var acceleration: SIMD2<Float> = SIMD2<Float>(0,0)
-    var species: Float
-    var bytes: Float = 0
-    
-    var description: String {
+extension LifeParticle: CustomStringConvertible {
+    public var description: String {
         return "p<\(position.x),\(position.y)> v<\(velocity.x),\(velocity.y)> a<\(acceleration.x),\(acceleration.y)"
     }
 }
-

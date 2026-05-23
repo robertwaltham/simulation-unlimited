@@ -99,29 +99,20 @@ import SwiftUI
 }
 
 
-struct ParticleLifeConfig {
-    var rMinDistance: Float = 0
-    var rMaxDistance: Float = 0
-    var maxSpeed: Float = 0
-    var drawRadius: Float = 0
-    var trailRadius: Float = 0
-    var cutoff: Float = 0
-    var falloff: Float = 0
-    var speedMultiplier: Float = 0
-    var flavourCount: Float = 0
-    var blurRadius: Float = 0
-    var padding: Float = 0 //TODO: fix boxBlur
-    
+extension ParticleLifeConfig {
     static func defaultConfig() -> ParticleLifeConfig {
-        ParticleLifeConfig(rMinDistance: 1,
-                           rMaxDistance: 15,
-                           maxSpeed: 1,
-                           drawRadius: 4,
-                           trailRadius: 5,
-                           cutoff: 0.01,
-                           falloff: 0.15,
-                           speedMultiplier: 2,
-                           flavourCount: 3,
-                           blurRadius: 3)
+        var config = ParticleLifeConfig()
+        config.rMinDistance = 1
+        config.rMaxDistance = 15
+        config.maxSpeed = 1
+        config.drawRadius = 4
+        config.trailRadius = 5
+        config.cutoff = 0.01
+        config.falloff = 0.15
+        config.speedMultiplier = 2
+        config.flavourCount = 3
+        config.blurRadius = 3
+        config.padding = 0
+        return config
     }
 }
