@@ -131,18 +131,18 @@ struct ParticleLifeWorkshop: View {
                 HStack {
                     Text("R Min: \(viewModel.config.rMinDistance, specifier: "%.2f")")
                         .font(.title3)
-                    Slider(value: $viewModel.config.rMinDistance, in: 0...10)
+                    Slider(value: $viewModel.config.rMinDistance, in: 0...viewModel.maxMinDistance)
                 }
                 
                 HStack {
                     Text("R MAx: \(viewModel.config.rMaxDistance, specifier: "%.1f")")
                         .font(.title3)
-                    Slider(value: $viewModel.config.rMaxDistance, in: 1...50)
+                    Slider(value: $viewModel.config.rMaxDistance, in: 1...viewModel.maxMaxDistance)
                 }
                 
                 HStack() {
                     Text("S Max: \(viewModel.config.maxSpeed, specifier: "%.1f")").font(.title3)
-                    Slider(value: $viewModel.config.maxSpeed, in: 0...5)
+                    Slider(value: $viewModel.config.maxSpeed, in: 0...viewModel.maxParticleSpeed)
                 }
             }
         }

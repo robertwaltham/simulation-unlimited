@@ -70,6 +70,9 @@ import UIKit
     let maxFalloff: Float = 0.15
     let maxRadius: Float = 5
     let maxMultiplier: Float = 6
+    let maxMinDistance: Float = 50
+    let maxMaxDistance: Float = 200
+    let maxParticleSpeed: Float = 10
     
     var colours = [
         SIMD4<Float>(1, 0, 0, 1),
@@ -165,7 +168,7 @@ extension ParticleLifeConfig {
         config.flavourCount = 3
         config.blurRadius = 3
         config.padding = 0
-        config.damping = 0.95
+        config.damping = 0.9
         config.forceMultiplier = 0.05
         config.touchRadius = 200
         config.touchForce = 20
