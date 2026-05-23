@@ -49,7 +49,7 @@ import SwiftUI
         SIMD4<Float>(0.5, 0.5, 0.5, 1),
     ]
     
-    var weights = createDefaultWeights(flavourCount: 3) // TODO: de-hardcode the flavour count
+    var weights = createDefaultWeights() // TODO: de-hardcode the flavour count
     
     func getSwiftUIColors() -> [Color] {
         colours.map { c in
@@ -57,11 +57,12 @@ import SwiftUI
         }
     }
     
-    static func createDefaultWeights(flavourCount: Int) -> [Float] {
+    static func createDefaultWeights() -> [Float] {
+        let flavourCount = 3 // TODO: remove magic number
         var defaultWeights: [Float] = Array(repeating: -1, count: flavourCount * flavourCount)
         
-        for i in 0..<flavourCount {
-            defaultWeights[(i * flavourCount) + i] = 1
+        for i in 0..<defaultWeights.count {
+            defaultWeights[i] = Self.weightOptions.randomElement()!
         }
         
         return defaultWeights
@@ -86,7 +87,7 @@ import SwiftUI
     }
     
     func resetWeights() {
-        weights = ParticleLifeViewModel.createDefaultWeights(flavourCount: Int(config.flavourCount))
+        weights = ParticleLifeViewModel.createDefaultWeights()
     }
     
     func randomizeWeights() {
