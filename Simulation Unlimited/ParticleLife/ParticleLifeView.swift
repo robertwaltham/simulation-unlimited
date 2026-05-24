@@ -180,7 +180,7 @@ extension ParticleLifeView.Coordinator {
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
             commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
             commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
-            var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig(time: viewModel.gradientNoiseTime)
+            var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig()
             commandEncoder.setBytes(&gradientConfig, length: MemoryLayout<ParticleLifeGradientConfig>.stride, index: Int(ParticleLifeInputIndexGradientConfig.rawValue))
             
             if shouldGenerateGradientTexture, let gradientTexture = gradientTexture {
@@ -333,8 +333,7 @@ extension ParticleLifeView.Coordinator {
     }
     
     private func updateGradientTextureIfNeeded() -> Bool {
-        let zValue = viewModel.gradientNoiseSettings.zValue(at: viewModel.gradientNoiseTime)
-        let signature = ParticleLifeGradientNoiseSignature(settings: viewModel.gradientNoiseSettings, zValue: zValue)
+        let signature = ParticleLifeGradientNoiseSignature(settings: viewModel.gradientNoiseSettings)
         guard gradientTexture == nil || gradientNoiseSignature != signature else {
             return false
         }

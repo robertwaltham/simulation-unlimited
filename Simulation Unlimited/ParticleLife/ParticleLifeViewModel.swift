@@ -118,7 +118,7 @@ import UIKit
     var resetOnNext = false
     var touches: [UITouch: CGPoint] = [:]
     var gradientNoiseSettings = ParticleLifeGradientNoiseSettings()
-    var gradientNoiseTime = 0.0
+    private var lastGradientNoiseAnimationUpdate: Date?
     
     var startType: StartType = .random
     
@@ -231,8 +231,20 @@ import UIKit
         config.maxSpeed = maxSpeedModulation.value(at: time)
     }
     
-    func updateGradientNoiseTime(_ time: Double) {
-        gradientNoiseTime = time
+    func updateGradientNoiseAnimation(currentDate: Date) {
+        guard gradientNoiseSettings.animateOverTime else {
+            lastGradientNoiseAnimationUpdate = nil
+            return
+        }
+        
+        guard let lastGradientNoiseAnimationUpdate else {
+            self.lastGradientNoiseAnimationUpdate = currentDate
+            return
+        }
+        
+        let elapsedTime = currentDate.timeIntervalSince(lastGradientNoiseAnimationUpdate)
+        gradientNoiseSettings.zOffset += Float(elapsedTime) * gradientNoiseSettings.animationSpeed
+        self.lastGradientNoiseAnimationUpdate = currentDate
     }
     
     func updateTouch(_ touch: UITouch, location: CGPoint?) {
@@ -262,8 +274,8 @@ extension ParticleLifeConfig {
         config.rMinDistance = 1
         config.rMaxDistance = 35
         config.maxSpeed = 1
-        config.drawRadius = 4
-        config.trailRadius = 5
+        config.drawRadius = 3
+        config.trailRadius = 3
         config.cutoff = 0.01
         config.falloff = 0.15
         config.speedMultiplier = 2.5

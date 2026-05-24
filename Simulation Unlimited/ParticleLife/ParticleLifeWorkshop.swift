@@ -22,10 +22,10 @@ struct ParticleLifeWorkshop: View {
             
             ParticleLifeView(viewModel: viewModel)
                 .frame(maxHeight: .infinity)
-                .onReceive(timer) { _ in
+                .onReceive(timer) { date in
                     modulationClock.tick(delta: 0.01)
                     viewModel.updateModulation(time: modulationClock.time)
-                    viewModel.updateGradientNoiseTime(modulationClock.time)
+                    viewModel.updateGradientNoiseAnimation(currentDate: date)
                 }
             TapView { touch, optLocation in
                 viewModel.updateTouch(touch, location: optLocation)
@@ -163,12 +163,12 @@ struct ParticleLifeWorkshop: View {
                 format: "%.2f"
             )
             
-            gradientSlider(
-                title: "Z Offset",
-                value: $viewModel.gradientNoiseSettings.zOffset,
-                range: 0...viewModel.maxGradientZOffset,
-                format: "%.2f"
-            )
+//            gradientSlider(
+//                title: "Z Offset",
+//                value: $viewModel.gradientNoiseSettings.zOffset,
+//                range: 0...viewModel.maxGradientZOffset,
+//                format: "%.2f"
+//            )
             
             gradientSlider(
                 title: "Animation Speed",
