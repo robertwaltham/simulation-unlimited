@@ -199,7 +199,7 @@ extension ParticleLifeView.Coordinator {
 
             if let particleBuffer = particleBuffer {
                 
-                // update particles and draw on path
+                // update particles
                 commandEncoder.setComputePipelineState(pipelines.updateParticles)
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                 commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
@@ -214,6 +214,10 @@ extension ParticleLifeView.Coordinator {
                 var touchCount = Int32(touches.count)
                 commandEncoder.setBytes(&touchCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexTouchCount.rawValue))
                 
+                commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                
+                // draw particle trails on path
+                commandEncoder.setComputePipelineState(pipelines.drawTrail)
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer
@@ -461,6 +465,7 @@ private struct ParticleLifePipelineStates {
     let generateGradientNoise: MTLComputePipelineState
     let background: MTLComputePipelineState
     let updateParticles: MTLComputePipelineState
+    let drawTrail: MTLComputePipelineState
     let drawParticles: MTLComputePipelineState
     let drawPath: MTLComputePipelineState
     let blur: MTLComputePipelineState
@@ -469,6 +474,7 @@ private struct ParticleLifePipelineStates {
         generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
         background = try Self.makePipeline(named: "drawParticleLifeBackground", device: device, library: library)
         updateParticles = try Self.makePipeline(named: "drawParticlePath", device: device, library: library)
+        drawTrail = try Self.makePipeline(named: "drawParticleTrail", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
         drawPath = try Self.makePipeline(named: "drawParticleLifePath", device: device, library: library)
         blur = try Self.makePipeline(named: "boxBlur", device: device, library: library)

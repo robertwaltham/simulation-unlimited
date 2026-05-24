@@ -213,9 +213,7 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
 
 kernel void drawParticlePath(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
                             texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
-                            const device RenderLifeColours& colours [[buffer(ParticleLifeInputIndexRenderColours)]],
                             device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
-                            device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
                             const device ParticleLifeTouch *touches [[buffer(ParticleLifeInputIndexTouches)]],
                             const device int& touch_count [[buffer(ParticleLifeInputIndexTouchCount)]],
@@ -234,7 +232,6 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     float2 velocity = particle.velocity;
     float2 acceleration = particle.acceleration;
     int species = (int)particle.species;
-    half4 color = (half4)colors[species];
     
     uint width = output.get_width();
     uint height = output.get_height();
@@ -333,8 +330,22 @@ kernel void drawParticlePath(texture2d<half, access::read_write> output [[textur
     
     // output
     particles[index] = particle;
+}
+
+kernel void drawParticleTrail(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
+                              device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
+                              device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
+                              const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
+                              uint id [[ thread_position_in_grid ]],
+                              uint tid [[ thread_index_in_threadgroup ]],
+                              uint bid [[ threadgroup_position_in_grid ]],
+                              uint blockDim [[ threads_per_threadgroup ]]) {
+    uint index = bid * blockDim + tid;
+    LifeParticle particle = particles[index];
+    half4 color = (half4)colors[(int)particle.species];
     
-    // leave trail
+    uint width = output.get_width();
+    uint height = output.get_height();
     uint2 pos = uint2(particle.position);
     uint span = (uint)config.trailRadius;
     
