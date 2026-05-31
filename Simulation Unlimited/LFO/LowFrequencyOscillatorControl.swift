@@ -92,9 +92,24 @@ private struct LowFrequencyOscillatorPicker: View {
 
 private struct LowFrequencyOscillatorSliders: View {
     @Binding var oscillator: LowFrequencyOscillator
+    @State private var offsetSliderValue: Double
+    @State private var lastOffsetCommit = Date.distantPast
+    @State private var pendingOffsetCommit: Task<Void, Never>?
     
     let offset: ClosedRange<Double>
     let amplitude: ClosedRange<Double>
+    private let offsetThrottleInterval: TimeInterval = 0.1
+    
+    init(
+        oscillator: Binding<LowFrequencyOscillator>,
+        offset: ClosedRange<Double>,
+        amplitude: ClosedRange<Double>
+    ) {
+        self._oscillator = oscillator
+        self._offsetSliderValue = State(initialValue: oscillator.wrappedValue.offset)
+        self.offset = offset
+        self.amplitude = amplitude
+    }
     
     var body: some View {
         HStack {
@@ -114,10 +129,60 @@ private struct LowFrequencyOscillatorSliders: View {
             }
             
             VStack {
-                Text("Offset: \(oscillator.offset, specifier: "%.2f")")
-                Slider(value: $oscillator.offset, in: offset)
+                Text("Offset: \(offsetSliderValue, specifier: "%.2f")")
+                Slider(value: throttledOffset, in: offset)
             }
         }
+        .onChange(of: oscillator.offset) { _, newValue in
+            guard pendingOffsetCommit == nil else {
+                return
+            }
+            
+            offsetSliderValue = newValue
+        }
+        .onDisappear {
+            pendingOffsetCommit?.cancel()
+            pendingOffsetCommit = nil
+            commitOffset(offsetSliderValue)
+        }
+    }
+    
+    private var throttledOffset: Binding<Double> {
+        Binding {
+            offsetSliderValue
+        } set: { newValue in
+            offsetSliderValue = newValue
+            scheduleOffsetCommit(newValue)
+        }
+    }
+    
+    private func scheduleOffsetCommit(_ value: Double) {
+        let now = Date()
+        let elapsed = now.timeIntervalSince(lastOffsetCommit)
+        
+        if elapsed >= offsetThrottleInterval {
+            pendingOffsetCommit?.cancel()
+            pendingOffsetCommit = nil
+            commitOffset(value)
+            return
+        }
+        
+        pendingOffsetCommit?.cancel()
+        let delay = offsetThrottleInterval - elapsed
+        pendingOffsetCommit = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            guard !Task.isCancelled else {
+                return
+            }
+            
+            commitOffset(offsetSliderValue)
+            pendingOffsetCommit = nil
+        }
+    }
+    
+    private func commitOffset(_ value: Double) {
+        oscillator.offset = value
+        lastOffsetCommit = Date()
     }
 }
 

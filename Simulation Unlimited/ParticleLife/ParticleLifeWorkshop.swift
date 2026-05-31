@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ParticleLifeWorkshop: View {
-    @State var viewModel = ParticleLifeViewModel(count: 8192)
+    @State var viewModel = ParticleLifeViewModel(count: 16384)
     @State var modulationClock = ModulationClock()
     @State var timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     @State var showWeights = false

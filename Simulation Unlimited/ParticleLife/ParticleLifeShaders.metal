@@ -190,7 +190,7 @@ kernel void drawParticleLifePath(texture2d<half, access::read_write> output [[te
     }
     
     half4 path_color = input.read(gid);
-    if (path_color.r <= 0 && path_color.g <= 0 && path_color.b <= 0) {
+    if (all(path_color.rgb <= half3(0))) {
         return;
     }
     
