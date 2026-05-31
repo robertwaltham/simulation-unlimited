@@ -15,6 +15,9 @@ struct ParticleLifeGradientNoiseSettings: Equatable {
     var textureSize = 256
     var scale: Float = 4.5
     var zOffset: Float = 0
+    var redZOffset: Float = 0
+    var greenZOffset: Float = 0
+    var blueZOffset: Float = 0
     var animateOverTime = true
     var animationSpeed: Float = 0.15
     var octaves = 2
@@ -34,6 +37,9 @@ struct ParticleLifeGradientNoiseSettings: Equatable {
         config.animationSpeed = animationSpeed
         config.persistence = persistence
         config.lacunarity = lacunarity
+        config.redZOffset = redZOffset
+        config.greenZOffset = greenZOffset
+        config.blueZOffset = blueZOffset
         config.seed = seed
         return config
     }

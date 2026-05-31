@@ -414,7 +414,7 @@ extension ParticleLifeView.Coordinator {
         }
         
         let size = max(viewModel.gradientNoiseSettings.textureSize, 2)
-        if gradientTexture == nil || gradientTexture?.width != size || gradientTexture?.height != size {
+        if gradientTexture == nil || gradientTexture?.width != size || gradientTexture?.height != size || gradientTexture?.pixelFormat != .rgba8Unorm {
             gradientTexture = makeGradientTexture(device: metalDevice, size: size)
         }
         
@@ -509,7 +509,7 @@ extension ParticleLifeView.Coordinator {
     
     private func makeGradientTexture(device: MTLDevice, size: Int) -> MTLTexture {
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(
-            pixelFormat: .r8Unorm,
+            pixelFormat: .rgba8Unorm,
             width: size,
             height: size,
             mipmapped: false

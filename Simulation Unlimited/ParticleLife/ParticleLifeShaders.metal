@@ -155,9 +155,11 @@ kernel void generateParticleLifeGradientNoise(texture2d<half, access::write> gra
     }
     
     float2 uv = float2(id) / float2(max(gradient.get_width() - 1, 1u), max(gradient.get_height() - 1, 1u));
-    float3 position = float3(uv * config.scale, config.zOffset);
-    float value = clamp((particle_life_octave_noise(position, config) + 1.0) * 0.5, 0.0, 1.0);
-    gradient.write(half4(value, value, value, 1), id);
+    float2 xy = uv * config.scale;
+    float red = clamp((particle_life_octave_noise(float3(xy, config.zOffset + config.redZOffset), config) + 1.0) * 0.5, 0.0, 1.0);
+    float green = clamp((particle_life_octave_noise(float3(xy, config.zOffset + config.greenZOffset), config) + 1.0) * 0.5, 0.0, 1.0);
+    float blue = clamp((particle_life_octave_noise(float3(xy, config.zOffset + config.blueZOffset), config) + 1.0) * 0.5, 0.0, 1.0);
+    gradient.write(half4(half(red), half(green), half(blue), 1), id);
 }
 
 kernel void drawParticleLifeBackground(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
@@ -175,8 +177,7 @@ kernel void drawParticleLifeBackground(texture2d<half, access::write> output [[t
             (float(id.x) / float(output.get_width())) * float(gradient.get_width() - 1),
             (float(id.y) / float(output.get_height())) * float(gradient.get_height() - 1)
         );
-        half value = gradient.read(gradient_coord).r / 2.0;
-        color = half4(value, value, value, 1);
+        color = half4(gradient.read(gradient_coord).rgb / 2.0, 1);
     }
     
     output.write(color, id);
@@ -370,10 +371,11 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
         uint y0 = uint(max(gy - 1.0, 0.0));
         uint y1 = uint(min(gy + 1.0, float(gradient.get_height() - 1)));
         
-        float left = float(gradient.read(uint2(x0, uint(gy))).r);
-        float right = float(gradient.read(uint2(x1, uint(gy))).r);
-        float up = float(gradient.read(uint2(uint(gx), y0)).r);
-        float down = float(gradient.read(uint2(uint(gx), y1)).r);
+        int gradientChannel = clamp(species, 0, 2);
+        float left = float(gradient.read(uint2(x0, uint(gy)))[gradientChannel]);
+        float right = float(gradient.read(uint2(x1, uint(gy)))[gradientChannel]);
+        float up = float(gradient.read(uint2(uint(gx), y0))[gradientChannel]);
+        float down = float(gradient.read(uint2(uint(gx), y1))[gradientChannel]);
         float2 gradient_force = -float2(right - left, down - up);
         gradient_velocity_delta = gradient_force * gradient_config.forceMultiplier;
     }

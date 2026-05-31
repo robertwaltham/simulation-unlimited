@@ -133,6 +133,9 @@ typedef struct ParticleLifeGradientConfig {
     float animationSpeed;
     float persistence;
     float lacunarity;
+    float redZOffset;
+    float greenZOffset;
+    float blueZOffset;
     uint32_t seed;
 } ParticleLifeGradientConfig;
 

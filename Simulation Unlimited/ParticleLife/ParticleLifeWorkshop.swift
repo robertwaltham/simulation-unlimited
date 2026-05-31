@@ -163,18 +163,35 @@ struct ParticleLifeWorkshop: View {
                 format: "%.2f"
             )
             
-//            gradientSlider(
-//                title: "Z Offset",
-//                value: $viewModel.gradientNoiseSettings.zOffset,
-//                range: 0...viewModel.maxGradientZOffset,
-//                format: "%.2f"
-//            )
-            
             gradientSlider(
                 title: "Animation Speed",
                 value: $viewModel.gradientNoiseSettings.animationSpeed,
                 range: 0...viewModel.maxGradientAnimationSpeed,
                 format: "%.2f"
+            )
+            
+            gradientSlider(
+                title: "Red Offset",
+                value: $viewModel.gradientNoiseSettings.redZOffset,
+                range: 0...viewModel.maxGradientZOffset,
+                format: "%.2f",
+                tint: .red
+            )
+            
+            gradientSlider(
+                title: "Green Offset",
+                value: $viewModel.gradientNoiseSettings.greenZOffset,
+                range: 0...viewModel.maxGradientZOffset,
+                format: "%.2f",
+                tint: .green
+            )
+            
+            gradientSlider(
+                title: "Blue Offset",
+                value: $viewModel.gradientNoiseSettings.blueZOffset,
+                range: 0...viewModel.maxGradientZOffset,
+                format: "%.2f",
+                tint: .blue
             )
             
             gradientSlider(
@@ -199,12 +216,13 @@ struct ParticleLifeWorkshop: View {
     }
     
     @ViewBuilder
-    private func gradientSlider(title: String, value: Binding<Float>, range: ClosedRange<Float>, format: String) -> some View {
+    private func gradientSlider(title: String, value: Binding<Float>, range: ClosedRange<Float>, format: String, tint: Color? = nil) -> some View {
         HStack {
             Text("\(title): \(String(format: format, value.wrappedValue))")
                 .font(.title3)
                 .frame(width: 190, alignment: .leading)
             Slider(value: value, in: range)
+                .tint(tint)
         }
     }
     
