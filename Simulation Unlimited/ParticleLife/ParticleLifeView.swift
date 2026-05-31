@@ -473,7 +473,7 @@ private struct ParticleLifePipelineStates {
     init(device: MTLDevice, library: MTLLibrary) throws {
         generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
         background = try Self.makePipeline(named: "drawParticleLifeBackground", device: device, library: library)
-        updateParticles = try Self.makePipeline(named: "drawParticlePath", device: device, library: library)
+        updateParticles = try Self.makePipeline(named: "updateParticles", device: device, library: library)
         drawTrail = try Self.makePipeline(named: "drawParticleTrail", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
         drawPath = try Self.makePipeline(named: "drawParticleLifePath", device: device, library: library)

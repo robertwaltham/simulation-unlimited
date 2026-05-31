@@ -211,7 +211,7 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
     }
 }
 
-kernel void drawParticlePath(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
+kernel void updateParticles(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
                             texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
                             device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
