@@ -67,7 +67,10 @@ typedef enum ParticleLifeInputIndex {
     ParticleLifeInputIndexTouches = 7,
     ParticleLifeInputIndexTouchCount = 8,
     ParticleLifeInputIndexGradientConfig = 9,
-    ParticleLifeInputIndexParticleOutput = 10
+    ParticleLifeInputIndexParticleOutput = 10,
+    ParticleLifeInputIndexGridCounts = 11,
+    ParticleLifeInputIndexGridParticleIndices = 12,
+    ParticleLifeInputIndexGridConfig = 13
 } ParticleLifeInputIndex;
 
 typedef struct LifeParticle {
@@ -113,6 +116,15 @@ typedef struct ParticleLifeGradientConfig {
     float lacunarity;
     uint32_t seed;
 } ParticleLifeGradientConfig;
+
+typedef struct ParticleLifeGridConfig {
+    int32_t gridWidth;
+    int32_t gridHeight;
+    int32_t cellCount;
+    int32_t maxParticlesPerCell;
+    int32_t cellRadius;
+    float cellSize;
+} ParticleLifeGridConfig;
 
 
 struct Vertex {

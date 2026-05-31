@@ -31,6 +31,31 @@ float2 limit_magnitude2(float2 vec, float max_mag) {
     return vec;
 }
 
+int particle_life_wrapped_cell(int value, int max_value) {
+    int wrapped = value % max_value;
+    return wrapped < 0 ? wrapped + max_value : wrapped;
+}
+
+float2 particle_life_toroidal_delta(float2 from, float2 to, float width, float height) {
+    float2 delta = to - from;
+    float halfWidth = width * 0.5;
+    float halfHeight = height * 0.5;
+    
+    if (delta.x > halfWidth) {
+        delta.x -= width;
+    } else if (delta.x < -halfWidth) {
+        delta.x += width;
+    }
+    
+    if (delta.y > halfHeight) {
+        delta.y -= height;
+    } else if (delta.y < -halfHeight) {
+        delta.y += height;
+    }
+    
+    return delta;
+}
+
 float particle_life_fade(float t) {
     return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 }
@@ -173,6 +198,39 @@ kernel void drawParticleLifePath(texture2d<half, access::read_write> output [[te
     output.write(half4(max(background_color.rgb, path_color.rgb), 1), gid);
 }
 
+kernel void clearParticleLifeGrid(device atomic_uint *grid_counts [[buffer(ParticleLifeInputIndexGridCounts)]],
+                                  const device ParticleLifeGridConfig& grid_config [[buffer(ParticleLifeInputIndexGridConfig)]],
+                                  uint id [[thread_position_in_grid]]) {
+    if (id >= uint(grid_config.cellCount)) {
+        return;
+    }
+    
+    atomic_store_explicit(&grid_counts[id], 0, memory_order_relaxed);
+}
+
+kernel void buildParticleLifeGrid(const device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
+                                  device atomic_uint *grid_counts [[buffer(ParticleLifeInputIndexGridCounts)]],
+                                  device uint *grid_particle_indices [[buffer(ParticleLifeInputIndexGridParticleIndices)]],
+                                  const device int& particle_count [[buffer(ParticleLifeInputIndexParticleCount)]],
+                                  const device ParticleLifeGridConfig& grid_config [[buffer(ParticleLifeInputIndexGridConfig)]],
+                                  uint id [[thread_position_in_grid]]) {
+    if (id >= uint(particle_count)) {
+        return;
+    }
+    
+    LifeParticle particle = particles[id];
+    int cellX = clamp(int(floor(particle.position.x / grid_config.cellSize)), 0, grid_config.gridWidth - 1);
+    int cellY = clamp(int(floor(particle.position.y / grid_config.cellSize)), 0, grid_config.gridHeight - 1);
+    uint cellIndex = uint(cellY * grid_config.gridWidth + cellX);
+    uint slot = atomic_fetch_add_explicit(&grid_counts[cellIndex], 1, memory_order_relaxed);
+    
+    if (slot >= uint(grid_config.maxParticlesPerCell)) {
+        return;
+    }
+    
+    grid_particle_indices[(cellIndex * uint(grid_config.maxParticlesPerCell)) + slot] = id;
+}
+
 kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                            device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
@@ -219,12 +277,15 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
                             texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
                             const device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                             device LifeParticle *updated_particles [[buffer(ParticleLifeInputIndexParticleOutput)]],
+                            const device atomic_uint *grid_counts [[buffer(ParticleLifeInputIndexGridCounts)]],
+                            const device uint *grid_particle_indices [[buffer(ParticleLifeInputIndexGridParticleIndices)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
                             const device ParticleLifeTouch *touches [[buffer(ParticleLifeInputIndexTouches)]],
                             const device int& touch_count [[buffer(ParticleLifeInputIndexTouchCount)]],
                             const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
                             const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                             const device ParticleLifeGradientConfig& gradient_config [[buffer(ParticleLifeInputIndexGradientConfig)]],
+                            const device ParticleLifeGridConfig& grid_config [[buffer(ParticleLifeInputIndexGridConfig)]],
                             uint id [[ thread_position_in_grid ]],
                             uint tid [[ thread_index_in_threadgroup ]],
                             uint bid [[ threadgroup_position_in_grid ]],
@@ -247,32 +308,44 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
     // Accumulate neighbor influence into force, then integrate velocity.
     float2 force = float2(0,0);
     float2 gradient_velocity_delta = float2(0,0);
-    for (uint i = 0; i < uint(particle_count); i++) {
-        
-        if (i == index) {
-            continue;
-        }
-        
-        LifeParticle other = particles[i];
-        float dist = distance(position, other.position);
-        if (dist <= 0.0001 || dist > config.rMaxDistance) {
-            continue;
-        }
-        
-        int otherSpecies = (int)other.species;
-        int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
-        float weight = -1.0 * weights[forceIndex];
-
-        
-        float2 direction = normalize(other.position - position);
-        if (dist < config.rMinDistance) {
-            force -= (1.0 - (dist / config.rMinDistance)) * direction * 0.5; // repel harder as particles get closer
-        } else {
-            float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
-            if (d < 0.5) {
-                force += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
-            } else {
-                force += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
+    int cellX = clamp(int(floor(position.x / grid_config.cellSize)), 0, grid_config.gridWidth - 1);
+    int cellY = clamp(int(floor(position.y / grid_config.cellSize)), 0, grid_config.gridHeight - 1);
+    
+    for (int yOffset = -grid_config.cellRadius; yOffset <= grid_config.cellRadius; yOffset++) {
+        int neighborCellY = particle_life_wrapped_cell(cellY + yOffset, grid_config.gridHeight);
+        for (int xOffset = -grid_config.cellRadius; xOffset <= grid_config.cellRadius; xOffset++) {
+            int neighborCellX = particle_life_wrapped_cell(cellX + xOffset, grid_config.gridWidth);
+            uint cellIndex = uint(neighborCellY * grid_config.gridWidth + neighborCellX);
+            uint cellParticleCount = min(atomic_load_explicit(&grid_counts[cellIndex], memory_order_relaxed), uint(grid_config.maxParticlesPerCell));
+            
+            for (uint slot = 0; slot < cellParticleCount; slot++) {
+                uint otherIndex = grid_particle_indices[(cellIndex * uint(grid_config.maxParticlesPerCell)) + slot];
+                if (otherIndex == index || otherIndex >= uint(particle_count)) {
+                    continue;
+                }
+                
+                LifeParticle other = particles[otherIndex];
+                float2 delta = particle_life_toroidal_delta(position, other.position, float(width), float(height));
+                float dist = length(delta);
+                if (dist <= 0.0001 || dist > config.rMaxDistance) {
+                    continue;
+                }
+                
+                int otherSpecies = (int)other.species;
+                int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
+                float weight = -1.0 * weights[forceIndex];
+                
+                float2 direction = normalize(delta);
+                if (dist < config.rMinDistance) {
+                    force -= (1.0 - (dist / config.rMinDistance)) * direction * 0.5; // repel harder as particles get closer
+                } else {
+                    float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
+                    if (d < 0.5) {
+                        force += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
+                    } else {
+                        force += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
+                    }
+                }
             }
         }
     }

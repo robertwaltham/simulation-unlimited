@@ -62,6 +62,9 @@ struct ParticleLifeView: UIViewRepresentable {
         private var pipelines: ParticleLifePipelineStates!
         private var particleBuffer: MTLBuffer!
         private var nextParticleBuffer: MTLBuffer!
+        private var gridCountsBuffer: MTLBuffer!
+        private var gridParticleIndicesBuffer: MTLBuffer!
+        private var gridSignature: ParticleLifeGridSignature?
         private var colorBuffer: MTLBuffer!
 
         private var viewPortSize = vector_uint2(x: 0, y: 0)
@@ -198,13 +201,33 @@ extension ParticleLifeView.Coordinator {
             }
 
             if let particleBuffer = particleBuffer, let nextParticleBuffer = nextParticleBuffer {
+                var gridConfig = updateParticleGridBuffersIfNeeded()
+                var particleCount = Int32(viewModel.particleCount)
+                
+                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
+                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
+                commandEncoder.setBuffer(gridCountsBuffer, offset: 0, index: Int(ParticleLifeInputIndexGridCounts.rawValue))
+                commandEncoder.setBuffer(gridParticleIndicesBuffer, offset: 0, index: Int(ParticleLifeInputIndexGridParticleIndices.rawValue))
+                commandEncoder.setBytes(&gridConfig, length: MemoryLayout<ParticleLifeGridConfig>.stride, index: Int(ParticleLifeInputIndexGridConfig.rawValue))
+                
+                // build particle grid
+                commandEncoder.setComputePipelineState(pipelines.clearGrid)
+                let gridThreadsPerGroup = MTLSize(width: 256, height: 1, depth: 1)
+                let gridThreadGroupsPerGrid = MTLSize(
+                    width: max((Int(gridConfig.cellCount) + gridThreadsPerGroup.width - 1) / gridThreadsPerGroup.width, 1),
+                    height: 1,
+                    depth: 1
+                )
+                commandEncoder.dispatchThreadgroups(gridThreadGroupsPerGrid, threadsPerThreadgroup: gridThreadsPerGroup)
+                commandEncoder.memoryBarrier(scope: .buffers)
+                
+                commandEncoder.setComputePipelineState(pipelines.buildGrid)
+                commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
+                commandEncoder.memoryBarrier(scope: .buffers)
                 
                 // update particles
                 commandEncoder.setComputePipelineState(pipelines.updateParticles)
-                commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                 commandEncoder.setBuffer(nextParticleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticleOutput.rawValue))
-                var particleCount = Int32(viewModel.particleCount)
-                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                 commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexSpeciesColours.rawValue))
                 commandEncoder.setBytes(viewModel.weights, length: MemoryLayout<Float>.stride * viewModel.weights.count, index: Int(ParticleLifeInputIndexWeights.rawValue))
                 if touches.isEmpty {
@@ -341,6 +364,40 @@ extension ParticleLifeView.Coordinator {
         colorBuffer = metalDevice.makeBuffer(bytes: viewModel.colours, length: size, options: [])
     }
     
+    private func updateParticleGridBuffersIfNeeded() -> ParticleLifeGridConfig {
+        let cellSize: Float = 32
+        let maxParticlesPerCell = 128
+        let gridWidth = max(Int(ceil(Float(viewPortSize.x) / cellSize)), 1)
+        let gridHeight = max(Int(ceil(Float(viewPortSize.y) / cellSize)), 1)
+        let cellCount = gridWidth * gridHeight
+        let signature = ParticleLifeGridSignature(
+            gridWidth: gridWidth,
+            gridHeight: gridHeight,
+            maxParticlesPerCell: maxParticlesPerCell
+        )
+        
+        if gridSignature != signature {
+            gridCountsBuffer = metalDevice.makeBuffer(
+                length: cellCount * MemoryLayout<UInt32>.stride,
+                options: .storageModePrivate
+            )
+            gridParticleIndicesBuffer = metalDevice.makeBuffer(
+                length: cellCount * maxParticlesPerCell * MemoryLayout<UInt32>.stride,
+                options: .storageModePrivate
+            )
+            gridSignature = signature
+        }
+        
+        var config = ParticleLifeGridConfig()
+        config.gridWidth = Int32(gridWidth)
+        config.gridHeight = Int32(gridHeight)
+        config.cellCount = Int32(cellCount)
+        config.maxParticlesPerCell = Int32(maxParticlesPerCell)
+        config.cellRadius = Int32(max(ceil(viewModel.config.rMaxDistance / cellSize), 1))
+        config.cellSize = cellSize
+        return config
+    }
+    
     private func updateGradientTextureIfNeeded() -> Bool {
         let signature = ParticleLifeGradientNoiseSignature(settings: viewModel.gradientNoiseSettings)
         guard gradientTexture == nil || gradientNoiseSignature != signature else {
@@ -466,9 +523,17 @@ struct ParticleLifeColors {
     var particle = SIMD4<Float>(0.5,0.5,0.5,1)
 }
 
+private struct ParticleLifeGridSignature: Equatable {
+    let gridWidth: Int
+    let gridHeight: Int
+    let maxParticlesPerCell: Int
+}
+
 private struct ParticleLifePipelineStates {
     let generateGradientNoise: MTLComputePipelineState
     let background: MTLComputePipelineState
+    let clearGrid: MTLComputePipelineState
+    let buildGrid: MTLComputePipelineState
     let updateParticles: MTLComputePipelineState
     let drawTrail: MTLComputePipelineState
     let drawParticles: MTLComputePipelineState
@@ -478,6 +543,8 @@ private struct ParticleLifePipelineStates {
     init(device: MTLDevice, library: MTLLibrary) throws {
         generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
         background = try Self.makePipeline(named: "drawParticleLifeBackground", device: device, library: library)
+        clearGrid = try Self.makePipeline(named: "clearParticleLifeGrid", device: device, library: library)
+        buildGrid = try Self.makePipeline(named: "buildParticleLifeGrid", device: device, library: library)
         updateParticles = try Self.makePipeline(named: "updateParticles", device: device, library: library)
         drawTrail = try Self.makePipeline(named: "drawParticleTrail", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
