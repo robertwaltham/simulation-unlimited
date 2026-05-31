@@ -32,7 +32,8 @@ typedef enum InputTextureIndex {
     InputTextureIndexPathInput = 1,
     InputTextureIndexPathOutput = 2,
     InputTextureIndexPathHexagon = 3,
-    InputTextureIndexGradient = 4
+    InputTextureIndexGradient = 4,
+    InputTextureIndexPathScratch = 5
 } InputTextureIndex;
 
 // Boids

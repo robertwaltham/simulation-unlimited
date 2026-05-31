@@ -288,3 +288,69 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
     
     output.write(finalColor, gid);
 }
+
+kernel void boxBlurHorizontal(texture2d<half, access::write> output [[texture(InputTextureIndexPathScratch)]],
+                              texture2d<half, access::read> input [[texture(InputTextureIndexPathInput)]],
+                              const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                              uint2 gid [[ thread_position_in_grid ]]) {
+    if (gid.x >= output.get_width() || gid.y >= output.get_height()) {
+        return;
+    }
+    
+    int blurSize = max(int(floor(config.blur_size)), 1);
+    int range = blurSize / 2;
+    int sampleCount = (range * 2) + 1;
+    
+    half4 colors = half4(0);
+    for (int x = -range; x <= range; x++) {
+        uint2 coord = uint2(
+            uint(clamp(int(gid.x) + x, 0, int(input.get_width()) - 1)),
+            gid.y
+        );
+        colors += input.read(coord);
+    }
+    
+    output.write(colors / float(sampleCount), gid);
+}
+
+kernel void boxBlurVertical(texture2d<half, access::write> output [[texture(InputTextureIndexPathOutput)]],
+                            texture2d<half, access::read> input [[texture(InputTextureIndexPathScratch)]],
+                            const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
+                            uint2 gid [[ thread_position_in_grid ]]) {
+    if (gid.x >= output.get_width() || gid.y >= output.get_height()) {
+        return;
+    }
+    
+    int blurSize = max(int(floor(config.blur_size)), 1);
+    int range = blurSize / 2;
+    int sampleCount = (range * 2) + 1;
+    
+    half4 colors = half4(0);
+    for (int y = -range; y <= range; y++) {
+        uint2 coord = uint2(
+            gid.x,
+            uint(clamp(int(gid.y) + y, 0, int(input.get_height()) - 1))
+        );
+        colors += input.read(coord);
+    }
+    
+    half4 finalColor = colors / float(sampleCount);
+    
+    float cutoff = config.cutoff;
+    if (finalColor[0] < cutoff) {
+        finalColor[0] = 0;
+    }
+    if (finalColor[1] < cutoff) {
+        finalColor[1] = 0;
+    }
+    if (finalColor[2] < cutoff) {
+        finalColor[2] = 0;
+    }
+    
+    float decay = 1 - config.falloff;
+    finalColor[0] *= decay;
+    finalColor[1] *= decay;
+    finalColor[2] *= decay;
+    
+    output.write(finalColor, gid);
+}

@@ -57,6 +57,7 @@ struct ParticleLifeView: UIViewRepresentable {
         private var metalCommandQueue: MTLCommandQueue!
         
         private var pathTextures: [MTLTexture] = []
+        private var pathBlurScratchTexture: MTLTexture?
         private var gradientTexture: MTLTexture?
         private var gradientNoiseSignature: ParticleLifeGradientNoiseSignature?
         private var pipelines: ParticleLifePipelineStates!
@@ -152,6 +153,9 @@ extension ParticleLifeView.Coordinator {
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
             pathTextures.append(makeTexture(device: metalDevice, drawableSize: viewPortSize))
         }
+        if pathBlurScratchTexture == nil {
+            pathBlurScratchTexture = makeTexture(device: metalDevice, drawableSize: viewPortSize)
+        }
         touches = viewModel.touches.values.map {
             var touch = ParticleLifeTouch()
             touch.position = SIMD2<Float>(
@@ -180,6 +184,7 @@ extension ParticleLifeView.Coordinator {
             
             commandEncoder.setTexture(pathTextures[0], index: Int(InputTextureIndexPathInput.rawValue))
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
+            commandEncoder.setTexture(pathBlurScratchTexture, index: Int(InputTextureIndexPathScratch.rawValue))
             commandEncoder.setTexture(gradientTexture, index: Int(InputTextureIndexGradient.rawValue))
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
             commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
@@ -247,7 +252,11 @@ extension ParticleLifeView.Coordinator {
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer
-                commandEncoder.setComputePipelineState(pipelines.blur)
+                commandEncoder.setComputePipelineState(pipelines.blurHorizontal)
+                commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+                commandEncoder.memoryBarrier(scope: .textures)
+                
+                commandEncoder.setComputePipelineState(pipelines.blurVertical)
                 commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
             }
             
@@ -538,7 +547,8 @@ private struct ParticleLifePipelineStates {
     let drawTrail: MTLComputePipelineState
     let drawParticles: MTLComputePipelineState
     let drawPath: MTLComputePipelineState
-    let blur: MTLComputePipelineState
+    let blurHorizontal: MTLComputePipelineState
+    let blurVertical: MTLComputePipelineState
     
     init(device: MTLDevice, library: MTLLibrary) throws {
         generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
@@ -549,7 +559,8 @@ private struct ParticleLifePipelineStates {
         drawTrail = try Self.makePipeline(named: "drawParticleTrail", device: device, library: library)
         drawParticles = try Self.makePipeline(named: "drawLifeParticles", device: device, library: library)
         drawPath = try Self.makePipeline(named: "drawParticleLifePath", device: device, library: library)
-        blur = try Self.makePipeline(named: "boxBlur", device: device, library: library)
+        blurHorizontal = try Self.makePipeline(named: "boxBlurHorizontal", device: device, library: library)
+        blurVertical = try Self.makePipeline(named: "boxBlurVertical", device: device, library: library)
     }
     
     private static func makePipeline(named name: String, device: MTLDevice, library: MTLLibrary) throws -> MTLComputePipelineState {
