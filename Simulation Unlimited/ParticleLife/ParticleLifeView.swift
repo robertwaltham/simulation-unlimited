@@ -164,10 +164,10 @@ extension ParticleLifeView.Coordinator {
             )
             return touch
         }
-        let maxThreads = 512
-        let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
+        let particleThreadsPerGroupCount = pipelines.particleThreadsPerThreadgroup
+        let particleThreadsPerGroup = MTLSize(width: particleThreadsPerGroupCount, height: 1, depth: 1)
         let particleThreadGroupsPerGrid = MTLSize(
-            width: max((viewModel.particleCount + maxThreads - 1) / maxThreads, 1),
+            width: max((viewModel.particleCount + particleThreadsPerGroupCount - 1) / particleThreadsPerGroupCount, 1),
             height: 1,
             depth: 1
         )
@@ -549,6 +549,7 @@ private struct ParticleLifePipelineStates {
     let drawPath: MTLComputePipelineState
     let blurHorizontal: MTLComputePipelineState
     let blurVertical: MTLComputePipelineState
+    let particleThreadsPerThreadgroup: Int
     
     init(device: MTLDevice, library: MTLLibrary) throws {
         generateGradientNoise = try Self.makePipeline(named: "generateParticleLifeGradientNoise", device: device, library: library)
@@ -561,6 +562,12 @@ private struct ParticleLifePipelineStates {
         drawPath = try Self.makePipeline(named: "drawParticleLifePath", device: device, library: library)
         blurHorizontal = try Self.makePipeline(named: "boxBlurHorizontal", device: device, library: library)
         blurVertical = try Self.makePipeline(named: "boxBlurVertical", device: device, library: library)
+        particleThreadsPerThreadgroup = [
+            updateParticles.maxTotalThreadsPerThreadgroup,
+            drawTrail.maxTotalThreadsPerThreadgroup,
+            drawParticles.maxTotalThreadsPerThreadgroup,
+            buildGrid.maxTotalThreadsPerThreadgroup,
+        ].min() ?? 1
     }
     
     private static func makePipeline(named name: String, device: MTLDevice, library: MTLLibrary) throws -> MTLComputePipelineState {
