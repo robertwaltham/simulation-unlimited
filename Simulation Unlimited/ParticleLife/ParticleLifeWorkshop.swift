@@ -260,7 +260,7 @@ struct ParticleLifeWorkshop: View {
                                     }
                                     
                                     Stepper(value: binding, in: viewModel.weightRange, step: viewModel.weightStep) {
-                                        Text("\(binding.wrappedValue, specifier: "%.1f")")
+                                        Text("\(binding.wrappedValue * 10, specifier: "%.1f")")
                                             .monospacedDigit()
                                             .frame(width: 44, alignment: .trailing)
                                     }

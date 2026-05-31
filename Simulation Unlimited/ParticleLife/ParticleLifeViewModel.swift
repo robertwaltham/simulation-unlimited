@@ -38,10 +38,10 @@ import UIKit
 }
 
 @Observable class ParticleLifeViewModel {
-    static let minimumWeight: Float = -1
-    static let maximumWeight: Float = 1
-    static let weightStep: Float = 0.1
-    static let weightOptions: [Float] = (-10...10).map { Float($0) * weightStep }
+    static let minimumWeight: Float = -0.2
+    static let maximumWeight: Float = 0.2
+    static let weightStep: Float = 0.05
+    static let weightOptions: [Float] = (-4...4).map { Float($0) * weightStep }
     private static let defaultMaxCutoff: Float = 1
     private static let defaultMaxFalloff: Float = 0.15
     private static let defaultMaxRadius: Float = 5
@@ -271,7 +271,7 @@ import UIKit
 extension ParticleLifeConfig {
     static func defaultConfig() -> ParticleLifeConfig {
         var config = ParticleLifeConfig()
-        config.rMinDistance = 1
+        config.rMinDistance = 5
         config.rMaxDistance = 35
         config.maxSpeed = 1
         config.drawRadius = 3

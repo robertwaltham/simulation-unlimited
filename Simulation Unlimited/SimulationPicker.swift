@@ -27,13 +27,13 @@ struct SimulationPicker: View {
                     ParticleLifeView(viewModel: ParticleLifeViewModel(count: 1024))
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
-                simulationTile(route: .hexagons, sim: {
-                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
-                }, text: "Hexagons", icon: "hexagon")
-                
-                simulationTile(route: .circles, sim: {
-                    CircleView(viewModel: CircleViewModel())
-                }, text: "Circles", icon: "circle")
+//                simulationTile(route: .hexagons, sim: {
+//                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
+//                }, text: "Hexagons", icon: "hexagon")
+//                
+//                simulationTile(route: .circles, sim: {
+//                    CircleView(viewModel: CircleViewModel())
+//                }, text: "Circles", icon: "circle")
                 
                 
                 simulationTile(route: .sand, sim: {

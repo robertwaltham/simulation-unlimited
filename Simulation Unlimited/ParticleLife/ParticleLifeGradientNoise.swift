@@ -8,14 +8,14 @@
 import Foundation
 
 struct ParticleLifeGradientNoiseSettings: Equatable {
-    var isEnabled = false
+    var isEnabled = true
     var isDisplayed = false
-    var forceMultiplier: Float = 5.0
+    var forceMultiplier: Float = 1.0
     
     var textureSize = 256
     var scale: Float = 4.5
     var zOffset: Float = 0
-    var animateOverTime = false
+    var animateOverTime = true
     var animationSpeed: Float = 0.15
     var octaves = 2
     var persistence: Float = 0.5
