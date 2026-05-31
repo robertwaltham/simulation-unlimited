@@ -217,7 +217,8 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
 
 kernel void updateParticles(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
                             texture2d<half, access::read> gradient [[texture(InputTextureIndexGradient)]],
-                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
+                            const device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
+                            device LifeParticle *updated_particles [[buffer(ParticleLifeInputIndexParticleOutput)]],
                             const device float *weights [[buffer(ParticleLifeInputIndexWeights)]],
                             const device ParticleLifeTouch *touches [[buffer(ParticleLifeInputIndexTouches)]],
                             const device int& touch_count [[buffer(ParticleLifeInputIndexTouchCount)]],
@@ -336,7 +337,7 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
     particle.position = position;
     
     // output
-    particles[index] = particle;
+    updated_particles[index] = particle;
 }
 
 kernel void drawParticleTrail(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],

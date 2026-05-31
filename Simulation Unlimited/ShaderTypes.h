@@ -66,7 +66,8 @@ typedef enum ParticleLifeInputIndex {
     ParticleLifeInputIndexWeights = 6,
     ParticleLifeInputIndexTouches = 7,
     ParticleLifeInputIndexTouchCount = 8,
-    ParticleLifeInputIndexGradientConfig = 9
+    ParticleLifeInputIndexGradientConfig = 9,
+    ParticleLifeInputIndexParticleOutput = 10
 } ParticleLifeInputIndex;
 
 typedef struct LifeParticle {

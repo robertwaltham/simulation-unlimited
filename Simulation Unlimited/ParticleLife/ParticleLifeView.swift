@@ -61,6 +61,7 @@ struct ParticleLifeView: UIViewRepresentable {
         private var gradientNoiseSignature: ParticleLifeGradientNoiseSignature?
         private var pipelines: ParticleLifePipelineStates!
         private var particleBuffer: MTLBuffer!
+        private var nextParticleBuffer: MTLBuffer!
         private var colorBuffer: MTLBuffer!
 
         private var viewPortSize = vector_uint2(x: 0, y: 0)
@@ -196,11 +197,12 @@ extension ParticleLifeView.Coordinator {
                 commandEncoder.dispatchThreadgroups(gradientThreadgroupsPerGrid, threadsPerThreadgroup: gradientThreadsPerGroup)
             }
 
-            if let particleBuffer = particleBuffer {
+            if let particleBuffer = particleBuffer, let nextParticleBuffer = nextParticleBuffer {
                 
                 // update particles
                 commandEncoder.setComputePipelineState(pipelines.updateParticles)
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
+                commandEncoder.setBuffer(nextParticleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticleOutput.rawValue))
                 var particleCount = Int32(viewModel.particleCount)
                 commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                 commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexSpeciesColours.rawValue))
@@ -218,6 +220,7 @@ extension ParticleLifeView.Coordinator {
                 
                 // draw particle trails on path
                 commandEncoder.setComputePipelineState(pipelines.drawTrail)
+                commandEncoder.setBuffer(nextParticleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                 commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 
                 // blur path and copy to second path buffer
@@ -238,9 +241,9 @@ extension ParticleLifeView.Coordinator {
                     commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
                 }
                 
-                if viewModel.drawParticles, let particleBuffer = particleBuffer {
+                if viewModel.drawParticles, let nextParticleBuffer = nextParticleBuffer {
                     commandEncoder.setComputePipelineState(pipelines.drawParticles)
-                    commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
+                    commandEncoder.setBuffer(nextParticleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
                     commandEncoder.dispatchThreadgroups(particleThreadGroupsPerGrid, threadsPerThreadgroup: particleThreadsPerGroup)
                 }
                 
@@ -252,6 +255,7 @@ extension ParticleLifeView.Coordinator {
             }
             commandBuffer.addCompletedHandler { buffer in
                 self.pathTextures.reverse()
+                swap(&self.particleBuffer, &self.nextParticleBuffer)
                 Task { @MainActor in
                     self.viewModel.fpsCounter.frameDidRender()
                 }
@@ -297,19 +301,20 @@ extension ParticleLifeView.Coordinator {
         particles = makeParticles()
         let size = particles.count * MemoryLayout<LifeParticle>.stride
         
-        particleBuffer = metalDevice.makeBuffer(bytes: &particles, length: size, options: [])
-        particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
+        particleBuffer = metalDevice.makeBuffer(bytes: particles, length: size, options: [])
+        nextParticleBuffer = metalDevice.makeBuffer(bytes: particles, length: size, options: [])
     }
     
     private func resetParticles() {
         
-        guard particleBuffer != nil else {
+        guard particleBuffer != nil, nextParticleBuffer != nil else {
             return
         }
         
-        let size = particles.count * MemoryLayout<LifeParticle>.stride
         particles = makeParticles()
-        particleBuffer.contents().copyMemory(from: &particles, byteCount: size)
+        let size = particles.count * MemoryLayout<LifeParticle>.stride
+        particleBuffer.contents().copyMemory(from: particles, byteCount: size)
+        nextParticleBuffer.contents().copyMemory(from: particles, byteCount: size)
     }
     
     private func extractParticles() {
