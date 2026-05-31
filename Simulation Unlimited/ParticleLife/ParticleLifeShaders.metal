@@ -338,14 +338,13 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
                 
                 float2 direction = normalize(delta);
                 if (dist < config.rMinDistance) {
-                    force -= (1.0 - (dist / config.rMinDistance)) * direction * 0.5; // repel harder as particles get closer
+                    float minDistance = max(config.rMinDistance, 0.0001);
+                    force -= (1.0 - (dist / minDistance)) * direction * 0.5; // repel harder as particles get closer
                 } else {
-                    float d = (dist - config.rMinDistance) / (config.rMaxDistance - config.rMinDistance);
-                    if (d < 0.5) {
-                        force += (d * 2.0 * weight) * direction; // force = 0 -> weight as distance goes from r_min -> r_max - r_min / 2
-                    } else {
-                        force += (0.5 - d) * 2.0 * weight * direction; // force = weight -> 0 as distance goes from r_max - r_min / 2 -> r_max
-                    }
+                    float interactionRange = max(config.rMaxDistance - config.rMinDistance, 0.0001);
+                    float d = clamp((dist - config.rMinDistance) / interactionRange, 0.0, 1.0);
+                    float influence = 1.0 - abs((d * 2.0) - 1.0);
+                    force += (influence * weight) * direction; // force = 0 -> weight -> 0 across r_min -> r_max
                 }
             }
         }
