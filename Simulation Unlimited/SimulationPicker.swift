@@ -8,29 +8,22 @@
 import SwiftUI
 
 struct SimulationPicker: View {
+    @State private var path: [SimulationRoute] = []
+    @State private var renderPickerSimulations = true
+    @State private var unplugPickerSimulationsWorkItem: DispatchWorkItem?
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack {
-                simulationTile(content: {
-                    BoidsWorkshop()
-                        .edgesIgnoringSafeArea(.all)
-                        .statusBar(hidden: true)
-                }, sim: {
+                simulationTile(route: .boids, sim: {
                     BoidsView(viewModel: BoidsViewModel(count: 1024))
                 }, text: "Boids", icon: "bird.circle")
                 
-                simulationTile(content: {
-                    SlimeLFOWorkshop()
-                }, sim: {
+                simulationTile(route: .slime, sim: {
                     SlimeView(viewModel: SlimeViewModel())
                 }, text: "Slime", icon: "drop.circle")
                 
-                simulationTile(content: {
-                    ParticleLifeWorkshop()        
-                        .edgesIgnoringSafeArea(.all)
-                        .statusBar(hidden: true)
-                }, sim: {
+                simulationTile(route: .particleLife, sim: {
                     ParticleLifeView(viewModel: ParticleLifeViewModel(count: 1024))
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
@@ -42,25 +35,23 @@ struct SimulationPicker: View {
 //                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
 //                }, text: "Hexagons", icon: "hexagon")
                 
-                simulationTile(content: {
-                    CircleWorkshop()
-                        .edgesIgnoringSafeArea(.all)
-                        .statusBar(hidden: true)
-                }, sim: {
+                simulationTile(route: .circles, sim: {
                     CircleView(viewModel: CircleViewModel())
                 }, text: "Circles", icon: "circle")
                 
                 
-                simulationTile(content: {
-                    SandWorkshop()
-                        .edgesIgnoringSafeArea(.all)
-                        .statusBar(hidden: true)
-                }, sim: {
+                simulationTile(route: .sand, sim: {
                     SandView(viewModel: SandViewModel())
                 }, text: "Sand", icon: "beach.umbrella.fill")
                 
                 
             }.navigationTitle("Simulations")
+                .navigationDestination(for: SimulationRoute.self) { route in
+                    destination(for: route)
+                }
+                .onChange(of: path) { _, newPath in
+                    updatePickerSimulationRendering(for: newPath)
+                }
         }
     }
 }
@@ -68,13 +59,48 @@ struct SimulationPicker: View {
 extension SimulationPicker {
     
     @ViewBuilder
-    func simulationTile<Content, Simulation>(content: @escaping () -> Content, sim: @escaping () -> Simulation, text: String, icon: String) -> some View where Content: View, Simulation: View {
-        NavigationLink {
-            content()
-        } label: {
-            sim()
-                .frame(width: 500, height: 200)
-                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+    private func destination(for route: SimulationRoute) -> some View {
+        switch route {
+        case .boids:
+            BoidsWorkshop()
+                .edgesIgnoringSafeArea(.all)
+                .statusBar(hidden: true)
+        case .slime:
+            SlimeLFOWorkshop()
+        case .particleLife:
+            ParticleLifeWorkshop()
+                .edgesIgnoringSafeArea(.all)
+                .statusBar(hidden: true)
+        case .circles:
+            CircleWorkshop()
+                .edgesIgnoringSafeArea(.all)
+                .statusBar(hidden: true)
+        case .sand:
+            SandWorkshop()
+                .edgesIgnoringSafeArea(.all)
+                .statusBar(hidden: true)
+        }
+    }
+    
+    private func updatePickerSimulationRendering(for path: [SimulationRoute]) {
+        unplugPickerSimulationsWorkItem?.cancel()
+        
+        guard !path.isEmpty else {
+            renderPickerSimulations = true
+            return
+        }
+        
+        let workItem = DispatchWorkItem {
+            renderPickerSimulations = false
+        }
+        unplugPickerSimulationsWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: workItem)
+    }
+    
+    @ViewBuilder
+    private func simulationTile<Simulation>(route: SimulationRoute, sim: @escaping () -> Simulation, text: String, icon: String) -> some View where Simulation: View {
+        NavigationLink(value: route) {
+            pickerSimulationPreview(sim: sim)
                 .overlay(
                     HStack {
                         Image(systemName: icon)
@@ -91,6 +117,28 @@ extension SimulationPicker {
                 )
         }
     }
+    
+    @ViewBuilder
+    private func pickerSimulationPreview<Simulation>(sim: @escaping () -> Simulation) -> some View where Simulation: View {
+        if renderPickerSimulations {
+            sim()
+                .frame(width: 500, height: 200)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+        } else {
+            Rectangle()
+                .fill(.black)
+                .frame(width: 500, height: 200)
+                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 10, height: 10)))
+        }
+    }
+}
+
+private enum SimulationRoute: Hashable {
+    case boids
+    case slime
+    case particleLife
+    case circles
+    case sand
 }
 
 #Preview {
