@@ -36,6 +36,24 @@ typedef enum InputTextureIndex {
     InputTextureIndexPathScratch = 5
 } InputTextureIndex;
 
+// Hexagons
+
+typedef enum HexagonInputIndex {
+    HexagonInputIndexConfig = 0
+} HexagonInputIndex;
+
+typedef struct HexagonConfig {
+    float offsetX;
+    float offsetY;
+    float shiftX;
+    float shiftY;
+    float size;
+    float modX;
+    float modY;
+    float multiplier;
+    float colorOffset;
+} HexagonConfig;
+
 // Boids
 
 typedef enum BoidsInputIndex {
