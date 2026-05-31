@@ -254,7 +254,7 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
     uint span = (uint)config.drawRadius;
     
     // display
-    half4 color = (half4)colors[(int)particle.species];
+    half4 color = (half4)colors[particle.species];
     
     if (span == 0) {
         output.write(color, pos);
@@ -300,7 +300,7 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
     float2 position = particle.position;
     float2 velocity = particle.velocity;
     float2 acceleration = particle.acceleration;
-    int species = (int)particle.species;
+    int species = particle.species;
     
     uint width = output.get_width();
     uint height = output.get_height();
@@ -331,7 +331,7 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
                     continue;
                 }
                 
-                int otherSpecies = (int)other.species;
+                int otherSpecies = other.species;
                 int forceIndex = (species * (int)config.flavourCount) + otherSpecies;
                 float weight = -1.0 * weights[forceIndex];
                 
@@ -427,7 +427,7 @@ kernel void drawParticleTrail(texture2d<half, access::read_write> output [[textu
         return;
     }
     LifeParticle particle = particles[index];
-    half4 color = (half4)colors[(int)particle.species];
+    half4 color = (half4)colors[particle.species];
     
     uint width = output.get_width();
     uint height = output.get_height();

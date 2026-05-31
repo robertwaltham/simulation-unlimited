@@ -424,7 +424,7 @@ extension ParticleLifeView.Coordinator {
         
         for i in 0 ..< viewModel.particleCount {
             var speed = SIMD2<Float>(Float.random(in: speedRange), 0)
-            var species = Float(Int.random(in: 0..<Int(viewModel.config.flavourCount)))
+            var species = Int32.random(in: 0..<Int32(viewModel.config.flavourCount))
             let position: SIMD2<Float>
             
             switch viewModel.startType {
@@ -469,7 +469,7 @@ extension ParticleLifeView.Coordinator {
                 if i % 2 == 0 {
                     speed.y *= -1
                 }
-                species = xLinePosition.truncatingRemainder(dividingBy: 3)
+                species = Int32(xLinePosition.truncatingRemainder(dividingBy: 3))
             }
             
             var particle = LifeParticle()

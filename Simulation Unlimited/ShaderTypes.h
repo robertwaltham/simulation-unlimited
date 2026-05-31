@@ -77,7 +77,7 @@ typedef struct LifeParticle {
     vector_float2 position;
     vector_float2 velocity;
     vector_float2 acceleration;
-    float species;
+    int32_t species;
     float bytes;
 } LifeParticle;
 
