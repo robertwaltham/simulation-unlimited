@@ -249,6 +249,9 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
                     texture2d<half, access::read_write> input [[texture(InputTextureIndexPathInput)]],
                     const device ParticleConfig& config [[ buffer(InputIndexConfig)]],
                     uint2 gid [[ thread_position_in_grid ]]) {
+    if (gid.x >= output.get_width() || gid.y >= output.get_height()) {
+        return;
+    }
     
     int blurSize = floor(config.blur_size);
     int range = floor(blurSize/2.0);
@@ -256,7 +259,11 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
     half4 colors = half4(0);
     for (int x = -range; x <= range; x++) {
         for (int y = -range; y <= range; y++) {
-            half4 color = input.read(uint2(gid.x+x, gid.y+y));
+            uint2 coord = uint2(
+                uint(clamp(int(gid.x) + x, 0, int(input.get_width()) - 1)),
+                uint(clamp(int(gid.y) + y, 0, int(input.get_height()) - 1))
+            );
+            half4 color = input.read(coord);
             colors += color;
         }
     }
@@ -281,4 +288,3 @@ kernel void boxBlur(texture2d<half, access::write> output [[texture(InputTexture
     
     output.write(finalColor, gid);
 }
-

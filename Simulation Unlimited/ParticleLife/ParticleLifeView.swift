@@ -156,13 +156,13 @@ extension ParticleLifeView.Coordinator {
             )
             return touch
         }
-        let randomCount = 1024
-        var random: [Float] = (0..<randomCount).map { _ in Float.random(in: 0...1) }
-        
-        let threadgroupSizeMultiplier = 1
         let maxThreads = 512
         let particleThreadsPerGroup = MTLSize(width: maxThreads, height: 1, depth: 1)
-        let particleThreadGroupsPerGrid = MTLSize(width: (max(viewModel.particleCount / (maxThreads * threadgroupSizeMultiplier), 1)), height: 1, depth:1)
+        let particleThreadGroupsPerGrid = MTLSize(
+            width: max((viewModel.particleCount + maxThreads - 1) / maxThreads, 1),
+            height: 1,
+            depth: 1
+        )
         
         let w = pipelines.background.threadExecutionWidth
         let h = pipelines.background.maxTotalThreadsPerThreadgroup / w
@@ -178,7 +178,6 @@ extension ParticleLifeView.Coordinator {
             commandEncoder.setTexture(pathTextures[1], index: Int(InputTextureIndexPathOutput.rawValue))
             commandEncoder.setTexture(gradientTexture, index: Int(InputTextureIndexGradient.rawValue))
             commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<ParticleLifeConfig>.stride, index: Int(ParticleLifeInputIndexConfig.rawValue))
-            commandEncoder.setBytes(&random, length: MemoryLayout<Float>.stride * randomCount, index: Int(ParticleLifeInputIndexRandom.rawValue))
             commandEncoder.setBytes(&colors, length: MemoryLayout<RenderColours>.stride, index: Int(ParticleLifeInputIndexRenderColours.rawValue))
             var gradientConfig = viewModel.gradientNoiseSettings.shaderConfig()
             commandEncoder.setBytes(&gradientConfig, length: MemoryLayout<ParticleLifeGradientConfig>.stride, index: Int(ParticleLifeInputIndexGradientConfig.rawValue))
@@ -202,7 +201,8 @@ extension ParticleLifeView.Coordinator {
                 // update particles
                 commandEncoder.setComputePipelineState(pipelines.updateParticles)
                 commandEncoder.setBuffer(particleBuffer, offset: 0, index: Int(ParticleLifeInputIndexParticles.rawValue))
-                commandEncoder.setBytes(&viewModel.particleCount, length: MemoryLayout<Int>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
+                var particleCount = Int32(viewModel.particleCount)
+                commandEncoder.setBytes(&particleCount, length: MemoryLayout<Int32>.stride, index: Int(ParticleLifeInputIndexParticleCount.rawValue))
                 commandEncoder.setBuffer(colorBuffer, offset: 0, index: Int(ParticleLifeInputIndexSpeciesColours.rawValue))
                 commandEncoder.setBytes(viewModel.weights, length: MemoryLayout<Float>.stride * viewModel.weights.count, index: Int(ParticleLifeInputIndexWeights.rawValue))
                 if touches.isEmpty {

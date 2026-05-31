@@ -176,6 +176,7 @@ kernel void drawParticleLifePath(texture2d<half, access::read_write> output [[te
 kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(InputTextureIndexDrawable)]],
                            device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                            device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
+                           const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
                            const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                            uint id [[ thread_position_in_grid ]],
                            uint tid [[ thread_index_in_threadgroup ]],
@@ -183,12 +184,15 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
                            uint blockDim [[ threads_per_threadgroup ]]) {
     
     uint index = bid * blockDim + tid;
+    if (index >= uint(particle_count)) {
+        return;
+    }
     
     uint width = output.get_width();
     uint height = output.get_height();
     
     LifeParticle particle = particles[index];
-    uint2 pos = uint2(particle.position);
+    uint2 pos = uint2(clamp(particle.position, float2(0), float2(float(width - 1), float(height - 1))));
     uint span = (uint)config.drawRadius;
     
     // display
@@ -197,14 +201,14 @@ kernel void drawLifeParticles(texture2d<half, access::write> output [[texture(In
     if (span == 0) {
         output.write(color, pos);
     } else {
-        for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
-            for (uint v = pos.y - span; v <= uint(pos.y) + span; v++) {
-                if (u < 0 || v < 0 || u >= width || v >= height) {
-                    continue;
-                }
-                
-                if (length(float2(u, v) - particle.position) < span) {
-                    output.write(color, uint2(u, v));
+        int minX = max(int(pos.x) - int(span), 0);
+        int maxX = min(int(pos.x) + int(span), int(width) - 1);
+        int minY = max(int(pos.y) - int(span), 0);
+        int maxY = min(int(pos.y) + int(span), int(height) - 1);
+        for (int u = minX; u <= maxX; u++) {
+            for (int v = minY; v <= maxY; v++) {
+                if (length(float2(float(u), float(v)) - particle.position) < span) {
+                    output.write(color, uint2(uint(u), uint(v)));
                 }
             }
         }
@@ -226,6 +230,9 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
                             uint blockDim [[ threads_per_threadgroup ]]) {
     
     uint index = bid * blockDim + tid;
+    if (index >= uint(particle_count)) {
+        return;
+    }
     LifeParticle particle = particles[index];
     
     float2 position = particle.position;
@@ -307,18 +314,18 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
     
     // bounds
     if (position.x < 0) {
-        position.x = width;
+        position.x = float(width - 1);
     }
     
     if (position.y < 0) {
-        position.y = height;
+        position.y = float(height - 1);
     }
     
-    if (position.x > width) {
+    if (position.x >= width) {
         position.x = 0;
     }
     
-    if (position.y > height) {
+    if (position.y >= height) {
         position.y = 0;
     }
     
@@ -335,30 +342,35 @@ kernel void updateParticles(texture2d<half, access::read_write> output [[texture
 kernel void drawParticleTrail(texture2d<half, access::read_write> output [[texture(InputTextureIndexPathInput)]],
                               device LifeParticle *particles [[buffer(ParticleLifeInputIndexParticles)]],
                               device float4 *colors [[buffer(ParticleLifeInputIndexSpeciesColours)]],
+                              const device int& particle_count [[ buffer(ParticleLifeInputIndexParticleCount)]],
                               const device ParticleLifeConfig& config [[ buffer(ParticleLifeInputIndexConfig)]],
                               uint id [[ thread_position_in_grid ]],
                               uint tid [[ thread_index_in_threadgroup ]],
                               uint bid [[ threadgroup_position_in_grid ]],
                               uint blockDim [[ threads_per_threadgroup ]]) {
     uint index = bid * blockDim + tid;
+    if (index >= uint(particle_count)) {
+        return;
+    }
     LifeParticle particle = particles[index];
     half4 color = (half4)colors[(int)particle.species];
     
     uint width = output.get_width();
     uint height = output.get_height();
-    uint2 pos = uint2(particle.position);
+    uint2 pos = uint2(clamp(particle.position, float2(0), float2(float(width - 1), float(height - 1))));
     uint span = (uint)config.trailRadius;
     
-    for (uint u = pos.x - span; u <= uint(pos.x) + span; u++) {
-        for (uint v = pos.y - span; v <= uint(pos.y) + span; v++) {
-            if (u < 0 || v < 0 || u >= width || v >= height) {
-                continue;
-            }
-            
-            if (length(float2(u, v) - particle.position) < span) {
-                half4 current_color = output.read(uint2(u,v));
+    int minX = max(int(pos.x) - int(span), 0);
+    int maxX = min(int(pos.x) + int(span), int(width) - 1);
+    int minY = max(int(pos.y) - int(span), 0);
+    int maxY = min(int(pos.y) + int(span), int(height) - 1);
+    for (int u = minX; u <= maxX; u++) {
+        for (int v = minY; v <= maxY; v++) {
+            if (length(float2(float(u), float(v)) - particle.position) < span) {
+                uint2 pixel = uint2(uint(u), uint(v));
+                half4 current_color = output.read(pixel);
                 half4 output_color = current_color += color;
-                output.write(clamp(output_color, half4(0), half4(1)), uint2(u, v));
+                output.write(clamp(output_color, half4(0), half4(1)), pixel);
                 // TODO: desaturate existing color?
             }
         }
