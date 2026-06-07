@@ -72,11 +72,11 @@ struct SlimeLFOWorkshop: View {
                             Text("Hexagons")
 
                             VStack {
-                                LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.hexagonLFO, name: "Weight \(viewModel.redConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.hexagonLFO, name: "Weight \(viewModel.redConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.red)
-                                LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.hexagonLFO, name: "Weight \(viewModel.greenConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.hexagonLFO, name: "Weight \(viewModel.greenConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.green)
-                                LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.hexagonLFO, name: "Weight \(viewModel.blueConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                                LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.hexagonLFO, name: "Weight \(viewModel.blueConfig.config.hexagonWeight.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                     .tint(Color.blue)
                             }.padding()
                             
@@ -94,11 +94,11 @@ struct SlimeLFOWorkshop: View {
                     }.popover(isPresented: $showLFO, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                         VStack {
                             Divider()
-                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.biasLFO, name: "Bias \(viewModel.redConfig.config.randomBias.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.red)
-                            LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.biasLFO, name: "Bias \(viewModel.greenConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.greenConfig.biasLFO, name: "Bias \(viewModel.greenConfig.config.randomBias.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.green)
-                            LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.biasLFO, name: "Bias \(viewModel.blueConfig.config.randomBias.formatted(.percent.precision(.fractionLength(0...0))))", offset: 0...1, time: viewModel.time)
+                            LowFrequencyOscillatorControl(oscillator: $viewModel.blueConfig.biasLFO, name: "Bias \(viewModel.blueConfig.config.randomBias.formatted(.percent.precision(.fractionLength(1))))", offset: 0...1, time: viewModel.time)
                                 .tint(Color.blue)
                             Divider()
                             LowFrequencyOscillatorControl(oscillator: $viewModel.redConfig.falloffLFO, name: "Falloff", offset: 0...1, time: viewModel.time)

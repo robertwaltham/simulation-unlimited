@@ -17,8 +17,8 @@ struct LowFrequencyOscillatorView: View {
         VStack (spacing: 40) {
 
             HStack {
-                Text("\(time, specifier: "%.2f")")
-                Text("\(oscillator.value(at: time), specifier: "%.2f")")
+                Text("\(time, specifier: "%.1f")")
+                Text("\(oscillator.value(at: time), specifier: "%.1f")")
             }
 
 
@@ -56,19 +56,19 @@ struct LowFrequencyOscillatorView: View {
         
         HStack {
             VStack {
-                Text("FRQ: \(oscillator.wrappedValue.frequency, specifier: "%.2f")")
+                Text("FRQ: \(oscillator.wrappedValue.frequency, specifier: "%.1f")")
                     .font(.title3)
                 Slider(value: $oscillator.frequency, in: 0...2)
             }
             
             VStack {
-                Text("AMP: \(oscillator.wrappedValue.amplitude, specifier: "%.2f")")
+                Text("AMP: \(oscillator.wrappedValue.amplitude, specifier: "%.1f")")
                     .font(.title3)
                 Slider(value: $oscillator.amplitude, in: 0...1)
             }
             
             VStack {
-                Text("Pha: \(oscillator.wrappedValue.phase, specifier: "%.2f")")
+                Text("Pha: \(oscillator.wrappedValue.phase, specifier: "%.1f")")
                     .font(.title3)
                 Slider(value: $oscillator.phase, in: 0...5)
             }

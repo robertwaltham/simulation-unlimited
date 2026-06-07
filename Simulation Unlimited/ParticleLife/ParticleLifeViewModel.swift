@@ -43,7 +43,7 @@ import UIKit
     static let weightStep: Float = 0.05
     static let weightOptions: [Float] = (-4...4).map { Float($0) * weightStep }
     private static let defaultMaxCutoff: Float = 1
-    private static let defaultMaxFalloff: Float = 0.15
+    private static let defaultMaxFalloff: Float = 0.05
     private static let defaultMaxRadius: Float = 5
     private static let defaultMaxMultiplier: Float = 6
     private static let defaultMaxMinDistance: Float = 50
@@ -277,7 +277,7 @@ extension ParticleLifeConfig {
         config.drawRadius = 3
         config.trailRadius = 3
         config.cutoff = 0.01
-        config.falloff = 0.15
+        config.falloff = 0.05
         config.speedMultiplier = 2.5
         config.flavourCount = 3
         config.blurRadius = 3

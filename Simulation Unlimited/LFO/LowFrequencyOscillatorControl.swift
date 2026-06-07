@@ -114,12 +114,12 @@ private struct LowFrequencyOscillatorSliders: View {
     var body: some View {
         HStack {
             VStack {
-                Text("FRQ: \(oscillator.frequency, specifier: "%.1f")")
+                Text("Freq: \(oscillator.frequency, specifier: "%.1f")")
                 Slider(value: $oscillator.frequency, in: 0...2)
             }
             
             VStack {
-                Text("AMP: \(oscillator.amplitude, specifier: "%.2f")")
+                Text("Amp: \(oscillator.amplitude, specifier: "%.1f")")
                 Slider(value: $oscillator.amplitude, in: amplitude)
             }
             
@@ -129,7 +129,7 @@ private struct LowFrequencyOscillatorSliders: View {
             }
             
             VStack {
-                Text("Offset: \(offsetSliderValue, specifier: "%.2f")")
+                Text("Offset: \(offsetSliderValue, specifier: "%.1f")")
                 Slider(value: throttledOffset, in: offset)
             }
         }
