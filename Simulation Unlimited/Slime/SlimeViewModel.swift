@@ -38,7 +38,7 @@ enum StartType: Int, CaseIterable, Identifiable {
     var greenConfig = ColorConfig(color: .green)
     var blueConfig = ColorConfig(color: .blue)
     
-    var hexagonConfig = HexagonConfig.defaultConfig()
+    var hexagonConfig = HexagonConfig()
 
     var particleCount = 8192
     
@@ -136,3 +136,4 @@ extension SlimeConfig {
                     blurSize: 1.0)
     }
 }
+

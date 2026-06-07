@@ -27,14 +27,18 @@ struct SimulationPicker: View {
                     ParticleLifeView(viewModel: ParticleLifeViewModel(count: 1024))
                 }, text: "Particle Life", icon: "sun.dust.circle")
                 
-//                simulationTile(route: .hexagons, sim: {
+
+//                simulationTile(content: {
+//                    HexagonWorkshop()
+//                        .edgesIgnoringSafeArea(.all)
+//                        .statusBar(hidden: true)
+//                }, sim: {
 //                    HexagonView(viewModel: HexagonViewModel(config: HexagonConfig(shiftX: 58, shiftY: 32)))
 //                }, text: "Hexagons", icon: "hexagon")
-//                
-//                simulationTile(route: .circles, sim: {
-//                    CircleView(viewModel: CircleViewModel())
-//                }, text: "Circles", icon: "circle")
                 
+                simulationTile(route: .circles, sim: {
+                    CircleView(viewModel: CircleViewModel())
+                }, text: "Circles", icon: "circle")
                 
                 simulationTile(route: .sand, sim: {
                     SandView(viewModel: SandViewModel())
@@ -65,10 +69,6 @@ extension SimulationPicker {
             SlimeLFOWorkshop()
         case .particleLife:
             ParticleLifeWorkshop()
-                .edgesIgnoringSafeArea(.all)
-                .statusBar(hidden: true)
-        case .hexagons:
-            HexagonWorkshop()
                 .edgesIgnoringSafeArea(.all)
                 .statusBar(hidden: true)
         case .circles:
@@ -137,7 +137,6 @@ private enum SimulationRoute: Hashable {
     case boids
     case slime
     case particleLife
-    case hexagons
     case circles
     case sand
 }

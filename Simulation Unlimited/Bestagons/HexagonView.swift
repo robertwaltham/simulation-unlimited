@@ -30,6 +30,7 @@ struct HexagonView: UIViewRepresentable {
         mtkView.framebufferOnly = false
         mtkView.clearColor = MTLClearColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 1)
         mtkView.drawableSize = mtkView.frame.size
+        mtkView.enableSetNeedsDisplay = true
         mtkView.isPaused = false
         mtkView.preferredFramesPerSecond = 60
         mtkView.isMultipleTouchEnabled = true
@@ -53,6 +54,7 @@ struct HexagonView: UIViewRepresentable {
         private var metalCommandQueue: MTLCommandQueue!
         var viewModel: HexagonViewModel!
         
+        private var pathTextures: [MTLTexture] = []
         private var states: [MTLComputePipelineState] = []
 
         private var viewPortSize = vector_uint2(x: 0, y: 0)
@@ -93,23 +95,23 @@ extension HexagonView.Coordinator {
         let textureThreadsPerGroup = MTLSizeMake(w, h, 1)
         let textureThreadgroupsPerGrid = MTLSize(width: (Int(viewPortSize.x) + w - 1) / w, height: (Int(viewPortSize.y) + h - 1) / h, depth: 1)
         
-        guard let drawable = view?.currentDrawable else {
-            return
-        }
-        
         guard let commandBuffer = metalCommandQueue.makeCommandBuffer(),
               let commandEncoder = commandBuffer.makeComputeCommandEncoder() else {
             fatalError("can't make command buffer or encoder")
         }
         
-        // Draw Background Colour
-        commandEncoder.setComputePipelineState(states[0])
-        commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexPathHexagon.rawValue))
-        commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<HexagonConfig>.stride, index: Int(HexagonInputIndexConfig.rawValue))
-        commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+        if let drawable = view?.currentDrawable {
+            // Draw Background Colour
+            commandEncoder.setComputePipelineState(states[0])
+            commandEncoder.setTexture(drawable.texture, index: Int(InputTextureIndexPathHexagon.rawValue))
+            commandEncoder.setBytes(&viewModel.config, length: MemoryLayout<HexagonConfig>.stride, index: 7)
+            commandEncoder.dispatchThreadgroups(textureThreadgroupsPerGrid, threadsPerThreadgroup: textureThreadsPerGroup)
+            
+            commandEncoder.endEncoding()
+            commandBuffer.present(drawable)
+            
+        }
         
-        commandEncoder.endEncoding()
-        commandBuffer.present(drawable)
         commandBuffer.commit()
         
     }
